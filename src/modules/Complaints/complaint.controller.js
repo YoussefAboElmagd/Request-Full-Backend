@@ -13,19 +13,20 @@ const createComplaint = catchAsync(async (req, res, next) => {
 });
 
 const getAllComplaint = catchAsync(async (req, res, next) => {
-  let ApiFeat = new ApiFeature(complaintModel.find(), req.query).search();p
+  let ApiFeat = new ApiFeature(complaintModel.find(), req.query).search();
   let results = await ApiFeat.mongooseQuery;
   results = JSON.stringify(results);
   results = JSON.parse(results);
-  res.json({
-    message: "done",
-    results,
-  });
-  if (!ApiFeat) {
+  if (!ApiFeat || !results) {
     return res.status(404).json({
       message: "No Complaint was found!",
     });
   }
+  res.json({
+    message: "done",
+    results,
+  });
+
 });
 
 export { createComplaint, getAllComplaint };
