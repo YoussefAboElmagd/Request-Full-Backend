@@ -15,21 +15,12 @@ const taskSchema = mongoose.Schema(
       default: false,
       required: true,
     },
-    isShared: {
-      type: Boolean,
-      default: false,
-      required: true,
-    },
     token: {
       type: String,
       // required: true,
     },
     tasksPriority: {
       type: String,
-      // required: true,
-    },
-    resources: {
-      type: [String],
       // required: true,
     },
     documments: {
