@@ -1,4 +1,5 @@
 import multer from "multer";
+import AppError from "../appError.js";
 export const fileSizeLimitErrorHandler = (err, req, res, next) => {
   if (err) {
     res.status(400).json({ message: err.message });
@@ -6,6 +7,18 @@ export const fileSizeLimitErrorHandler = (err, req, res, next) => {
     next();
   }
 };
+export function fileFilterHandler(file,req, cb) {
+  const filetypes = /jpeg|jpg|png/;
+  const mimetype = filetypes.test(file.files.profilePic[0].mimetype);
+  // console.log(file.files.profilePic[0].mimetype,"mmmmm");
+  // console.log(mimetype,"mmmmm");
+  
+  if (mimetype) {
+    return cb(null, true);
+  } else {
+    return cb(new AppError("Please, Upload a Valid Image", 400), false);
+  }
+}
 
 let options = (folderName) => {
   const storage = multer.diskStorage({
@@ -19,12 +32,14 @@ let options = (folderName) => {
 
   });
   function fileFilter(file,req, cb) {
-    // if (file.mimetype.startsWith("image")) {
-    //   cb(null, true);
-    // } else {
-    //   cb(new AppError("invalid image", 400), false);
-    // }
-      // cb(new Error("invalid image", 400), false);
+  //   if(file.mimetype){
+  //   if (file.mimetype.startsWith("image")) {
+  //     cb(null, true);
+  //   } else {
+  //     cb(new Error("invalid image", 400), false);
+  //     // cb(new AppError("invalid image", 400), false);
+  //   }
+  // }
 
       cb(null, true);
   }

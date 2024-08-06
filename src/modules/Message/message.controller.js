@@ -49,7 +49,7 @@ const addPhotos = catchAsync(async (req, res, next) => {
     req.files.docs &&
     req.files.docs.map(
       (file) =>
-        `https://tchatpro.com/image/${file.filename.split(" ").join("")}`
+        `http://localhost:8000/image/${file.filename.split(" ").join("")}`
     );
 
   const directoryPathh = path.join(docs, "uploads/image");

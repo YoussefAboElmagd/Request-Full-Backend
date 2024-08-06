@@ -5,6 +5,7 @@ import authRouter from "./auth/auth.routes.js";
 import usersRouter from "./users/users.routes.js";
 import projectRouter from "./Project/project.routes.js";
 import complaintRouter from "./Complaints/complaint.routes.js";
+import privacyRouter from "./Privacy/privacy.routes.js";
 
 
 export function init(app) {
@@ -15,6 +16,7 @@ export function init(app) {
   app.use("/project", projectRouter);
   app.use("/task", taskRouter);
   app.use("/complaint", complaintRouter);
+  app.use("/privacy", privacyRouter);
   
   app.use("/", (req, res, next) => {
     res.send("Hello World");

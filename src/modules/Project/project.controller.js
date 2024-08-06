@@ -1,7 +1,6 @@
 import { projectModel } from "../../../database/models/project.model.js";
 import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
-import generateUniqueId from "generate-unique-id";
 
 const createProject = catchAsync(async (req, res, next) => {
   let newProject = new projectModel(req.body);
