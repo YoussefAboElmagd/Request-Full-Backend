@@ -11,11 +11,12 @@ usersRouter.get("/consultant/", usersController.getAllconsultant);
 usersRouter.get("/contractor/", usersController.getAllcontractors);
 usersRouter.get("/:id", usersController.getUserById);
 usersRouter.put("/:id", usersController.updateUser);
+usersRouter.put("/projects/:id", usersController.updateUserProjects);
 usersRouter.delete("/:id", usersController.deleteUser);
 usersRouter.post(
   "/photo",
   uploadMixFile("profilePic", [
-    { name: "profilePic", maxcount: 1, },
+    { name: "profilePic",},
   ]),fileFilterHandler,fileSizeLimitErrorHandler,
   usersController.addPhotos
 );

@@ -1,3 +1,4 @@
+import generateUniqueId from "generate-unique-id";
 import { taskModel } from "../../../database/models/tasks.model.js";
 import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
@@ -5,20 +6,22 @@ import fsExtra from "fs-extra";
 import path from "path";
 
 const createTask = catchAsync(async (req, res, next) => {
-  if (req.body.users) {
-    if (req.body.users.length >= 1) {
-      req.body.isShared = true;
-      req.body.taskType = "shared";
-    }
-  }
-  req.body.users = [];
+req.body.taskId=generateUniqueId({
+  length: 10,
+  useLetters: false,
+});
+if (req.body.taskBudget && req.body.taskBudget >= 0) {
+
   let newTask = new taskModel(req.body);
   let addedTask = await newTask.save();
-
+  
   res.status(201).json({
     message: " Task has been created successfully!",
     addedTask,
   });
+}else{
+  return res.status(404).json({ message: "Budget must be greater than 0" });
+}
 });
 
 const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
@@ -36,15 +39,17 @@ const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
     });
   }
   let { filterType, filterValue } = req.query;
-
   if (filterType && filterValue) {
-    let filter = await taskModel.find({
-      $and: [
-        { taskType: filterType.toLowerCase() },
-        { eDate: filterValue },
-      ]
-    })
-    results = filter  
+    results = results.filter(function (item) {
+      if (filterType == "name") {
+        return item.name.toLowerCase().includes(filterValue.toLowerCase());
+      }
+      if (filterType == "company") {
+        if(item.company){
+          return item.company.name.toLowerCase().includes(filterValue.toLowerCase());
+        }
+      }
+    });
   }
 
   res.json({
@@ -70,15 +75,17 @@ const getAllTaskByUser = catchAsync(async (req, res, next) => {
     });
   }
   let { filterType, filterValue } = req.query;
-
   if (filterType && filterValue) {
-    let filter = await taskModel.find({
-      $and: [
-        { taskType: filterType.toLowerCase() },
-        { eDate: filterValue },
-      ]
-    })
-    results = filter  
+    results = results.filter(function (item) {
+      if (filterType == "name") {
+        return item.name.toLowerCase().includes(filterValue.toLowerCase());
+      }
+      if (filterType == "company") {
+        if(item.company){
+          return item.company.name.toLowerCase().includes(filterValue.toLowerCase());
+        }
+      }
+    });
   }
 
   res.json({
@@ -109,7 +116,7 @@ const updateTaskPhoto = catchAsync(async (req, res, next) => {
       req.files.documments &&
       req.files.documments.map(
         (file) =>
-          `https://tchatpro.com/tasks/${file.filename.split(" ").join("")}`
+          `http://localhost:8000/tasks/${file.filename.split(" ").join("")}`
       );
     const directoryPathh = path.join(documments, "uploads/tasks");
 
@@ -136,7 +143,7 @@ const updateTaskPhoto = catchAsync(async (req, res, next) => {
   }
   let updatedTask = await taskModel.findByIdAndUpdate(
     id,
-    { $push: { documments: docummentss } },
+    { $push: { documments: documments } },
     { new: true }
   );
 
@@ -150,7 +157,9 @@ const updateTaskPhoto = catchAsync(async (req, res, next) => {
 
 const updateTask = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let updatedTask = await taskModel.findByIdAndUpdate(id, req.body, {
+  if ( req.body.taskBudget < 0) {
+    return res.status(404).json({ message: "Budget must be greater than 0" });
+  }  let updatedTask = await taskModel.findByIdAndUpdate(id, req.body, {
     new: true,
   });
 

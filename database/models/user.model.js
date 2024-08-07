@@ -9,6 +9,13 @@ const userSchema = mongoose.Schema(
       required: [true, "Name is a required field."],
       minLength: [2, "Name is too short."],
     },
+    email: {
+      type: String,
+      trim: true,
+      required: [true, "Email is a required field."],
+      minLength: 6,
+      unique: [true, "Email must be unique."],
+    },
     phone: {
       type: String,
       required: [true, "Phone is a required field."],
@@ -17,6 +24,26 @@ const userSchema = mongoose.Schema(
     },
     otp: {
       type: String,
+    },
+    dateOfBirth: {
+      type: Date,
+      required:true
+    },
+    presentaddress: {
+      type: String,
+      required:true
+    },
+    city: {
+      type: String,
+      required:true
+    },
+    country: {
+      type: String,
+      required:true
+    },
+    postalCode: {
+      type: String,
+      required:true
     },
     idNumber: {
       type: String,
@@ -43,6 +70,18 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    confirmedEmail: {
+      type: Boolean,
+      default: false,
+    },
+    confirmedPhone: {
+      type: Boolean,
+      default: false,
+    },
+    projects: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "project",
+      default: [],},
   },
   { timestamps: true }
 );

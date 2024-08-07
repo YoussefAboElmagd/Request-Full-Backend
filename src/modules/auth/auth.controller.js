@@ -7,7 +7,10 @@ import generateUniqueId from "generate-unique-id";
 
 export const signUp = catchAsync(async (req, res, next) => {
   let phoneFormat = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/; //+XX XXXXX XXXXX
+  let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
   if (
+    req.body.email !== "" &&
+    req.body.email.match(emailFormat)&&
     req.body.phone !== "" &&
     req.body.phone.match(phoneFormat) &&
     req.body.phone.length > 10
@@ -30,7 +33,11 @@ export const signUp = catchAsync(async (req, res, next) => {
 
 export const signIn = catchAsync(async (req, res, next) => {
   let phoneFormat = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/; //+XX XXXXX XXXXX
-  if (req.body.phone !== "" && req.body.phone.match(phoneFormat)) {
+  let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+  if (
+    req.body.email !== "" &&
+    req.body.email.match(emailFormat)&&
+    req.body.phone !== "" && req.body.phone.match(phoneFormat)) {
   // if (req.body.phone !== "") {
     let { phone } = req.body.phone;
     let isFound = await userModel.findOne({ phone });

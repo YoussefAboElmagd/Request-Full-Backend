@@ -166,6 +166,20 @@ const updateUser = catchAsync(async (req, res, next) => {
   !results && res.status(404).json({ message: "couldn't update! not found!" });
   results && res.json({ message: "updatedd", results });
 });
+const updateUserProjects = catchAsync(async (req, res, next) => {
+  let { id } = req.params;
+if(req.body.projects){
+let updatedTask = await userModel.findByIdAndUpdate(
+  id,
+  { $push: { projects: req.body.projects } },
+  { new: true }
+);
+if (!updatedTask) {
+  return res.status(404).json({ message: "Couldn't update!  not found!" });
+}
+res.status(200).json({ message: "Task updated successfully!",  updatedTask,  });
+}
+});
 
 const deleteUser = catchAsync(async (req, res, next) => {
   let { id } = req.params;
@@ -181,4 +195,4 @@ const deleteUser = catchAsync(async (req, res, next) => {
   res.status(200).json({ message: "User deleted successfully!" });
 });
 
-export { getAllUsersByAdmin, getUserById, updateUser, deleteUser, addPhotos ,getAllowners,getAllcontractors,getAllconsultant ,addIdPhotos };
+export { getAllUsersByAdmin, getUserById, updateUser, deleteUser, addPhotos ,getAllowners,getAllcontractors,getAllconsultant ,addIdPhotos ,updateUserProjects };

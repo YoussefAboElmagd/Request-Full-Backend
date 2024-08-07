@@ -16,7 +16,7 @@ export function fileFilterHandler(file,req, cb) {
   if (mimetype) {
     return cb(null, true);
   } else {
-    return cb(new AppError("Please, Upload a Valid Image", 400), false);
+    return cb(new AppError("Please, Upload a Valid Image JPEG or PNG or JPG", 400), false);
   }
 }
 

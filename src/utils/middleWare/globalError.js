@@ -4,4 +4,4 @@ export const globalError = (err, req, res, next) => {
   } else {
     res.json({ err: err.message });
   }
-}
+};

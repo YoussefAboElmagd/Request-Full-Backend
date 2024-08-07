@@ -15,73 +15,52 @@ const taskSchema = mongoose.Schema(
       default: false,
       required: true,
     },
-    token: {
-      type: String,
-      // required: true,
-    },
-    tasksPriority: {
-      type: String,
-      // required: true,
-    },
-    documments: {
-      type: [String],
-      // required: true,
-    },
-    users: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref: "user",
-      default: [],
-      // required: true,
-    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       required: true,
     },
-    sDate: {
-      type: String,
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
       required: true,
     },
-    eDate: {
-      type: String,
+    contractor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
       required: true,
     },
-    sTime: {
-      type: String,
+    project: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "project",
       required: true,
     },
-    eTime: {
+    dueDate: {
+      type: Date,
+      required: true,
+    },
+    taskBudget: {
+      type: Number,
+      required: true,
+    },
+    taskId: {
       type: String,
+    },
+    documments: {
+      type: [String],
+    },
+    taskStatus: {
+      type: String,
+      enum: ["Done", "InProgress", "Waiting"],
+      default: "InProgress",
       required: true,
     },
     taskType: {
       type: String,
-      enum: ["normal", "shared"],
-      default: "normal",
+      enum: ["Normal", "High","Low"],
+      default: "Normal",
       required: true,
     },
-    taskStatus: {
-      type: String,
-      enum: ["Done", "InProgress", "Cancelled"],
-      default: "InProgress",
-      required: true,
-    },
-    parentTask: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "task",
-      // required: true,
-    },
-    // review: {
-    //   type: [
-    //     {
-    //       review: { type: String},
-    //       status: { type: String},
-    //       uId: { type: mongoose.Schema.Types.ObjectId, ref: "user"},
-    //       createdAt: { type: Date},
-    //     },
-    //   ],
-    //    required: true,
-    // },
   },
   { timestamps: true }
 );

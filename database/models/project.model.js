@@ -8,14 +8,15 @@ const projectSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      enum: [ "onGoing","ending"],
+      enum: [ "onGoing","ending","waiting"],
       default: "onGoing",
       required: true,
     },
-    notes: {
-      type: String,
-      // required: true,
-    },
+    notes: [{
+          content: {type: String},
+          postedBy: {type: mongoose.Schema.Types.ObjectId, ref: "user"},
+                // required: true,
+    }],
     sDate: {
       type: String,
       required: true,
@@ -51,6 +52,11 @@ const projectSchema = mongoose.Schema(
     budget: {
       type: Number,
       required: true,
+    },
+    members: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "user",
+      default: [],
     },
   },
   { timestamps: true }

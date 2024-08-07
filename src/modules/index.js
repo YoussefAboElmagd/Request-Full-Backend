@@ -9,14 +9,14 @@ import privacyRouter from "./Privacy/privacy.routes.js";
 
 
 export function init(app) {
-  app.use("/users", usersRouter);
-  app.use("/auth", authRouter);
-  app.use("/notification", notiticationRouter);
-  app.use("/message", messageRouter);
-  app.use("/project", projectRouter);
-  app.use("/task", taskRouter);
-  app.use("/complaint", complaintRouter);
-  app.use("/privacy", privacyRouter);
+  app.use("/api/v1/users", usersRouter);
+  app.use("/api/v1/auth", authRouter);
+  app.use("/api/v1/notification", notiticationRouter);
+  app.use("/api/v1/message", messageRouter);
+  app.use("/api/v1/project", projectRouter);
+  app.use("/api/v1/task", taskRouter);
+  app.use("/api/v1/complaint", complaintRouter);
+  app.use("/api/v1/privacy", privacyRouter);
   
   app.use("/", (req, res, next) => {
     res.send("Hello World");
