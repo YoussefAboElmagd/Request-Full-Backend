@@ -1,16 +1,16 @@
 import mongoose from "mongoose";
 
-const projectSchema = mongoose.Schema(
+const projectLogSchema = mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
+      // required: true,
     },
     status: {
       type: String,
-      enum: ["onGoing", "ending", "waiting","delayed"],
+      enum: ["onGoing", "ending", "waiting"],
       default: "onGoing",
-      required: true,
+      // required: true,
     },
     notes: [
       {
@@ -21,11 +21,11 @@ const projectSchema = mongoose.Schema(
     ],
     sDate: {
       type: String,
-      required: true,
+      // required: true,
     },
     eDate: {
       type: String,
-      required: true,
+      // required: true,
     },
     documents: {
       type: [mongoose.Schema.Types.ObjectId],
@@ -33,14 +33,14 @@ const projectSchema = mongoose.Schema(
       // required: true,
     },
     consultant: {
-      type: [mongoose.Schema.Types.ObjectId],
+      type: mongoose.Schema.Types.ObjectId,
       ref: "user",
-      required: true,
+      // required: true,
     },
     contractor: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "user",
-      required: true,
+      // required: true,
     },
     owner: {
       type: [mongoose.Schema.Types.ObjectId],
@@ -54,7 +54,6 @@ const projectSchema = mongoose.Schema(
     },
     budget: {
       type: Number,
-      default: 0,
       required: true,
     },
     members: {
@@ -66,4 +65,4 @@ const projectSchema = mongoose.Schema(
   { timestamps: true }
 );
 
-export const projectModel = mongoose.model("project", projectSchema);
+export const projectLogModel = mongoose.model("projectLog", projectLogSchema);

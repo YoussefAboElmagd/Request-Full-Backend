@@ -21,12 +21,12 @@ const taskSchema = mongoose.Schema(
       required: true,
     },
     owner: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: [mongoose.Schema.Types.ObjectId],
       ref: "user",
       required: true,
     },
     contractor: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: [mongoose.Schema.Types.ObjectId],
       ref: "user",
       required: true,
     },
@@ -35,8 +35,12 @@ const taskSchema = mongoose.Schema(
       ref: "project",
       required: true,
     },
+    startDate: {
+      type: String,
+      required: true,
+    },
     dueDate: {
-      type: Date,
+      type: String,
       required: true,
     },
     taskBudget: {
@@ -46,7 +50,7 @@ const taskSchema = mongoose.Schema(
     taskId: {
       type: String,
     },
-    documments: {
+    documents: {
       type: [String],
     },
     taskStatus: {
@@ -57,7 +61,7 @@ const taskSchema = mongoose.Schema(
     },
     taskType: {
       type: String,
-      enum: ["Normal", "High","Low"],
+      enum: ["Normal", "High", "Low"],
       default: "Normal",
       required: true,
     },

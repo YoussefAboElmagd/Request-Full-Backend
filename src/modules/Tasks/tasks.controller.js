@@ -6,26 +6,25 @@ import fsExtra from "fs-extra";
 import path from "path";
 
 const createTask = catchAsync(async (req, res, next) => {
-req.body.taskId=generateUniqueId({
-  length: 10,
-  useLetters: false,
-});
-if (req.body.taskBudget && req.body.taskBudget >= 0) {
-
-  let newTask = new taskModel(req.body);
-  let addedTask = await newTask.save();
-  
-  res.status(201).json({
-    message: " Task has been created successfully!",
-    addedTask,
+  req.body.taskId = generateUniqueId({
+    length: 9,
+    useLetters: false,
   });
-}else{
-  return res.status(404).json({ message: "Budget must be greater than 0" });
-}
+  if (req.body.taskBudget && req.body.taskBudget >= 0) {
+    let newTask = new taskModel(req.body);
+    let addedTask = await newTask.save();
+
+    res.status(201).json({
+      message: " Task has been created successfully!",
+      addedTask,
+    });
+  } else {
+    return res.status(404).json({ message: "Budget must be greater than 0" });
+  }
 });
 
 const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
-  let ApiFeat = new ApiFeature(taskModel.find().populate("users"), req.query)
+  let ApiFeat = new ApiFeature(taskModel.find().populate("users").populate("project"), req.query)
 
     .sort()
     .search();
@@ -45,8 +44,10 @@ const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
         return item.name.toLowerCase().includes(filterValue.toLowerCase());
       }
       if (filterType == "company") {
-        if(item.company){
-          return item.company.name.toLowerCase().includes(filterValue.toLowerCase());
+        if (item.company) {
+          return item.company.name
+            .toLowerCase()
+            .includes(filterValue.toLowerCase());
         }
       }
     });
@@ -54,14 +55,15 @@ const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
 
   res.json({
     message: "done",
-    // count: await taskModel.countDocuments(),
+    count: await taskModel.countDocuments(),
     results,
   });
-
 });
 const getAllTaskByUser = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
-    taskModel.find({ createdBy: req.params.id }).populate("users"),
+    taskModel
+      .find({ $or: [{ createdBy: req.params.id }, { users: req.params.id }] })
+      .populate("users").populate("project"),
     req.query
   )
     .sort()
@@ -81,8 +83,10 @@ const getAllTaskByUser = catchAsync(async (req, res, next) => {
         return item.name.toLowerCase().includes(filterValue.toLowerCase());
       }
       if (filterType == "company") {
-        if(item.company){
-          return item.company.name.toLowerCase().includes(filterValue.toLowerCase());
+        if (item.company) {
+          return item.company.name
+            .toLowerCase()
+            .includes(filterValue.toLowerCase());
         }
       }
     });
@@ -90,14 +94,57 @@ const getAllTaskByUser = catchAsync(async (req, res, next) => {
 
   res.json({
     message: "done",
+    count: await taskModel.countDocuments({ $or: [{ createdBy: req.params.id }, { users: req.params.id }] }),
     results,
   });
+});
+const getAllTaskByProject = catchAsync(async (req, res, next) => {
+  let ApiFeat = new ApiFeature(
+    taskModel
+      .find({ project: req.params.id })
+      .populate("users").populate("project"),
+    req.query
+  )
+    .sort()
+    .search();
+  let results = await ApiFeat.mongooseQuery;
+  results = JSON.stringify(results);
+  results = JSON.parse(results);
+  if (!ApiFeat || !results) {
+    return res.status(404).json({
+      message: "No Task was found!",
+    });
+  }
+  let { filterType, filterValue } = req.query;
+  if (filterType && filterValue) {
+    results = results.filter(function (item) {
+      if (filterType == "name") {
+        return item.name.toLowerCase().includes(filterValue.toLowerCase());
+      }
+      if (filterType == "company") {
+        if (item.company) {
+          return item.company.name
+            .toLowerCase()
+            .includes(filterValue.toLowerCase());
+        }
+      }
+    });
+  }
 
+  res.json({
+    message: "done",
+    count: await taskModel.countDocuments({ project: req.params.id }),
+    results,
+  });
 });
 
 const getTaskById = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let results = await taskModel.findById(id).populate("users").populate("createdBy");
+  let results = await taskModel
+    .findById(id)
+    .populate("users")
+    .populate("createdBy")
+    .populate("project");
 
   if (!results) {
     return res.status(404).json({ message: "Task not found!" });
@@ -106,19 +153,20 @@ const getTaskById = catchAsync(async (req, res, next) => {
   res.json({
     message: "done",
     results,
-  });});
+  });
+});
 
 const updateTaskPhoto = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let documments = "";
-  if (req.files.documments) {
-    req.body.documments =
-      req.files.documments &&
-      req.files.documments.map(
+  let documents = "";
+  if (req.files.documents) {
+    req.body.documents =
+      req.files.documents &&
+      req.files.documents.map(
         (file) =>
           `http://localhost:8000/tasks/${file.filename.split(" ").join("")}`
       );
-    const directoryPathh = path.join(documments, "uploads/tasks");
+    const directoryPathh = path.join(documents, "uploads/tasks");
 
     fsExtra.readdir(directoryPathh, (err, files) => {
       if (err) {
@@ -137,13 +185,13 @@ const updateTaskPhoto = catchAsync(async (req, res, next) => {
       });
     });
 
-    if (req.body.documments !== "") {
-      documments = req.body.documments;
+    if (req.body.documents !== "") {
+      documents = req.body.documents;
     }
   }
   let updatedTask = await taskModel.findByIdAndUpdate(
     id,
-    { $push: { documments: documments } },
+    { $push: { documents: documents } },
     { new: true }
   );
 
@@ -151,15 +199,17 @@ const updateTaskPhoto = catchAsync(async (req, res, next) => {
     return res.status(404).json({ message: "Couldn't update!  not found!" });
   }
 
-  res.status(200).json({ message: "Task updated successfully!",  documments, resources });
+  res
+    .status(200)
+    .json({ message: "Task updated successfully!", documents, resources });
 });
-
 
 const updateTask = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  if ( req.body.taskBudget < 0) {
+  if (req.body.taskBudget < 0) {
     return res.status(404).json({ message: "Budget must be greater than 0" });
-  }  let updatedTask = await taskModel.findByIdAndUpdate(id, req.body, {
+  }
+  let updatedTask = await taskModel.findByIdAndUpdate(id, req.body, {
     new: true,
   });
 
@@ -181,8 +231,6 @@ const deleteTask = catchAsync(async (req, res, next) => {
   res.status(200).json({ message: "Task deleted successfully!" });
 });
 
-
-
 export {
   createTask,
   getAllTaskByAdmin,
@@ -191,4 +239,5 @@ export {
   getAllTaskByUser,
   updateTaskPhoto,
   updateTask,
+  getAllTaskByProject
 };

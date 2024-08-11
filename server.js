@@ -17,10 +17,11 @@ import cors from "cors";
 import dbConnection from "./database/DBConnection.js";
 import { init } from "./src/modules/index.js";
 import { globalError } from "./src/utils/middleWare/globalError.js";
-app.use(cors());
+
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("uploads"));
-app.use(express.json());
+app.use(cors());
 
 dbConnection();
 

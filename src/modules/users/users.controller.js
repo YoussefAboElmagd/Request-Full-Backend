@@ -48,6 +48,10 @@ const addPhotos = catchAsync(async (req, res, next) => {
 });
 const addIdPhotos = catchAsync(async (req, res, next) => {
   let idPhoto = "";
+  console.log(req.body, "req.body");
+  console.log(req.file, "req.fiiles");
+  console.log(req.files, "req.fiiles");
+  
   req.body.idPhoto =
     req.files.idPhoto &&
     req.files.idPhoto.map(

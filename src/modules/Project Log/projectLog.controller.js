@@ -1,5 +1,4 @@
-import { memoryStorage } from "multer";
-import { projectModel } from "../../../database/models/project.model.js";
+import { projectLogModel } from "../../../database/models/projectLog.model.js";
 import { userModel } from "../../../database/models/user.model.js";
 import ApiFeature from "../../utils/apiFeature.js";
 import AppError from "../../utils/appError.js";
@@ -7,7 +6,7 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const createProject = catchAsync(async (req, res, next) => {
   if (req.body.budget && req.body.budget >= 0) {
-    let newProject = new projectModel(req.body);
+    let newProject = new projectLogModel(req.body);
     let addedProject = await newProject.save();
     res.status(201).json({
       message: " Project has been created successfully!",
@@ -17,55 +16,55 @@ const createProject = catchAsync(async (req, res, next) => {
     return res.status(404).json({ message: "Budget must be greater than 0" });
   }
 });
-// const updateProjectDocs = catchAsync(async (req, res, next) => {
-//   let { id } = req.params;
-//   let documents = "";
-//   if (req.files.documents) {
-//     req.body.documents =
-//       req.files.documents &&
-//       req.files.documents.map(
-//         (file) =>
-//           `http://localhost:8000/documents/${file.filename.split(" ").join("")}`
-//       );
+const updateProjectDocs = catchAsync(async (req, res, next) => {
+  let { id } = req.params;
+  let documents = "";
+  if (req.files.documents) {
+    req.body.documents =
+      req.files.documents &&
+      req.files.documents.map(
+        (file) =>
+          `http://localhost:8000/documents/${file.filename.split(" ").join("")}`
+      );
 
-//     const directoryPathh = path.join(documents, "uploads/documents");
+    const directoryPathh = path.join(documents, "uploads/documents");
 
-//     fsExtra.readdir(directoryPathh, (err, files) => {
-//       if (err) {
-//         return console.error("Unable to scan directory: " + err);
-//       }
+    fsExtra.readdir(directoryPathh, (err, files) => {
+      if (err) {
+        return console.error("Unable to scan directory: " + err);
+      }
 
-//       files.forEach((file) => {
-//         const oldPath = path.join(directoryPathh, file);
-//         const newPath = path.join(directoryPathh, file.replace(/\s+/g, ""));
+      files.forEach((file) => {
+        const oldPath = path.join(directoryPathh, file);
+        const newPath = path.join(directoryPathh, file.replace(/\s+/g, ""));
 
-//         fsExtra.rename(oldPath, newPath, (err) => {
-//           if (err) {
-//             console.error("Error renaming file: ", err);
-//           }
-//         });
-//       });
-//     });
+        fsExtra.rename(oldPath, newPath, (err) => {
+          if (err) {
+            console.error("Error renaming file: ", err);
+          }
+        });
+      });
+    });
 
-//     if (req.body.documents !== "") {
-//       documents = req.body.documents;
-//     }
-//   }
-//   let updatedTask = await projectModel.findByIdAndUpdate(
-//     id,
-//     { $push: { documents: documents } },
-//     { new: true }
-//   );
-//   if (!updatedTask) {
-//     return res.status(404).json({ message: "Couldn't update!  not found!" });
-//   }
-//   res.status(200).json({ message: "Task updated successfully!",  documents,  });
-// });
+    if (req.body.documents !== "") {
+      documents = req.body.documents;
+    }
+  }
+  let updatedTask = await projectLogModel.findByIdAndUpdate(
+    id,
+    { $push: { documents: documents } },
+    { new: true }
+  );
+  if (!updatedTask) {
+    return res.status(404).json({ message: "Couldn't update!  not found!" });
+  }
+  res.status(200).json({ message: "Task updated successfully!", documents });
+});
 
 const getProjectById = catchAsync(async (req, res, next) => {
   let { id } = req.params;
 
-  let results = await projectModel.findById(id);
+  let results = await projectLogModel.findById(id);
   !results && next(new AppError(`not found `, 404));
   results && res.json({ message: "Done", results });
   if (!ApiFeat || !results) {
@@ -83,7 +82,7 @@ const getProjectById = catchAsync(async (req, res, next) => {
 
 const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
-    projectModel
+    projectLogModel
       .find()
       .populate("contractor")
       .populate("consultant")
@@ -118,13 +117,13 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
 
   res.json({
     message: "done",
-    count: await projectModel.countDocuments(),
+    count: await projectLogModel.countDocuments(),
     results,
   });
 });
 const getAllProjectByStatusByAdmin = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
-    projectModel
+    projectLogModel
       .find({ status: req.params.status })
       .populate("contractor")
       .populate("consultant")
@@ -144,7 +143,7 @@ const getAllProjectByStatusByAdmin = catchAsync(async (req, res, next) => {
 
   res.json({
     message: "done",
-    count: await projectModel.countDocuments(),
+    count: await projectLogModel.countDocuments(),
     results,
   });
 });
@@ -155,7 +154,7 @@ const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
     return res.status(404).json({ message: "User not found!" });
   }
   let ApiFeat = new ApiFeature(
-    projectModel
+    projectLogModel
       .find({
         $and: [
           { _id: { $in: foundUser.projects } },
@@ -180,12 +179,12 @@ const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
 
   res.json({
     message: "done",
-    count: await projectModel.countDocuments(),
+    count: await projectLogModel.countDocuments(),
     results,
   });
 });
 const getAllDocsProject = catchAsync(async (req, res, next) => {
-  let ApiFeat = new ApiFeature(projectModel.findById(req.params.id), req.query)
+  let ApiFeat = new ApiFeature(projectLogModel.findById(req.params.id), req.query)
     .sort()
     .search();
 
@@ -208,7 +207,7 @@ const getAllDocsProject = catchAsync(async (req, res, next) => {
 });
 const getAllProjectByUser = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
-    projectModel
+    projectLogModel
       .find()
       .populate("contractor")
       .populate("consultant")
@@ -243,7 +242,7 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
 
   res.json({
     message: "done",
-    count: await projectModel.countDocuments(),
+    count: await projectLogModel.countDocuments(),
     results,
   });
 });
@@ -256,7 +255,7 @@ const updateProject = catchAsync(async (req, res, next) => {
   if (req.body.budget < 0) {
     return res.status(404).json({ message: "Budget must be greater than 0" });
   }
-  const updatedProject = await projectModel.findByIdAndUpdate(id, req.body, {
+  const updatedProject = await projectLogModel.findByIdAndUpdate(id, req.body, {
     new: true,
   });
 
@@ -271,7 +270,7 @@ const updateProject = catchAsync(async (req, res, next) => {
 const updateProjectMembers = catchAsync(async (req, res, next) => {
   let { id } = req.params;
   if (req.body.members) {
-    let updatedTask = await projectModel.findByIdAndUpdate(
+    let updatedTask = await projectLogModel.findByIdAndUpdate(
       id,
       { $push: { members: req.body.members } },
       { new: true }
@@ -288,7 +287,7 @@ const updateProjectMembers = catchAsync(async (req, res, next) => {
 const deleteProject = catchAsync(async (req, res, next) => {
   const { id } = req.params;
 
-  const deletedProject = await projectModel.findByIdAndDelete(id);
+  const deletedProject = await projectLogModel.findByIdAndDelete(id);
   if (!deletedProject) {
     return res.status(404).json({ message: "Project not found!" });
   }
@@ -300,6 +299,7 @@ export {
   updateProject,
   getAllProjectByAdmin,
   createProject,
+  updateProjectDocs,
   getProjectById,
   getAllDocsProject,
   getAllProjectByStatusByAdmin,

@@ -28,5 +28,21 @@ const getAllComplaint = catchAsync(async (req, res, next) => {
   });
 
 });
+const getAllComplaintByUser = catchAsync(async (req, res, next) => {
+  let ApiFeat = new ApiFeature(complaintModel.find({user:req.params.id}), req.query).search();
+  let results = await ApiFeat.mongooseQuery;
+  results = JSON.stringify(results);
+  results = JSON.parse(results);
+  if (!ApiFeat || !results) {
+    return res.status(404).json({
+      message: "No Complaint was found!",
+    });
+  }
+  res.json({
+    message: "done",
+    results,
+  });
 
-export { createComplaint, getAllComplaint };
+});
+
+export { createComplaint, getAllComplaint,getAllComplaintByUser };
