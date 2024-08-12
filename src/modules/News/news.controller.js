@@ -3,6 +3,8 @@ import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const createNews = catchAsync(async (req, res, next) => {
+  req.body.model = "66ba010fecc8dae4bda821c9"
+
   const newComp = new newsModel(req.body);
   const savedComp = await newComp.save();
 

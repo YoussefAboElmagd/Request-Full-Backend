@@ -4,19 +4,21 @@ import ApiFeature from "../../utils/apiFeature.js";
 import AppError from "../../utils/appError.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
-const createProject = catchAsync(async (req, res, next) => {
+const createProjectLog = catchAsync(async (req, res, next) => {
+  req.body.model = "66ba017594aef366c6a8def1"
+
   if (req.body.budget && req.body.budget >= 0) {
-    let newProject = new projectLogModel(req.body);
-    let addedProject = await newProject.save();
+    let newProjectLog = new projectLogModel(req.body);
+    let addedProjectLog = await newProjectLog.save();
     res.status(201).json({
-      message: " Project has been created successfully!",
-      addedProject,
+      message: " ProjectLog has been created successfully!",
+      addedProjectLog,
     });
   } else {
     return res.status(404).json({ message: "Budget must be greater than 0" });
   }
 });
-const updateProjectDocs = catchAsync(async (req, res, next) => {
+const updateProjectLogDocs = catchAsync(async (req, res, next) => {
   let { id } = req.params;
   let documents = "";
   if (req.files.documents) {
@@ -24,7 +26,7 @@ const updateProjectDocs = catchAsync(async (req, res, next) => {
       req.files.documents &&
       req.files.documents.map(
         (file) =>
-          `http://localhost:8000/documents/${file.filename.split(" ").join("")}`
+          `http://localhost:8000/documents/${file.filename.split(" ").join("_")}`
       );
 
     const directoryPathh = path.join(documents, "uploads/documents");
@@ -36,7 +38,7 @@ const updateProjectDocs = catchAsync(async (req, res, next) => {
 
       files.forEach((file) => {
         const oldPath = path.join(directoryPathh, file);
-        const newPath = path.join(directoryPathh, file.replace(/\s+/g, ""));
+        const newPath = path.join(directoryPathh, file.replace(/\s+/g, "_"));
 
         fsExtra.rename(oldPath, newPath, (err) => {
           if (err) {
@@ -61,7 +63,7 @@ const updateProjectDocs = catchAsync(async (req, res, next) => {
   res.status(200).json({ message: "Task updated successfully!", documents });
 });
 
-const getProjectById = catchAsync(async (req, res, next) => {
+const getProjectLogById = catchAsync(async (req, res, next) => {
   let { id } = req.params;
 
   let results = await projectLogModel.findById(id);
@@ -69,7 +71,7 @@ const getProjectById = catchAsync(async (req, res, next) => {
   results && res.json({ message: "Done", results });
   if (!ApiFeat || !results) {
     return res.status(404).json({
-      message: " Project Not found!",
+      message: " ProjectLog Not found!",
     });
   }
 
@@ -80,7 +82,7 @@ const getProjectById = catchAsync(async (req, res, next) => {
 });
 ////////////////////////////////// admin \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
+const getAllProjectLogByAdmin = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
     projectLogModel
       .find()
@@ -96,7 +98,7 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
   results = JSON.parse(results);
   if (!ApiFeat || !results) {
     return res.status(404).json({
-      message: "No Project was found!",
+      message: "No ProjectLog was found!",
     });
   }
   let { filterType, filterValue } = req.query;
@@ -121,7 +123,7 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
     results,
   });
 });
-const getAllProjectByStatusByAdmin = catchAsync(async (req, res, next) => {
+const getAllProjectLogByStatusByAdmin = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
     projectLogModel
       .find({ status: req.params.status })
@@ -137,7 +139,7 @@ const getAllProjectByStatusByAdmin = catchAsync(async (req, res, next) => {
   results = JSON.parse(results);
   if (!ApiFeat || !results) {
     return res.status(404).json({
-      message: "No Project was found!",
+      message: "No ProjectLog was found!",
     });
   }
 
@@ -147,7 +149,7 @@ const getAllProjectByStatusByAdmin = catchAsync(async (req, res, next) => {
     results,
   });
 });
-const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
+const getAllProjectLogByStatusByUser = catchAsync(async (req, res, next) => {
   let foundUser = await userModel.findById(req.params.id);
   // console.log(foundUser,"foundUser");
   if (!foundUser) {
@@ -157,7 +159,7 @@ const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
     projectLogModel
       .find({
         $and: [
-          { _id: { $in: foundUser.projects } },
+          { _id: { $in: foundUser.ProjectLogs } },
           { status: req.query.status },
         ],
       })
@@ -173,7 +175,7 @@ const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
   results = JSON.parse(results);
   if (!ApiFeat || !results) {
     return res.status(404).json({
-      message: "No Project was found!",
+      message: "No ProjectLog was found!",
     });
   }
 
@@ -183,7 +185,7 @@ const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
     results,
   });
 });
-const getAllDocsProject = catchAsync(async (req, res, next) => {
+const getAllDocsProjectLog = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(projectLogModel.findById(req.params.id), req.query)
     .sort()
     .search();
@@ -205,7 +207,7 @@ const getAllDocsProject = catchAsync(async (req, res, next) => {
     documents,
   });
 });
-const getAllProjectByUser = catchAsync(async (req, res, next) => {
+const getAllProjectLogByUser = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
     projectLogModel
       .find()
@@ -221,7 +223,7 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
   results = JSON.parse(results);
   if (!ApiFeat || !results) {
     return res.status(404).json({
-      message: "No Project was found!",
+      message: "No ProjectLog was found!",
     });
   }
   let { filterType, filterValue } = req.query;
@@ -250,24 +252,24 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
 ////////////////////////////////// contractor \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 ////////////////////////////////// consultant \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-const updateProject = catchAsync(async (req, res, next) => {
+const updateProjectLog = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   if (req.body.budget < 0) {
     return res.status(404).json({ message: "Budget must be greater than 0" });
   }
-  const updatedProject = await projectLogModel.findByIdAndUpdate(id, req.body, {
+  const updatedProjectLog = await projectLogModel.findByIdAndUpdate(id, req.body, {
     new: true,
   });
 
-  if (!updatedProject) {
-    return res.status(404).json({ message: "Project not found!" });
+  if (!updatedProjectLog) {
+    return res.status(404).json({ message: "ProjectLog not found!" });
   }
   res.status(200).json({
-    message: "project updated successfully!",
-    updatedProject,
+    message: "ProjectLog updated successfully!",
+    updatedProjectLog,
   });
 });
-const updateProjectMembers = catchAsync(async (req, res, next) => {
+const updateProjectLogMembers = catchAsync(async (req, res, next) => {
   let { id } = req.params;
   if (req.body.members) {
     let updatedTask = await projectLogModel.findByIdAndUpdate(
@@ -284,25 +286,25 @@ const updateProjectMembers = catchAsync(async (req, res, next) => {
   }
 });
 
-const deleteProject = catchAsync(async (req, res, next) => {
+const deleteProjectLog = catchAsync(async (req, res, next) => {
   const { id } = req.params;
 
-  const deletedProject = await projectLogModel.findByIdAndDelete(id);
-  if (!deletedProject) {
-    return res.status(404).json({ message: "Project not found!" });
+  const deletedProjectLog = await projectLogModel.findByIdAndDelete(id);
+  if (!deletedProjectLog) {
+    return res.status(404).json({ message: "ProjectLog not found!" });
   }
-  res.status(200).json({ message: "project deleted successfully!" });
+  res.status(200).json({ message: "ProjectLog deleted successfully!" });
 });
 
 export {
-  deleteProject,
-  updateProject,
-  getAllProjectByAdmin,
-  createProject,
-  updateProjectDocs,
-  getProjectById,
-  getAllDocsProject,
-  getAllProjectByStatusByAdmin,
-  getAllProjectByStatusByUser,
-  updateProjectMembers,
+  deleteProjectLog,
+  updateProjectLog,
+  getAllProjectLogByAdmin,
+  createProjectLog,
+  updateProjectLogDocs,
+  getProjectLogById,
+  getAllDocsProjectLog,
+  getAllProjectLogByStatusByAdmin,
+  getAllProjectLogByStatusByUser,
+  updateProjectLogMembers,
 };

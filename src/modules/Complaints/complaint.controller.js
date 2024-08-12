@@ -3,6 +3,8 @@ import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const createComplaint = catchAsync(async (req, res, next) => {
+  req.body.model = "66ba00c7c54b444982177b57"
+
   const newComp = new complaintModel(req.body);
   const savedComp = await newComp.save();
 

@@ -10,7 +10,7 @@ const createDocsComment = catchAsync(async (req, res, next) => {
     req.files.document &&
     req.files.document.map(
       (file) =>
-        `http://localhost:8000/documents/${file.filename.split(" ").join("")}`
+        `http://localhost:8000/documents/${file.filename.split(" ").join("_")}`
     );
 
   const directoryPath = path.join(document, "uploads/documents");
@@ -21,7 +21,7 @@ const createDocsComment = catchAsync(async (req, res, next) => {
     }
     files.forEach((file) => {
       const oldPath = path.join(directoryPath, file);
-      const newPath = path.join(directoryPath, file.replace(/\s+/g, ""));
+      const newPath = path.join(directoryPath, file.replace(/\s+/g, "_"));
 
       fsExtra.rename(oldPath, newPath, (err) => {
         if (err) {
@@ -36,6 +36,8 @@ const createDocsComment = catchAsync(async (req, res, next) => {
     document=document[0]
 
   }
+  req.body.model = "66ba00e94554c396c5dd3e47";
+
 let { comment ,project ,status,uploadedBy} = req.body
   // const newDocs = new documentsModel({comment,project,status,uploadedBy, document});
   // const savedDocs = await newDocs.save();

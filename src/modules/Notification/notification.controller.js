@@ -11,6 +11,8 @@ const getAllNotification = catchAsync(async (req, res, next) => {
 });
 
 const createNotification = catchAsync(async (req, res, next) => {
+  req.body.model = "66ba0122ff7376971c929636"
+
   const newNotif = new notificationModel(req.body);
   const savedNotif = await newNotif.save();
   let message = req.body.content;

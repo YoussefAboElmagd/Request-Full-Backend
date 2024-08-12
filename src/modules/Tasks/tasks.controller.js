@@ -10,6 +10,7 @@ const createTask = catchAsync(async (req, res, next) => {
     length: 9,
     useLetters: false,
   });
+  req.body.model = "66ba018d87b5d43dcd881f7e"
   if (req.body.taskBudget && req.body.taskBudget >= 0) {
     let newTask = new taskModel(req.body);
     let addedTask = await newTask.save();
@@ -24,7 +25,7 @@ const createTask = catchAsync(async (req, res, next) => {
 });
 
 const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
-  let ApiFeat = new ApiFeature(taskModel.find().populate("users").populate("project"), req.query)
+  let ApiFeat = new ApiFeature(taskModel.find().populate("project"), req.query)
 
     .sort()
     .search();
@@ -62,8 +63,7 @@ const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
 const getAllTaskByUser = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
     taskModel
-      .find({ $or: [{ createdBy: req.params.id }, { users: req.params.id }] })
-      .populate("users").populate("project"),
+      .find({ $or: [{ createdBy: req.params.id }, { users: req.params.id }] }).populate("project"),
     req.query
   )
     .sort()
@@ -102,7 +102,7 @@ const getAllTaskByProject = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
     taskModel
       .find({ project: req.params.id })
-      .populate("users").populate("project"),
+      .populate("project"),
     req.query
   )
     .sort()
@@ -142,7 +142,6 @@ const getTaskById = catchAsync(async (req, res, next) => {
   let { id } = req.params;
   let results = await taskModel
     .findById(id)
-    .populate("users")
     .populate("createdBy")
     .populate("project");
 
@@ -164,7 +163,7 @@ const updateTaskPhoto = catchAsync(async (req, res, next) => {
       req.files.documents &&
       req.files.documents.map(
         (file) =>
-          `http://localhost:8000/tasks/${file.filename.split(" ").join("")}`
+          `http://localhost:8000/tasks/${file.filename.split(" ").join("_")}`
       );
     const directoryPathh = path.join(documents, "uploads/tasks");
 
@@ -175,7 +174,7 @@ const updateTaskPhoto = catchAsync(async (req, res, next) => {
 
       files.forEach((file) => {
         const oldPath = path.join(directoryPathh, file);
-        const newPath = path.join(directoryPathh, file.replace(/\s+/g, ""));
+        const newPath = path.join(directoryPathh, file.replace(/\s+/g, "_"));
 
         fsExtra.rename(oldPath, newPath, (err) => {
           if (err) {

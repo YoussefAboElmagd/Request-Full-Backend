@@ -22,6 +22,7 @@ export const signUp = catchAsync(async (req, res, next) => {
   } else {
     return res.status(409).json({ message: "this phone is not valid" });
   }
+  req.body.model = "66ba00b0e39d9694110fd3df"
   let results = new userModel(req.body);
   let token = jwt.sign(
     { name: results.name, userId: results._id },

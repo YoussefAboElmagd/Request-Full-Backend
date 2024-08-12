@@ -3,6 +3,8 @@ import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const createPrivacy = catchAsync(async (req, res, next) => {
+  req.body.model = "66ba0147b64cba13bd4fec37"
+
   const newPrivacy  = new privacyModel(req.body);
   const savedPrivacy  = await newPrivacy .save();
 

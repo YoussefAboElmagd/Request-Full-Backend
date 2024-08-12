@@ -6,6 +6,7 @@ import AppError from "../../utils/appError.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const createProject = catchAsync(async (req, res, next) => {
+  req.body.model = "66ba015a73f994dd94dbc1e9"
   if (req.body.budget && req.body.budget >= 0) {
     let newProject = new projectModel(req.body);
     let addedProject = await newProject.save();
@@ -17,50 +18,6 @@ const createProject = catchAsync(async (req, res, next) => {
     return res.status(404).json({ message: "Budget must be greater than 0" });
   }
 });
-// const updateProjectDocs = catchAsync(async (req, res, next) => {
-//   let { id } = req.params;
-//   let documents = "";
-//   if (req.files.documents) {
-//     req.body.documents =
-//       req.files.documents &&
-//       req.files.documents.map(
-//         (file) =>
-//           `http://localhost:8000/documents/${file.filename.split(" ").join("")}`
-//       );
-
-//     const directoryPathh = path.join(documents, "uploads/documents");
-
-//     fsExtra.readdir(directoryPathh, (err, files) => {
-//       if (err) {
-//         return console.error("Unable to scan directory: " + err);
-//       }
-
-//       files.forEach((file) => {
-//         const oldPath = path.join(directoryPathh, file);
-//         const newPath = path.join(directoryPathh, file.replace(/\s+/g, ""));
-
-//         fsExtra.rename(oldPath, newPath, (err) => {
-//           if (err) {
-//             console.error("Error renaming file: ", err);
-//           }
-//         });
-//       });
-//     });
-
-//     if (req.body.documents !== "") {
-//       documents = req.body.documents;
-//     }
-//   }
-//   let updatedTask = await projectModel.findByIdAndUpdate(
-//     id,
-//     { $push: { documents: documents } },
-//     { new: true }
-//   );
-//   if (!updatedTask) {
-//     return res.status(404).json({ message: "Couldn't update!  not found!" });
-//   }
-//   res.status(200).json({ message: "Task updated successfully!",  documents,  });
-// });
 
 const getProjectById = catchAsync(async (req, res, next) => {
   let { id } = req.params;

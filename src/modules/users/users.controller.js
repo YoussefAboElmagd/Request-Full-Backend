@@ -56,7 +56,7 @@ const addIdPhotos = catchAsync(async (req, res, next) => {
     req.files.idPhoto &&
     req.files.idPhoto.map(
       (file) =>
-        `http://localhost:8000/ids/${file.filename.split(" ").join("")}`
+        `http://localhost:8000/ids/${file.filename.split(" ").join("_")}`
     );
 
   const directoryPath = path.join(idPhoto, "uploads/photos");
@@ -67,7 +67,7 @@ const addIdPhotos = catchAsync(async (req, res, next) => {
     }
     files.forEach((file) => {
       const oldPath = path.join(directoryPath, file);
-      const newPath = path.join(directoryPath, file.replace(/\s+/g, ""));
+      const newPath = path.join(directoryPath, file.replace(/\s+/g, "_"));
 
       fsExtra.rename(oldPath, newPath, (err) => {
         if (err) {

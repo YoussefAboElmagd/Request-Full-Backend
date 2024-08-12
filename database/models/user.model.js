@@ -59,11 +59,15 @@ const userSchema = mongoose.Schema(
       type: String,
       default: "",
     },
+    model: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "model",
+      immutable: true,
+      required: true,
+    },
     role: {
-      type: String,
-      //               مدير المشروع  و استشاري   و مقاول   و مالك    
-      enum: [ "admin","owner","contractor","consultant","manger"],
-      default: "admin",
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "userType",
       required: true,
     },  
     verified: {

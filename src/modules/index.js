@@ -9,7 +9,7 @@ import privacyRouter from "./Privacy/privacy.routes.js";
 import docsRouter from "./Documents/docs.routes.js";
 import newsRouter from "./News/news.routes.js";
 import logRouter from "./Project Log/projectLog.routes.js";
-
+import modelRouter from "./Model/model.routes.js";
 
 export function init(app) {
   app.use("/api/v1/users", usersRouter);
@@ -23,14 +23,14 @@ export function init(app) {
   app.use("/api/v1/docs", docsRouter);
   app.use("/api/v1/news", newsRouter);
   app.use("/api/v1/log", logRouter);
-  
+  app.use("/api/v1/model", modelRouter);
+
   app.use("/", (req, res, next) => {
-    res.send("Hello World");
+      res.send("Page Not Found");
     // next(res.status(404).json({ message: "Page Not Found" }));
   });
 
   app.all("*", (req, res, next) => {
     next(res.status(404).json({ message: "Not found" }));
   });
-
 }

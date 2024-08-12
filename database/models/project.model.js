@@ -62,6 +62,12 @@ const projectSchema = mongoose.Schema(
       ref: "user",
       default: [],
     },
+    model: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "model",
+      immutable: true,
+      required: true,
+    },
   },
   { timestamps: true }
 );

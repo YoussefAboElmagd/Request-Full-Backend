@@ -26,6 +26,8 @@ const createmessage = catchAsync(async (req, res, next) => {
   if (req.body.docs) {
     docs = req.body.docs;
   }
+  req.body.model = "66ba00faf820163904164a43"
+
   const newmessage = new messageModel(req.body);
   const savedmessage = await newmessage.save();
 
