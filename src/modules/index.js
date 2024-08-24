@@ -10,6 +10,7 @@ import docsRouter from "./Documents/docs.routes.js";
 import newsRouter from "./News/news.routes.js";
 import logRouter from "./Project Log/projectLog.routes.js";
 import modelRouter from "./Model/model.routes.js";
+import userTypeRouter from "./User Type/userType.routes.js";
 
 export function init(app) {
   app.use("/api/v1/users", usersRouter);
@@ -24,6 +25,7 @@ export function init(app) {
   app.use("/api/v1/news", newsRouter);
   app.use("/api/v1/log", logRouter);
   app.use("/api/v1/model", modelRouter);
+  app.use("/api/v1/type", userTypeRouter);
 
   app.use("/", (req, res, next) => {
       res.send("Page Not Found");

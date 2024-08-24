@@ -181,7 +181,9 @@ let updatedTask = await userModel.findByIdAndUpdate(
 if (!updatedTask) {
   return res.status(404).json({ message: "Couldn't update!  not found!" });
 }
-res.status(200).json({ message: "Task updated successfully!",  updatedTask,  });
+res.status(200).json({ message: "Task updated successfully!",  updatedTask  });
+}else{
+  return res.status(404).json({ message: "Couldn't update!  not found!" });
 }
 });
 

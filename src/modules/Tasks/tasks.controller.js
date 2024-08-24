@@ -63,7 +63,7 @@ const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
 const getAllTaskByUser = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
     taskModel
-      .find({ $or: [{ createdBy: req.params.id }, { users: req.params.id }] }).populate("project"),
+      .find({createdBy: req.params.id }).populate("project"),
     req.query
   )
     .sort()
@@ -94,7 +94,7 @@ const getAllTaskByUser = catchAsync(async (req, res, next) => {
 
   res.json({
     message: "done",
-    count: await taskModel.countDocuments({ $or: [{ createdBy: req.params.id }, { users: req.params.id }] }),
+    count: await taskModel.countDocuments({createdBy: req.params.id}),
     results,
   });
 });

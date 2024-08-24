@@ -10,11 +10,6 @@ const taskSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    isCompleted: {
-      type: Boolean,
-      default: false,
-      required: true,
-    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
@@ -47,11 +42,9 @@ const taskSchema = mongoose.Schema(
       type: Number,
       required: true,
     },
-    taskId: {
-      type: String,
-    },
     documents: {
-      type: [String],
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "document",
     },
     taskStatus: {
       type: String,
@@ -59,7 +52,7 @@ const taskSchema = mongoose.Schema(
       default: "InProgress",
       required: true,
     },
-    taskType: {
+    taskPriority: {
       type: String,
       enum: ["Normal", "High", "Low"],
       default: "Normal",

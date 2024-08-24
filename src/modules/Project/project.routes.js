@@ -1,9 +1,5 @@
 import express from "express";
 import * as projectController from "./project.controller.js";
-import {
-  fileSizeLimitErrorHandler,
-  uploadMixFile,
-} from "../../utils/middleWare/fileUploads.js";
 
 const projectRouter = express.Router();
 

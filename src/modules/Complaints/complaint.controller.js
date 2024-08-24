@@ -14,7 +14,7 @@ const createComplaint = catchAsync(async (req, res, next) => {
   });
 });
 
-const getAllComplaint = catchAsync(async (req, res, next) => {
+const getAllComplaintByAdmin = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(complaintModel.find(), req.query).search();
   let results = await ApiFeat.mongooseQuery;
   results = JSON.stringify(results);
@@ -46,5 +46,16 @@ const getAllComplaintByUser = catchAsync(async (req, res, next) => {
   });
 
 });
+const deleteComplaint = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const deleteComplaint = await complaintModel.findByIdAndDelete(id);
+  if (!deleteComplaint) {
+    return res.status(404).json({ message: "Complaint not found!" });
+  }
+  res.status(200).json({
+    message: "Complaint Deleted successfully!",
+    deleteComplaint,
+  });
+});
 
-export { createComplaint, getAllComplaint,getAllComplaintByUser };
+export { createComplaint, getAllComplaintByAdmin,getAllComplaintByUser ,deleteComplaint };

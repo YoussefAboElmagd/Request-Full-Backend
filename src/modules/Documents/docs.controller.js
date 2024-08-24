@@ -10,7 +10,7 @@ const createDocsComment = catchAsync(async (req, res, next) => {
     req.files.document &&
     req.files.document.map(
       (file) =>
-        `http://localhost:8000/documents/${file.filename.split(" ").join("_")}`
+        `http://localhost:8000/documents/${file.filename.split(" ").join("-")}`
     );
 
   const directoryPath = path.join(document, "uploads/documents");
@@ -21,7 +21,7 @@ const createDocsComment = catchAsync(async (req, res, next) => {
     }
     files.forEach((file) => {
       const oldPath = path.join(directoryPath, file);
-      const newPath = path.join(directoryPath, file.replace(/\s+/g, "_"));
+      const newPath = path.join(directoryPath, file.replace(/\s+/g, "-"));
 
       fsExtra.rename(oldPath, newPath, (err) => {
         if (err) {
@@ -78,7 +78,7 @@ const updateDocs = catchAsync(async (req, res, next) => {
       req.files.document &&
       req.files.document.map(
         (file) =>
-          `http://localhost:8000/documents/${file.filename.split(" ").join("")}`
+          `http://localhost:8000/documents/${file.filename.split(" ").join("-")}`
       );
 
     const directoryPathh = path.join(document, "uploads/documents");
@@ -90,7 +90,7 @@ const updateDocs = catchAsync(async (req, res, next) => {
 
       files.forEach((file) => {
         const oldPath = path.join(directoryPathh, file);
-        const newPath = path.join(directoryPathh, file.replace(/\s+/g, ""));
+        const newPath = path.join(directoryPathh, file.replace(/\s+/g, "-"));
 
         fsExtra.rename(oldPath, newPath, (err) => {
           if (err) {

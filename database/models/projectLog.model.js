@@ -4,68 +4,75 @@ const projectLogSchema = mongoose.Schema(
   {
     name: {
       type: String,
-      // required: true,
+      default:undefined,
     },
     status: {
       type: String,
       enum: ["onGoing", "ending", "waiting"],
       default: "onGoing",
-      // required: true,
+      default:undefined,
     },
     notes: [
       {
-        content: { type: String },
-        postedBy: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
-        // required: true,
+        content: { type: String ,default:undefined},
+        postedBy: { type: mongoose.Schema.Types.ObjectId, ref: "user",default:undefined, },
       },
     ],
     sDate: {
       type: String,
-      // required: true,
+      default:undefined,
     },
     eDate: {
       type: String,
-      // required: true,
+      default:undefined,
     },
     documents: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "document",
-      // required: true,
+      default:undefined,
     },
     consultant: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
-      // required: true,
+      default:undefined,
     },
     contractor: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "user",
-      // required: true,
+      default:undefined,
     },
     owner: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "user",
-      required: true,
+      default:undefined,
     },
     tasks: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "task",
-      // required: true,
+      default:undefined,
     },
     budget: {
       type: Number,
-      required: true,
+      default:undefined,
     },
     members: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "user",
-      default: [],
+      default:undefined,
     },
     model: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "model",
       immutable: true,
       required: true,
+    },
+    projectId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "project",
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
     },
   },
   { timestamps: true }
