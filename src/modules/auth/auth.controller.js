@@ -10,19 +10,23 @@ export const signUp = catchAsync(async (req, res, next) => {
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
   if (
     req.body.email !== "" &&
-    req.body.email.match(emailFormat)&&
+    req.body.email.match(emailFormat) &&
     req.body.phone !== "" &&
     req.body.phone.match(phoneFormat) &&
     req.body.phone.length > 10
   ) {
     let existUser = await userModel.findOne({ phone: req.body.phone });
+    let existUser2 = await userModel.findOne({ email: req.body.email });
     if (existUser) {
-      return res.status(409).json({ message: "this phone already exist" });
+      return res.status(409).json({ message: "this phone  already exist" });
+    }
+    if (existUser2) {
+      return res.status(409).json({ message: "this email  already exist" });
     }
   } else {
     return res.status(409).json({ message: "this phone is not valid" });
   }
-  req.body.model = "66ba00b0e39d9694110fd3df"
+  req.body.model = "66ba00b0e39d9694110fd3df";
   let results = new userModel(req.body);
   let token = jwt.sign(
     { name: results.name, userId: results._id },
@@ -37,9 +41,11 @@ export const signIn = catchAsync(async (req, res, next) => {
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
   if (
     req.body.email !== "" &&
-    req.body.email.match(emailFormat)&&
-    req.body.phone !== "" && req.body.phone.match(phoneFormat)) {
-  // if (req.body.phone !== "") {
+    req.body.email.match(emailFormat) &&
+    req.body.phone !== "" &&
+    req.body.phone.match(phoneFormat)
+  ) {
+    // if (req.body.phone !== "") {
     let { phone } = req.body.phone;
     let isFound = await userModel.findOne({ phone });
     if (!isFound) return res.status(404).json({ message: "User Not Found" });
@@ -84,7 +90,9 @@ export const protectRoutes = catchAsync(async (req, res, next) => {
 export const allowTo = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
-      return next(res.status(403).json({ message: "you don't have permission" }));
+      return next(
+        res.status(403).json({ message: "you don't have permission" })
+      );
     }
     next();
   };
