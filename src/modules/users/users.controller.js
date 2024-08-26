@@ -12,7 +12,7 @@ const addPhotos = catchAsync(async (req, res, next) => {
     req.files.profilePic &&
     req.files.profilePic.map(
       (file) =>
-        `http://localhost:8000/profilePic/${file.filename.split(" ").join("")}`
+        `http://localhost:8000/profilePic/${file.filename.split(" ").join("-")}`
     );
 
   const directoryPath = path.join(profilePic, "uploads/profilePic");
@@ -23,7 +23,7 @@ const addPhotos = catchAsync(async (req, res, next) => {
     }
     files.forEach((file) => {
       const oldPath = path.join(directoryPath, file);
-      const newPath = path.join(directoryPath, file.replace(/\s+/g, ""));
+      const newPath = path.join(directoryPath, file.replace(/\s+/g, "-"));
 
       fsExtra.rename(oldPath, newPath, (err) => {
         if (err) {
@@ -45,6 +45,50 @@ const addPhotos = catchAsync(async (req, res, next) => {
   } else {
     res.status(400).json({ message: "File upload failed." });
   }
+});
+const updateprofilePic = catchAsync(async (req, res, next) => {
+  let { id } = req.params;
+  let profilePic = "";
+  if (req.files.profilePic) {
+    req.body.profilePic =
+      req.files.profilePic &&
+      req.files.profilePic.map(
+        (file) =>
+          `http://localhost:8000/profilePic/${file.filename.split(" ").join("-")}`
+      );
+    const directoryPath = path.join(profilePic, "uploads/profilePic");
+
+    fsExtra.readdir(directoryPath, (err, files) => {
+      if (err) {
+        return console.error("Unable to scan directory: " + err);
+      }
+
+      files.forEach((file) => {
+        const oldPath = path.join(directoryPath, file);
+        const newPath = path.join(directoryPath, file.replace(/\s+/g, "-"));
+
+        fsExtra.rename(oldPath, newPath, (err) => {
+          if (err) {
+            console.error("Error renaming file: ", err);
+          }
+        });
+      });
+    });
+
+    if (req.body.profilePic !== "") {
+      profilePic = req.body.profilePic;
+    }
+  }
+  let updatedTask = await userModel.findByIdAndUpdate(
+    id,
+    { profilePic: profilePic } ,
+    { new: true }
+  );
+
+  if (!updatedTask) {
+    return res.status(404).json({ message: "Couldn't update!  not found!" });
+  }
+  res.status(200).json({ message: "Task updated successfully!", documents });
 });
 const addIdPhotos = catchAsync(async (req, res, next) => {
   let idPhoto = "";
@@ -201,4 +245,4 @@ const deleteUser = catchAsync(async (req, res, next) => {
   res.status(200).json({ message: "User deleted successfully!" });
 });
 
-export { getAllUsersByAdmin, getUserById, updateUser, deleteUser, addPhotos ,getAllowners,getAllcontractors,getAllconsultant ,addIdPhotos ,updateUserProjects };
+export { getAllUsersByAdmin, getUserById, updateUser, deleteUser, addPhotos ,getAllowners,getAllcontractors,getAllconsultant ,addIdPhotos ,updateUserProjects,updateprofilePic };

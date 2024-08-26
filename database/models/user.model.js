@@ -25,7 +25,7 @@ const userSchema = mongoose.Schema(
     password: {
       type: String,
       required: [true, "Phone is a required field."],
-      minLength: 6,
+      minLength: 8,
       unique: [true, "Password must be unique."],
     },
     otp: {

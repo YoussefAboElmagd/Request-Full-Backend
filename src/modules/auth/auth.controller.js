@@ -36,31 +36,52 @@ export const signUp = catchAsync(async (req, res, next) => {
   res.json({ message: "added", token, results });
 });
 
+// export const signIn = catchAsync(async (req, res, next) => {
+//   // let phoneFormat = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/; //+XX XXXXX XXXXX
+//   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+//   if (
+//     req.body.email !== "" &&
+//     req.body.email.match(emailFormat) &&
+//     req.body.phone !== ""
+//     // req.body.phone.match(phoneFormat)
+//   ) {
+//     // if (req.body.phone !== "") {
+//     let { phone } = req.body.phone;
+//     let isFound = await userModel.findOne({ phone });
+//     if (!isFound) return res.status(404).json({ message: "User Not Found" });
+//     if (isFound) {
+//       let token = jwt.sign(
+//         { name: isFound.name, userId: isFound._id },
+//         process.env.JWT_SECRET_KEY
+//       );
+//       return res.json({ message: "success", token, isFound });
+//     }
+//     return res.status(401).json({ message: "worng phone " });
+//   } else {
+//     return res.status(409).json({ message: "this phone is not valid" });
+//   }
+// });
+
 export const signIn = catchAsync(async (req, res, next) => {
-  // let phoneFormat = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/; //+XX XXXXX XXXXX
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
-  if (
-    req.body.email !== "" &&
-    req.body.email.match(emailFormat) &&
-    req.body.phone !== ""
-    // req.body.phone.match(phoneFormat)
-  ) {
-    // if (req.body.phone !== "") {
-    let { phone } = req.body.phone;
-    let isFound = await userModel.findOne({ phone });
-    if (!isFound) return res.status(404).json({ message: "User Not Found" });
-    if (isFound) {
+  if (req.body.email !== "" && req.body.email.match(emailFormat)) {
+    let { email, password } = req.body;
+    let isFound = await userModel.findOne({ email });
+    if (!isFound) return res.status(404).json({ message: "Email Not Found" });
+    const match = await bcrypt.compare(password, isFound.password);
+    if (match && isFound) {
       let token = jwt.sign(
         { name: isFound.name, userId: isFound._id },
         process.env.JWT_SECRET_KEY
       );
       return res.json({ message: "success", token, isFound });
     }
-    return res.status(401).json({ message: "worng phone " });
+    return res.status(401).json({ message: "worng email or password" });
   } else {
-    return res.status(409).json({ message: "this phone is not valid" });
+    return res.status(409).json({ message: "this email is not valid" });
   }
 });
+
 
 // 1- check we have token or not
 // 2- verfy token

@@ -20,6 +20,14 @@ usersRouter.post(
   ]),fileFilterHandler,fileSizeLimitErrorHandler,
   usersController.addPhotos
 );
+usersRouter.put(
+  "/photo",
+  uploadMixFile("profilePic", [
+    { name: "profilePic",},
+  ]),fileFilterHandler,fileSizeLimitErrorHandler,
+  usersController.addPhotos
+);
+
 usersRouter.post(
   "/id",
   uploadMixFile("photos", [
