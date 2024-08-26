@@ -3,22 +3,21 @@ import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const createPrivacy = catchAsync(async (req, res, next) => {
-  req.body.model = "66ba0147b64cba13bd4fec37"
+  req.body.model = "66ba0147b64cba13bd4fec37";
 
-  const newPrivacy  = new privacyModel(req.body);
-  const savedPrivacy  = await newPrivacy .save();
+  const newPrivacy = new privacyModel(req.body);
+  const savedPrivacy = await newPrivacy.save();
 
   res.status(201).json({
     message: "Privacy created successfully!",
-    savedPrivacy ,
+    savedPrivacy,
   });
 });
 const updatePrivacy = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  const updatedPrivacy = await privacyModel.findByIdAndUpdate(
-    id,
-req.body,    { new: true }
-  );
+  const updatedPrivacy = await privacyModel.findByIdAndUpdate(id, req.body, {
+    new: true,
+  });
   if (!updatedPrivacy) {
     return res.status(404).json({ message: "Privacy not found!" });
   }
@@ -50,9 +49,9 @@ const getAllPrivacy = catchAsync(async (req, res, next) => {
     });
   }
   res.json({
-    message: "done",
+    message: "Done",
     results,
   });
 });
 
-export { createPrivacy,updatePrivacy,getAllPrivacy ,deletePrivacy};
+export { createPrivacy, updatePrivacy, getAllPrivacy, deletePrivacy };

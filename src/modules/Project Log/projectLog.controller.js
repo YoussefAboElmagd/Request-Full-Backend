@@ -5,15 +5,14 @@ import AppError from "../../utils/appError.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const createProjectLog = catchAsync(async (req, res, next) => {
-  req.body.model = "66ba017594aef366c6a8def1"
+  req.body.model = "66ba017594aef366c6a8def1";
 
-    let newProjectLog = new projectLogModel(req.body);
-    let addedProjectLog = await newProjectLog.save();
-    res.status(201).json({
-      message: " ProjectLog has been created successfully!",
-      addedProjectLog,
-    });
-  
+  let newProjectLog = new projectLogModel(req.body);
+  let addedProjectLog = await newProjectLog.save();
+  res.status(201).json({
+    message: " ProjectLog has been created successfully!",
+    addedProjectLog,
+  });
 });
 
 const getAllProjectLogByAdmin = catchAsync(async (req, res, next) => {
@@ -36,7 +35,7 @@ const getAllProjectLogByAdmin = catchAsync(async (req, res, next) => {
     });
   }
   res.json({
-    message: "done",
+    message: "Done",
     results,
   });
 });
@@ -50,8 +49,4 @@ const deleteProjectLog = catchAsync(async (req, res, next) => {
   res.status(200).json({ message: "ProjectLog deleted successfully!" });
 });
 
-export {
-  deleteProjectLog,
-  createProjectLog,
-
-};
+export { deleteProjectLog, createProjectLog };

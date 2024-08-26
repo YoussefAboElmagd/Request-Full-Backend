@@ -3,7 +3,7 @@ import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const createComplaint = catchAsync(async (req, res, next) => {
-  req.body.model = "66ba00c7c54b444982177b57"
+  req.body.model = "66ba00c7c54b444982177b57";
 
   const newComp = new complaintModel(req.body);
   const savedComp = await newComp.save();
@@ -25,13 +25,15 @@ const getAllComplaintByAdmin = catchAsync(async (req, res, next) => {
     });
   }
   res.json({
-    message: "done",
+    message: "Done",
     results,
   });
-
 });
 const getAllComplaintByUser = catchAsync(async (req, res, next) => {
-  let ApiFeat = new ApiFeature(complaintModel.find({user:req.params.id}), req.query).search();
+  let ApiFeat = new ApiFeature(
+    complaintModel.find({ user: req.params.id }),
+    req.query
+  ).search();
   let results = await ApiFeat.mongooseQuery;
   results = JSON.stringify(results);
   results = JSON.parse(results);
@@ -41,10 +43,9 @@ const getAllComplaintByUser = catchAsync(async (req, res, next) => {
     });
   }
   res.json({
-    message: "done",
+    message: "Done",
     results,
   });
-
 });
 const deleteComplaint = catchAsync(async (req, res, next) => {
   const { id } = req.params;
@@ -58,4 +59,9 @@ const deleteComplaint = catchAsync(async (req, res, next) => {
   });
 });
 
-export { createComplaint, getAllComplaintByAdmin,getAllComplaintByUser ,deleteComplaint };
+export {
+  createComplaint,
+  getAllComplaintByAdmin,
+  getAllComplaintByUser,
+  deleteComplaint,
+};

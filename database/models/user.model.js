@@ -76,11 +76,11 @@ const userSchema = mongoose.Schema(
       ref: "tag",
       // required: true,
     },
-    role: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "userType",
-      required: true,
-    },  
+    // role: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "userType",
+    //   required: true,
+    // },  
     role: {
       type: String,
       required: true,

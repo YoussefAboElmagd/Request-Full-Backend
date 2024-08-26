@@ -23,19 +23,16 @@ const getAllModel = catchAsync(async (req, res, next) => {
     });
   }
   res.json({
-    message: "done",
+    message: "Done",
     results,
   });
-
 });
 
 const updateModel = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  const updatedModel = await modelModel.findByIdAndUpdate(
-    id,
-    req.body,
-    { new: true }
-  );
+  const updatedModel = await modelModel.findByIdAndUpdate(id, req.body, {
+    new: true,
+  });
   if (!updatedModel) {
     return res.status(404).json({ message: "Model not found!" });
   }
@@ -56,4 +53,4 @@ const deleteModel = catchAsync(async (req, res, next) => {
   });
 });
 
-export { createModel, getAllModel ,updateModel,deleteModel };
+export { createModel, getAllModel, updateModel, deleteModel };

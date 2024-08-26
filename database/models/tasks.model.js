@@ -40,6 +40,7 @@ const taskSchema = mongoose.Schema(
     },
     taskBudget: {
       type: Number,
+      default: 0,
       required: true,
     },
     documents: {

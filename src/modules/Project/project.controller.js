@@ -6,7 +6,7 @@ import AppError from "../../utils/appError.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const createProject = catchAsync(async (req, res, next) => {
-  req.body.model = "66ba015a73f994dd94dbc1e9"
+  req.body.model = "66ba015a73f994dd94dbc1e9";
   if (req.body.budget && req.body.budget >= 0) {
     let newProject = new projectModel(req.body);
     let addedProject = await newProject.save();
@@ -32,7 +32,7 @@ const getProjectById = catchAsync(async (req, res, next) => {
   }
 
   res.json({
-    message: "done",
+    message: "Done",
     results,
   });
 });
@@ -74,7 +74,7 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
   }
 
   res.json({
-    message: "done",
+    message: "Done",
     count: await projectModel.countDocuments(),
     results,
   });
@@ -100,7 +100,7 @@ const getAllProjectByStatusByAdmin = catchAsync(async (req, res, next) => {
   }
 
   res.json({
-    message: "done",
+    message: "Done",
     count: await projectModel.countDocuments(),
     results,
   });
@@ -136,7 +136,7 @@ const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
   }
 
   res.json({
-    message: "done",
+    message: "Done",
     count: await projectModel.countDocuments(),
     results,
   });
@@ -159,7 +159,7 @@ const getAllDocsProject = catchAsync(async (req, res, next) => {
   }
 
   res.json({
-    message: "done",
+    message: "Done",
     documents,
   });
 });
@@ -199,8 +199,7 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
   }
 
   res.json({
-    message: "done",
-    count: await projectModel.countDocuments(),
+    message: "Done",
     results,
   });
 });

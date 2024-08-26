@@ -33,19 +33,24 @@ const createDocsComment = catchAsync(async (req, res, next) => {
 
   if (req.body.document) {
     document = req.body.document;
-    document=document[0]
-
+    document = document[0];
   }
   req.body.model = "66ba00e94554c396c5dd3e47";
 
-let { comment ,project ,status,uploadedBy} = req.body
+  let { comment, project, status, uploadedBy } = req.body;
   // const newDocs = new documentsModel({comment,project,status,uploadedBy, document});
   // const savedDocs = await newDocs.save();
-  const savedDocs = await documentsModel.insertMany({comment,project,status,uploadedBy, document});
+  const savedDocs = await documentsModel.insertMany({
+    comment,
+    project,
+    status,
+    uploadedBy,
+    document,
+  });
   res.status(201).json({
     message: "Docs created successfully!",
-    savedDocs
-});
+    savedDocs,
+  });
 });
 
 const getAllDocsByProject = catchAsync(async (req, res, next) => {
@@ -62,13 +67,12 @@ const getAllDocsByProject = catchAsync(async (req, res, next) => {
     });
   }
   res.json({
-    message: "done",
+    message: "Done",
     page: ApiFeat.page,
     count: await messageModel.countDocuments({ project: req.params.id }),
     results,
   });
 });
-
 
 const updateDocs = catchAsync(async (req, res, next) => {
   let { id } = req.params;
@@ -78,7 +82,9 @@ const updateDocs = catchAsync(async (req, res, next) => {
       req.files.document &&
       req.files.document.map(
         (file) =>
-          `http://localhost:8000/documents/${file.filename.split(" ").join("-")}`
+          `http://localhost:8000/documents/${file.filename
+            .split(" ")
+            .join("-")}`
       );
 
     const directoryPathh = path.join(document, "uploads/documents");
@@ -99,18 +105,14 @@ const updateDocs = catchAsync(async (req, res, next) => {
         });
       });
     });
-
   }
-  if (req.body.document !== undefined) {    
+  if (req.body.document !== undefined) {
     document = req.body.document;
-    document=document[0]
-   
+    document = document[0];
   }
-  let updateDocs = await documentsModel.findByIdAndUpdate(
-    id,
-    req.body,
-    { new: true }
-  );
+  let updateDocs = await documentsModel.findByIdAndUpdate(id, req.body, {
+    new: true,
+  });
   if (!updateDocs) {
     return res.status(404).json({ message: "Couldn't update!  not found!" });
   }
@@ -128,4 +130,4 @@ const deleteDocs = catchAsync(async (req, res, next) => {
     deleteDocs,
   });
 });
-export { updateDocs, createDocsComment ,getAllDocsByProject,deleteDocs };
+export { updateDocs, createDocsComment, getAllDocsByProject, deleteDocs };

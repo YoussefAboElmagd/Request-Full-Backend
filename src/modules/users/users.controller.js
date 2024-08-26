@@ -5,7 +5,6 @@ import AppError from "../../utils/appError.js";
 import path from "path";
 import fsExtra from "fs-extra";
 
-
 const addPhotos = catchAsync(async (req, res, next) => {
   let profilePic = "";
   req.body.profilePic =
@@ -54,7 +53,9 @@ const updateprofilePic = catchAsync(async (req, res, next) => {
       req.files.profilePic &&
       req.files.profilePic.map(
         (file) =>
-          `http://localhost:8000/profilePic/${file.filename.split(" ").join("-")}`
+          `http://localhost:8000/profilePic/${file.filename
+            .split(" ")
+            .join("-")}`
       );
     const directoryPath = path.join(profilePic, "uploads/profilePic");
 
@@ -81,7 +82,7 @@ const updateprofilePic = catchAsync(async (req, res, next) => {
   }
   let updatedTask = await userModel.findByIdAndUpdate(
     id,
-    { profilePic: profilePic } ,
+    { profilePic: profilePic },
     { new: true }
   );
 
@@ -95,7 +96,7 @@ const addIdPhotos = catchAsync(async (req, res, next) => {
   console.log(req.body, "req.body");
   console.log(req.file, "req.fiiles");
   console.log(req.files, "req.fiiles");
-  
+
   req.body.idPhoto =
     req.files.idPhoto &&
     req.files.idPhoto.map(
@@ -151,13 +152,15 @@ const getAllUsersByAdmin = catchAsync(async (req, res, next) => {
   }
 });
 const getAllowners = catchAsync(async (req, res, next) => {
-  let ApiFeat = new ApiFeature(userModel.find({role:"owner"}), req.query).sort().search();
+  let ApiFeat = new ApiFeature(userModel.find({ role: "owner" }), req.query)
+    .sort()
+    .search();
 
   let results = await ApiFeat.mongooseQuery;
   res.json({
     message: "Done",
 
-    count: await userModel.countDocuments({role:"owner"}),
+    count: await userModel.countDocuments({ role: "owner" }),
     results,
   });
   if (!results) {
@@ -167,13 +170,18 @@ const getAllowners = catchAsync(async (req, res, next) => {
   }
 });
 const getAllcontractors = catchAsync(async (req, res, next) => {
-  let ApiFeat = new ApiFeature(userModel.find({role:"contractor"}), req.query).sort().search();
+  let ApiFeat = new ApiFeature(
+    userModel.find({ role: "contractor" }),
+    req.query
+  )
+    .sort()
+    .search();
 
   let results = await ApiFeat.mongooseQuery;
   res.json({
     message: "Done",
 
-    count: await userModel.countDocuments({role:"contractor"}),
+    count: await userModel.countDocuments({ role: "contractor" }),
     results,
   });
   if (!results) {
@@ -183,13 +191,18 @@ const getAllcontractors = catchAsync(async (req, res, next) => {
   }
 });
 const getAllconsultant = catchAsync(async (req, res, next) => {
-  let ApiFeat = new ApiFeature(userModel.find({role:"consultant"}), req.query).sort().search();
+  let ApiFeat = new ApiFeature(
+    userModel.find({ role: "consultant" }),
+    req.query
+  )
+    .sort()
+    .search();
 
   let results = await ApiFeat.mongooseQuery;
   res.json({
     message: "Done",
 
-    count: await userModel.countDocuments({role:"consultant"}),
+    count: await userModel.countDocuments({ role: "consultant" }),
     results,
   });
   if (!results) {
@@ -216,19 +229,21 @@ const updateUser = catchAsync(async (req, res, next) => {
 });
 const updateUserProjects = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-if(req.body.projects){
-let updatedTask = await userModel.findByIdAndUpdate(
-  id,
-  { $push: { projects: req.body.projects } },
-  { new: true }
-);
-if (!updatedTask) {
-  return res.status(404).json({ message: "Couldn't update!  not found!" });
-}
-res.status(200).json({ message: "Task updated successfully!",  updatedTask  });
-}else{
-  return res.status(404).json({ message: "Couldn't update!  not found!" });
-}
+  if (req.body.projects) {
+    let updatedTask = await userModel.findByIdAndUpdate(
+      id,
+      { $push: { projects: req.body.projects } },
+      { new: true }
+    );
+    if (!updatedTask) {
+      return res.status(404).json({ message: "Couldn't update!  not found!" });
+    }
+    res
+      .status(200)
+      .json({ message: "Task updated successfully!", updatedTask });
+  } else {
+    return res.status(404).json({ message: "Couldn't update!  not found!" });
+  }
 });
 
 const deleteUser = catchAsync(async (req, res, next) => {
@@ -245,4 +260,16 @@ const deleteUser = catchAsync(async (req, res, next) => {
   res.status(200).json({ message: "User deleted successfully!" });
 });
 
-export { getAllUsersByAdmin, getUserById, updateUser, deleteUser, addPhotos ,getAllowners,getAllcontractors,getAllconsultant ,addIdPhotos ,updateUserProjects,updateprofilePic };
+export {
+  getAllUsersByAdmin,
+  getUserById,
+  updateUser,
+  deleteUser,
+  addPhotos,
+  getAllowners,
+  getAllcontractors,
+  getAllconsultant,
+  addIdPhotos,
+  updateUserProjects,
+  updateprofilePic,
+};

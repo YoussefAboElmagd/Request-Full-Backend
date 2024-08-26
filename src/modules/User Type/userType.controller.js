@@ -23,19 +23,16 @@ const getAllUserType = catchAsync(async (req, res, next) => {
     });
   }
   res.json({
-    message: "done",
+    message: "Done",
     results,
   });
-
 });
 
 const updateUserType = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  const updatedUserType = await userTypeModel.findByIdAndUpdate(
-    id,
-    req.body,
-    { new: true }
-  );
+  const updatedUserType = await userTypeModel.findByIdAndUpdate(id, req.body, {
+    new: true,
+  });
   if (!updatedUserType) {
     return res.status(404).json({ message: "UserType not found!" });
   }
@@ -56,4 +53,4 @@ const deleteUserType = catchAsync(async (req, res, next) => {
   });
 });
 
-export { createUserType, getAllUserType ,updateUserType,deleteUserType };
+export { createUserType, getAllUserType, updateUserType, deleteUserType };

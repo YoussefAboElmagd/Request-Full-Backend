@@ -3,7 +3,7 @@ import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const createNews = catchAsync(async (req, res, next) => {
-  req.body.model = "66ba010fecc8dae4bda821c9"
+  req.body.model = "66ba010fecc8dae4bda821c9";
 
   const newComp = new newsModel(req.body);
   const savedComp = await newComp.save();
@@ -25,19 +25,16 @@ const getAllNews = catchAsync(async (req, res, next) => {
     });
   }
   res.json({
-    message: "done",
+    message: "Done",
     results,
   });
-
 });
 
 const updateNews = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  const updatedNews = await newsModel.findByIdAndUpdate(
-    id,
-    req.body,
-    { new: true }
-  );
+  const updatedNews = await newsModel.findByIdAndUpdate(id, req.body, {
+    new: true,
+  });
   if (!updatedNews) {
     return res.status(404).json({ message: "News not found!" });
   }
@@ -58,4 +55,4 @@ const deleteNews = catchAsync(async (req, res, next) => {
   });
 });
 
-export { createNews, getAllNews ,updateNews,deleteNews };
+export { createNews, getAllNews, updateNews, deleteNews };

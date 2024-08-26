@@ -23,7 +23,7 @@ const getAllTagsByAdmin = catchAsync(async (req, res, next) => {
     });
   }
   res.json({
-    message: "done",
+    message: "Done",
     results,
   });
 });
@@ -41,7 +41,7 @@ const getTagByUser = catchAsync(async (req, res, next) => {
     });
   }
   res.json({
-    message: "done",
+    message: "Done",
     results,
   });
 });

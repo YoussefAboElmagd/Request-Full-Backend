@@ -10,7 +10,7 @@ const createTask = catchAsync(async (req, res, next) => {
     length: 9,
     useLetters: false,
   });
-  req.body.model = "66ba018d87b5d43dcd881f7e"
+  req.body.model = "66ba018d87b5d43dcd881f7e";
   if (req.body.taskBudget && req.body.taskBudget >= 0) {
     let newTask = new taskModel(req.body);
     let addedTask = await newTask.save();
@@ -55,15 +55,14 @@ const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
   }
 
   res.json({
-    message: "done",
+    message: "Done",
     count: await taskModel.countDocuments(),
     results,
   });
 });
 const getAllTaskByUser = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
-    taskModel
-      .find({createdBy: req.params.id }).populate("project"),
+    taskModel.find({ createdBy: req.params.id }).populate("project"),
     req.query
   )
     .sort()
@@ -93,16 +92,14 @@ const getAllTaskByUser = catchAsync(async (req, res, next) => {
   }
 
   res.json({
-    message: "done",
-    count: await taskModel.countDocuments({createdBy: req.params.id}),
+    message: "Done",
+    count: await taskModel.countDocuments({ createdBy: req.params.id }),
     results,
   });
 });
 const getAllTaskByProject = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
-    taskModel
-      .find({ project: req.params.id })
-      .populate("project"),
+    taskModel.find({ project: req.params.id }).populate("project"),
     req.query
   )
     .sort()
@@ -132,7 +129,7 @@ const getAllTaskByProject = catchAsync(async (req, res, next) => {
   }
 
   res.json({
-    message: "done",
+    message: "Done",
     count: await taskModel.countDocuments({ project: req.params.id }),
     results,
   });
@@ -150,7 +147,7 @@ const getTaskById = catchAsync(async (req, res, next) => {
   }
 
   res.json({
-    message: "done",
+    message: "Done",
     results,
   });
 });
@@ -238,5 +235,5 @@ export {
   getAllTaskByUser,
   updateTaskPhoto,
   updateTask,
-  getAllTaskByProject
+  getAllTaskByProject,
 };
