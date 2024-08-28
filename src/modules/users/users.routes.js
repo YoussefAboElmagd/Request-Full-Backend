@@ -13,13 +13,13 @@ usersRouter.get("/:id", usersController.getUserById);
 usersRouter.put("/:id", usersController.updateUser);
 usersRouter.put("/projects/:id", usersController.updateUserProjects);
 usersRouter.delete("/:id", usersController.deleteUser);
-usersRouter.post(
-  "/photo/:id",
-  uploadMixFile("profilePic", [
-    { name: "profilePic",},
-  ]),fileFilterHandler,fileSizeLimitErrorHandler,
-  usersController.addPhotos
-);
+// usersRouter.post(
+//   "/photo/:id",
+//   uploadMixFile("profilePic", [
+//     { name: "profilePic",},
+//   ]),fileFilterHandler,fileSizeLimitErrorHandler,
+//   usersController.addPhotos
+// );
 usersRouter.put(
   "/photo/:id",
   uploadMixFile("profilePic", [

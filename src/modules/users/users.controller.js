@@ -5,52 +5,54 @@ import AppError from "../../utils/appError.js";
 import path from "path";
 import fsExtra from "fs-extra";
 
-const addPhotos = catchAsync(async (req, res, next) => {
-  let profilePic = "";
-  req.body.profilePic =
-    req.files.profilePic &&
-    req.files.profilePic.map(
-      (file) =>
-        `http://62.72.32.44:8000/profilePic/${file.filename.split(" ").join("-")}`
-    );
+// const addPhotos = catchAsync(async (req, res, next) => {
+//   let profilePic = "";
+//   req.body.profilePic =
+//     req.files.profilePic &&
+//     req.files.profilePic.map(
+//       (file) =>
+//         `http://62.72.32.44:8000/profilePic/${file.filename.split(" ").join("-")}`
+//     );
 
-  const directoryPath = path.join(profilePic, "uploads/profilePic");
+//   const directoryPath = path.join(profilePic, "uploads/profilePic");
 
-  fsExtra.readdir(directoryPath, (err, files) => {
-    if (err) {
-      return console.error("Unable to scan directory: " + err);
-    }
-    files.forEach((file) => {
-      const oldPath = path.join(directoryPath, file);
-      const newPath = path.join(directoryPath, file.replace(/\s+/g, "-"));
+//   fsExtra.readdir(directoryPath, (err, files) => {
+//     if (err) {
+//       return console.error("Unable to scan directory: " + err);
+//     }
+//     files.forEach((file) => {
+//       const oldPath = path.join(directoryPath, file);
+//       const newPath = path.join(directoryPath, file.replace(/\s+/g, "-"));
 
-      fsExtra.rename(oldPath, newPath, (err) => {
-        if (err) {
-          console.error("Error renaming file: ", err);
-        }
-      });
-    });
-  });
+//       fsExtra.rename(oldPath, newPath, (err) => {
+//         if (err) {
+//           console.error("Error renaming file: ", err);
+//         }
+//       });
+//     });
+//   });
 
-  if (req.body.profilePic) {
-    profilePic = req.body.profilePic;
-  }
-  if (profilePic !== "") {
-    profilePic = profilePic[0];
-    let updatedTask = await userModel.findByIdAndUpdate(
-      req.params.id,
-      { profilePic: profilePic },
-      { new: true }
-    );
-    res.status(200).json({
-      message: "Photo created successfully!",
-      profilePic,
-    });
-  } else {
-    res.status(400).json({ message: "File upload failed." });
-  }
-});
+//   if (req.body.profilePic) {
+//     profilePic = req.body.profilePic;
+//   }
+//   if (profilePic !== "") {
+//     profilePic = profilePic[0];
+//     let updatedTask = await userModel.findByIdAndUpdate(
+//       req.params.id,
+//       { profilePic: profilePic },
+//       { new: true }
+//     );
+//     res.status(200).json({
+//       message: "Photo created successfully!",
+//       profilePic,
+//     });
+//   } else {
+//     res.status(400).json({ message: "File upload failed." });
+//   }
+// });
 const updateprofilePic = catchAsync(async (req, res, next) => {
+  console.log(req.params.id);
+  
   let { id } = req.params;
   let profilePic = "";
   if (req.files.profilePic) {
@@ -73,6 +75,8 @@ const updateprofilePic = catchAsync(async (req, res, next) => {
         const oldPath = path.join(directoryPath, file);
         const newPath = path.join(directoryPath, file.replace(/\s+/g, "-"));
 
+        console.log(oldPath,"oldPath","newPath", newPath);
+        
         fsExtra.rename(oldPath, newPath, (err) => {
           if (err) {
             console.error("Error renaming file: ", err);
@@ -83,8 +87,11 @@ const updateprofilePic = catchAsync(async (req, res, next) => {
 
     if (req.body.profilePic !== "") {
       profilePic = req.body.profilePic;
+      profilePic = profilePic[0];
     }
   }
+  console.log(profilePic, "profilePic");
+  
   let updatedTask = await userModel.findByIdAndUpdate(
     id,
     { profilePic: profilePic },
@@ -322,7 +329,6 @@ export {
   getUserById,
   updateUser,
   deleteUser,
-  addPhotos,
   getAllowners,
   getAllcontractors,
   getAllconsultant,
