@@ -8,14 +8,15 @@ import {
 const docsRouter = express.Router();
 
 
-docsRouter.get("/:id", docsController.getAllDocsByProject);
+docsRouter.get("/project/:id", docsController.getAllDocsByProject);
+docsRouter.get("/task/:id", docsController.getAllDocsByTask);
 docsRouter.delete("/:id", docsController.deleteDocs);
 
 docsRouter.post(
   "/",
   uploadMixFile("documents", [{ name: "document" }]),
   fileSizeLimitErrorHandler,
-  docsController.createDocsComment
+  docsController.createDocs
 );
 docsRouter.put(
   "/:id",

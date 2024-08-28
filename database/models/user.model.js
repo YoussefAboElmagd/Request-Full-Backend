@@ -51,6 +51,10 @@ const userSchema = mongoose.Schema(
       type: String,
       // required:true
     },
+    verificationCode: {
+      type: String,
+      // required:true
+    },
     idNumber: {
       type: String,
     },
@@ -89,10 +93,10 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    confirmedEmail: {
-      type: Boolean,
-      default: false,
-    },
+    // confirmedEmail: {
+    //   type: Boolean,
+    //   default: false,
+    // },
     confirmedPhone: {
       type: Boolean,
       default: false,
@@ -119,4 +123,10 @@ userSchema.pre("findOneAndUpdate", function () {
   }
 });
 
+userSchema.pre(/^delete/, { document: false, query: true }, async function () {
+  const doc = await this.model.findOne(this.getFilter());
+  if (doc) {
+    removeFile("profilePic", doc.profilePic);
+  }
+}); 
 export const userModel = mongoose.model("user", userSchema);

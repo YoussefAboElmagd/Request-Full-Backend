@@ -2,8 +2,7 @@ import generateUniqueId from "generate-unique-id";
 import { taskModel } from "../../../database/models/tasks.model.js";
 import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
-import fsExtra from "fs-extra";
-import path from "path";
+
 
 const createTask = catchAsync(async (req, res, next) => {
   req.body.taskId = generateUniqueId({
@@ -154,47 +153,16 @@ const getTaskById = catchAsync(async (req, res, next) => {
 
 const updateTaskPhoto = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let documents = "";
-  if (req.files.documents) {
-    req.body.documents =
-      req.files.documents &&
-      req.files.documents.map(
-        (file) =>
-          `http://localhost:8000/tasks/${file.filename.split(" ").join("_")}`
-      );
-    const directoryPathh = path.join(documents, "uploads/tasks");
-
-    fsExtra.readdir(directoryPathh, (err, files) => {
-      if (err) {
-        return console.error("Unable to scan directory: " + err);
-      }
-
-      files.forEach((file) => {
-        const oldPath = path.join(directoryPathh, file);
-        const newPath = path.join(directoryPathh, file.replace(/\s+/g, "_"));
-
-        fsExtra.rename(oldPath, newPath, (err) => {
-          if (err) {
-            console.error("Error renaming file: ", err);
-          }
-        });
-      });
-    });
-
-    if (req.body.documents !== "") {
-      documents = req.body.documents;
-    }
-  }
+  
   let updatedTask = await taskModel.findByIdAndUpdate(
     id,
-    { $push: { documents: documents } },
+    { $push: { documents: req.body.documents } },
     { new: true }
   );
 
   if (!updatedTask) {
     return res.status(404).json({ message: "Couldn't update!  not found!" });
   }
-
   res
     .status(200)
     .json({ message: "Task updated successfully!", documents, resources });
@@ -205,7 +173,22 @@ const updateTask = catchAsync(async (req, res, next) => {
   if (req.body.taskBudget < 0) {
     return res.status(404).json({ message: "Budget must be greater than 0" });
   }
-  let updatedTask = await taskModel.findByIdAndUpdate(id, req.body, {
+ let {title,desc,priority,startDate,endDate,taskBudget,projectId,createdBy,project,documents}=req.body
+  let updatedTask = await taskModel.findByIdAndUpdate(id,
+    
+    {$push: { documents: req.body.documents } ,
+    title: title,
+    desc: desc,
+    priority: priority,
+    startDate: startDate,
+    endDate: endDate,
+    taskBudget: taskBudget,
+    projectId: projectId,
+    createdBy: createdBy,
+    project: project,
+    documents: documents
+    }
+    , {
     new: true,
   });
 

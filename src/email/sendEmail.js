@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
+// import { userModel } from "../../database/models/user.model.js";
 
-export async function sendEmail(message, name, phone) {
+export async function sendEmail(email,code) {
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -9,14 +10,15 @@ export async function sendEmail(message, name, phone) {
     },
   });
 
-  // send mail with defined transport object
+  // let existUser = await userModel.findOne({ email: email });
+  // if (!existUser) {
+  //   return res.status(409).json({ message: "this email not exist" });
+  // }
   const info = await transporter.sendMail({
-    from: `User " <abdelrahmanmohammed851@gmail.com>`, // sender address
-    to: "ahmed.osama.swe@gmail.com", // list of receivers
-    subject: "Help Center", // Subject line
-    text: `Content :${message} , 
-    User Name: ${name}, 
-    Phone: ${phone}`, // plain text body
+    from: `Admin " <abdelrahmanmohammed851@gmail.com>`, // sender address
+    to: `${email}`, // list of receivers
+    subject: "Email Verification", // Subject line
+    text: `Email Verification Code: ${code}`, // plain text body
   });
 
   console.log("Message sent: %s", info.messageId);

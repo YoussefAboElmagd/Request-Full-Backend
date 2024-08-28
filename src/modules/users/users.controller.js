@@ -11,7 +11,7 @@ const addPhotos = catchAsync(async (req, res, next) => {
     req.files.profilePic &&
     req.files.profilePic.map(
       (file) =>
-        `http://localhost:8000/profilePic/${file.filename.split(" ").join("-")}`
+        `http://62.72.32.44:8000/profilePic/${file.filename.split(" ").join("-")}`
     );
 
   const directoryPath = path.join(profilePic, "uploads/profilePic");
@@ -37,6 +37,11 @@ const addPhotos = catchAsync(async (req, res, next) => {
   }
   if (profilePic !== "") {
     profilePic = profilePic[0];
+    let updatedTask = await userModel.findByIdAndUpdate(
+      req.params.id,
+      { profilePic: profilePic },
+      { new: true }
+    );
     res.status(200).json({
       message: "Photo created successfully!",
       profilePic,
@@ -53,7 +58,7 @@ const updateprofilePic = catchAsync(async (req, res, next) => {
       req.files.profilePic &&
       req.files.profilePic.map(
         (file) =>
-          `http://localhost:8000/profilePic/${file.filename
+          `http://62.72.32.44:8000/profilePic/${file.filename
             .split(" ")
             .join("-")}`
       );
@@ -89,7 +94,53 @@ const updateprofilePic = catchAsync(async (req, res, next) => {
   if (!updatedTask) {
     return res.status(404).json({ message: "Couldn't update!  not found!" });
   }
-  res.status(200).json({ message: "Task updated successfully!", documents });
+  res.status(200).json({ message: "Task updated successfully!", profilePic });
+});
+const updateIdPhoto = catchAsync(async (req, res, next) => {
+  let { id } = req.params;
+  let idPhoto = "";
+  if (req.files.idPhoto) {
+    req.body.idPhoto =
+      req.files.idPhoto &&
+      req.files.idPhoto.map(
+        (file) =>
+          `http://62.72.32.44:8000/idPhoto/${file.filename
+            .split(" ")
+            .join("-")}`
+      );
+    const directoryPath = path.join(idPhoto, "uploads/photos");
+
+    fsExtra.readdir(directoryPath, (err, files) => {
+      if (err) {
+        return console.error("Unable to scan directory: " + err);
+      }
+
+      files.forEach((file) => {
+        const oldPath = path.join(directoryPath, file);
+        const newPath = path.join(directoryPath, file.replace(/\s+/g, "-"));
+
+        fsExtra.rename(oldPath, newPath, (err) => {
+          if (err) {
+            console.error("Error renaming file: ", err);
+          }
+        });
+      });
+    });
+
+    if (req.body.idPhoto !== "") {
+      idPhoto = req.body.idPhoto;
+    }
+  }
+  let updatedTask = await userModel.findByIdAndUpdate(
+    id,
+    { idPhoto: idPhoto },
+    { new: true }
+  );
+
+  if (!updatedTask) {
+    return res.status(404).json({ message: "Couldn't update!  not found!" });
+  }
+  res.status(200).json({ message: "Task updated successfully!", idPhoto });
 });
 const addIdPhotos = catchAsync(async (req, res, next) => {
   let idPhoto = "";
@@ -101,7 +152,7 @@ const addIdPhotos = catchAsync(async (req, res, next) => {
     req.files.idPhoto &&
     req.files.idPhoto.map(
       (file) =>
-        `http://localhost:8000/ids/${file.filename.split(" ").join("_")}`
+        `http://62.72.32.44:8000/ids/${file.filename.split(" ").join("-")}`
     );
 
   const directoryPath = path.join(idPhoto, "uploads/photos");
@@ -112,7 +163,7 @@ const addIdPhotos = catchAsync(async (req, res, next) => {
     }
     files.forEach((file) => {
       const oldPath = path.join(directoryPath, file);
-      const newPath = path.join(directoryPath, file.replace(/\s+/g, "_"));
+      const newPath = path.join(directoryPath, file.replace(/\s+/g, "-"));
 
       fsExtra.rename(oldPath, newPath, (err) => {
         if (err) {
@@ -126,6 +177,11 @@ const addIdPhotos = catchAsync(async (req, res, next) => {
     idPhoto = req.body.idPhoto;
   }
   if (idPhoto !== "") {
+    let updatedTask = await userModel.findByIdAndUpdate(
+      req.params.id,
+      { idPhoto: idPhoto },
+      { new: true }
+    );
     res.status(200).json({
       message: "Photo created successfully!",
       idPhoto,
@@ -249,7 +305,7 @@ const updateUserProjects = catchAsync(async (req, res, next) => {
 const deleteUser = catchAsync(async (req, res, next) => {
   let { id } = req.params;
 
-  let deletedUser = await userModel.findByIdAndDelete(id);
+  let deletedUser = await userModel.deleteOne({ _id: id });
 
   if (!deletedUser) {
     return res
@@ -259,6 +315,7 @@ const deleteUser = catchAsync(async (req, res, next) => {
 
   res.status(200).json({ message: "User deleted successfully!" });
 });
+
 
 export {
   getAllUsersByAdmin,
@@ -272,4 +329,5 @@ export {
   addIdPhotos,
   updateUserProjects,
   updateprofilePic,
+  updateIdPhoto,
 };

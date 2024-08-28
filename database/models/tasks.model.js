@@ -15,14 +15,10 @@ const taskSchema = mongoose.Schema(
       ref: "user",
       required: true,
     },
-    owner: {
+    assignees: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "user",
-      required: true,
-    },
-    contractor: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref: "user",
+      default: [],
       required: true,
     },
     project: {

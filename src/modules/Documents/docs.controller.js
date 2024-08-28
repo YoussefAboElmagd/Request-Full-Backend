@@ -3,8 +3,9 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import path from "path";
 import fsExtra from "fs-extra";
 import ApiFeature from "../../utils/apiFeature.js";
+import { taskModel } from "../../../database/models/tasks.model.js";
 
-const createDocsComment = catchAsync(async (req, res, next) => {
+const createDocs = catchAsync(async (req, res, next) => {
   let document = "";
   req.body.document =
     req.files.document &&
@@ -73,43 +74,29 @@ const getAllDocsByProject = catchAsync(async (req, res, next) => {
     results,
   });
 });
+const getAllDocsByTask = catchAsync(async (req, res, next) => {
+  let ApiFeat = new ApiFeature(
+    taskModel.find({ _id: req.params.id }),
+    req.query
+  );
+  let results = await ApiFeat.mongooseQuery;
+  results = JSON.stringify(results);
+  results = JSON.parse(results);
+  if (!ApiFeat || !results) {
+    return res.status(404).json({
+      message: "No Docs was found!",
+    });
+  }
+  results = results[0].documents;
+  res.json({
+    message: "Done",
+    results,
+  });
+});
 
 const updateDocs = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let document = "";
-  if (req.files.document) {
-    req.body.document =
-      req.files.document &&
-      req.files.document.map(
-        (file) =>
-          `http://localhost:8000/documents/${file.filename
-            .split(" ")
-            .join("-")}`
-      );
 
-    const directoryPathh = path.join(document, "uploads/documents");
-
-    fsExtra.readdir(directoryPathh, (err, files) => {
-      if (err) {
-        return console.error("Unable to scan directory: " + err);
-      }
-
-      files.forEach((file) => {
-        const oldPath = path.join(directoryPathh, file);
-        const newPath = path.join(directoryPathh, file.replace(/\s+/g, "-"));
-
-        fsExtra.rename(oldPath, newPath, (err) => {
-          if (err) {
-            console.error("Error renaming file: ", err);
-          }
-        });
-      });
-    });
-  }
-  if (req.body.document !== undefined) {
-    document = req.body.document;
-    document = document[0];
-  }
   let updateDocs = await documentsModel.findByIdAndUpdate(id, req.body, {
     new: true,
   });
@@ -130,4 +117,4 @@ const deleteDocs = catchAsync(async (req, res, next) => {
     deleteDocs,
   });
 });
-export { updateDocs, createDocsComment, getAllDocsByProject, deleteDocs };
+export { updateDocs, createDocs, getAllDocsByProject, deleteDocs ,getAllDocsByTask };

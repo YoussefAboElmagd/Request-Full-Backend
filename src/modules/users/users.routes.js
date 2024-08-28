@@ -14,25 +14,32 @@ usersRouter.put("/:id", usersController.updateUser);
 usersRouter.put("/projects/:id", usersController.updateUserProjects);
 usersRouter.delete("/:id", usersController.deleteUser);
 usersRouter.post(
-  "/photo",
+  "/photo/:id",
   uploadMixFile("profilePic", [
     { name: "profilePic",},
   ]),fileFilterHandler,fileSizeLimitErrorHandler,
   usersController.addPhotos
 );
 usersRouter.put(
-  "/photo",
+  "/photo/:id",
   uploadMixFile("profilePic", [
     { name: "profilePic",},
   ]),fileFilterHandler,fileSizeLimitErrorHandler,
-  usersController.addPhotos
+  usersController.updateprofilePic
 );
 
 usersRouter.post(
-  "/id",
+  "/id/:id",
   uploadMixFile("photos", [
     { name: "idPhoto" },
   ]),fileSizeLimitErrorHandler,
   usersController.addIdPhotos
+);
+usersRouter.put(
+  "/id/:id",
+  uploadMixFile("photos", [
+    { name: "idPhoto" },
+  ]),fileSizeLimitErrorHandler,
+  usersController.updateIdPhoto
 );
 export default usersRouter;

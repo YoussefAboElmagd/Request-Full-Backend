@@ -4,6 +4,7 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import AppError from "../../utils/appError.js";
 import { userModel } from "../../../database/models/user.model.js";
 import generateUniqueId from "generate-unique-id";
+import { sendEmail } from "../../email/sendEmail.js";
 
 export const signUp = catchAsync(async (req, res, next) => {
   // let phoneFormat = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/; //+XX XXXXX XXXXX
@@ -27,14 +28,21 @@ export const signUp = catchAsync(async (req, res, next) => {
     return res.status(409).json({ message: "this phone is not valid" });
   }
   req.body.model = "66ba00b0e39d9694110fd3df";
+  req.body.verificationCode = generateUniqueId({
+    length: 6,
+    useLetters: false,
+  });
   let results = new userModel(req.body);
   let token = jwt.sign(
     { name: results.name, userId: results._id },
     process.env.JWT_SECRET_KEY
   );
+sendEmail(results.email,results.verificationCode);
+
   await results.save();
   res.json({ message: "added", token, results });
 });
+
 
 // export const signIn = catchAsync(async (req, res, next) => {
 //   // let phoneFormat = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/; //+XX XXXXX XXXXX
@@ -70,6 +78,12 @@ export const signIn = catchAsync(async (req, res, next) => {
     if (!isFound) return res.status(404).json({ message: "Email Not Found" });
     const match = await bcrypt.compare(password, isFound.password);
     if (match && isFound) {
+      isFound.verificationCode = generateUniqueId({
+        length: 6,
+        useLetters: false,
+      })
+      sendEmail(isFound.email,isFound.verificationCode);
+      await isFound.save();
       let token = jwt.sign(
         { name: isFound.name, userId: isFound._id },
         process.env.JWT_SECRET_KEY
