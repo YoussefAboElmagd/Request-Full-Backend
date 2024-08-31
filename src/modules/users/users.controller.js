@@ -4,6 +4,7 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import AppError from "../../utils/appError.js";
 import path from "path";
 import fsExtra from "fs-extra";
+import { DateTime } from "luxon"; 
 
 // const addPhotos = catchAsync(async (req, res, next) => {
 //   let profilePic = "";
@@ -37,7 +38,7 @@ import fsExtra from "fs-extra";
 //   }
 //   if (profilePic !== "") {
 //     profilePic = profilePic[0];
-//     let updatedTask = await userModel.findByIdAndUpdate(
+//     let updatedProfile = await userModel.findByIdAndUpdate(
 //       req.params.id,
 //       { profilePic: profilePic },
 //       { new: true }
@@ -51,7 +52,6 @@ import fsExtra from "fs-extra";
 //   }
 // });
 const updateprofilePic = catchAsync(async (req, res, next) => {
-  console.log(req.params.id);
   
   let { id } = req.params;
   let profilePic = "";
@@ -89,13 +89,13 @@ const updateprofilePic = catchAsync(async (req, res, next) => {
     }
   }
   
-  let updatedTask = await userModel.findByIdAndUpdate(
+  let updatedProfile = await userModel.findByIdAndUpdate(
     id,
     { profilePic: profilePic },
     { new: true }
   );
 
-  if (!updatedTask) {
+  if (!updatedProfile) {
     return res.status(404).json({ message: "Couldn't update!  not found!" });
   }
   res.status(200).json({ message: "Task updated successfully!", profilePic });
@@ -135,13 +135,13 @@ const updateIdPhoto = catchAsync(async (req, res, next) => {
       idPhoto = req.body.idPhoto;
     }
   }
-  let updatedTask = await userModel.findByIdAndUpdate(
+  let updatedProfile = await userModel.findByIdAndUpdate(
     id,
     { idPhoto: idPhoto },
     { new: true }
   );
 
-  if (!updatedTask) {
+  if (!updatedProfile) {
     return res.status(404).json({ message: "Couldn't update!  not found!" });
   }
   res.status(200).json({ message: "Task updated successfully!", idPhoto });
@@ -181,7 +181,7 @@ const addIdPhotos = catchAsync(async (req, res, next) => {
     idPhoto = req.body.idPhoto;
   }
   if (idPhoto !== "") {
-    let updatedTask = await userModel.findByIdAndUpdate(
+    let updatedProfile = await userModel.findByIdAndUpdate(
       req.params.id,
       { idPhoto: idPhoto },
       { new: true }
@@ -199,17 +199,17 @@ const getAllUsersByAdmin = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(userModel.find(), req.query).sort().search();
 
   let results = await ApiFeat.mongooseQuery;
+  if (!results) {
+    return res.status(404).json({
+      message: "No users was found! add a new user to get started!",
+    });
+  }
   res.json({
     message: "Done",
 
     count: await userModel.countDocuments(),
     results,
   });
-  if (!results) {
-    return res.status(404).json({
-      message: "No users was found! add a new user to get started!",
-    });
-  }
 });
 const getAllowners = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(userModel.find({ role: "owner" }), req.query)
@@ -283,6 +283,9 @@ const getUserById = catchAsync(async (req, res, next) => {
 const updateUser = catchAsync(async (req, res, next) => {
   let { id } = req.params;
 
+req.body.dateOfBirth = DateTime.fromISO(req.body.dateOfBirth).toISODate();
+console.log(req.body.dateOfBirth);
+
   let results = await userModel.findByIdAndUpdate(id, req.body, { new: true });
   !results && res.status(404).json({ message: "couldn't update! not found!" });
   results && res.json({ message: "updatedd", results });
@@ -290,17 +293,17 @@ const updateUser = catchAsync(async (req, res, next) => {
 const updateUserProjects = catchAsync(async (req, res, next) => {
   let { id } = req.params;
   if (req.body.projects) {
-    let updatedTask = await userModel.findByIdAndUpdate(
+    let updatedProfile = await userModel.findByIdAndUpdate(
       id,
       { $push: { projects: req.body.projects } },
       { new: true }
     );
-    if (!updatedTask) {
+    if (!updatedProfile) {
       return res.status(404).json({ message: "Couldn't update!  not found!" });
     }
     res
       .status(200)
-      .json({ message: "Task updated successfully!", updatedTask });
+      .json({ message: "Task updated successfully!", updatedProfile });
   } else {
     return res.status(404).json({ message: "Couldn't update!  not found!" });
   }

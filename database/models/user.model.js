@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
+import { removeFile } from "../../src/utils/removeFiles.js";
 
 const userSchema = mongoose.Schema(
   {
@@ -84,11 +85,11 @@ const userSchema = mongoose.Schema(
     //   type: mongoose.Schema.Types.ObjectId,
     //   ref: "userType",
     //   required: true,
-    // },  
+    // },
     role: {
       type: String,
       required: true,
-    },  
+    },
     verified: {
       type: Boolean,
       default: false,
@@ -118,8 +119,8 @@ userSchema.pre("save", function () {
   this.password = bcrypt.hashSync(this.password, 10);
 });
 userSchema.pre("findOneAndUpdate", function () {
-  if(this._update.password){
-  this._update.password = bcrypt.hashSync(this._update.password, 10);
+  if (this._update.password) {
+    this._update.password = bcrypt.hashSync(this._update.password, 10);
   }
 });
 
@@ -128,5 +129,5 @@ userSchema.pre(/^delete/, { document: false, query: true }, async function () {
   if (doc) {
     removeFile("profilePic", doc.profilePic);
   }
-}); 
+});
 export const userModel = mongoose.model("user", userSchema);
