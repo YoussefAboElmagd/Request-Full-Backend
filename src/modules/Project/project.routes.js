@@ -10,10 +10,8 @@ projectRouter.get(
   "/status/:status",
   projectController.getAllProjectByStatusByAdmin
 );
-projectRouter.get(
-  "/user/status/:id",
-  projectController.getAllProjectByStatusByUser
-);
+projectRouter.get("/user/status/:id",projectController.getAllProjectByStatusByUser);
+projectRouter.get("/files/:id",projectController.getAllProjectFiles);
 projectRouter.post("/", projectController.createProject);
 projectRouter.put("/members/:id", projectController.updateProjectMembers);
 projectRouter.put("/:id", projectController.updateProject);

@@ -1,4 +1,4 @@
-import { memoryStorage } from "multer";
+import mongoose from "mongoose";
 import { projectModel } from "../../../database/models/project.model.js";
 import { userModel } from "../../../database/models/user.model.js";
 import ApiFeature from "../../utils/apiFeature.js";
@@ -7,6 +7,7 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const createProject = catchAsync(async (req, res, next) => {
   req.body.model = "66ba015a73f994dd94dbc1e9";
+  req.body.members = req.body.createdBy;
   if (req.body.budget && req.body.budget >= 0) {
     let newProject = new projectModel(req.body);
     let addedProject = await newProject.save();
@@ -163,46 +164,35 @@ const getAllDocsProject = catchAsync(async (req, res, next) => {
     documents,
   });
 });
-const getAllProjectByUser = catchAsync(async (req, res, next) => {
-  let ApiFeat = new ApiFeature(
-    projectModel
-      .find()
-      .populate("contractor")
-      .populate("consultant")
-      .populate("owner"),
-    req.query
-  )
-    .sort()
-    .search();
-  let results = await ApiFeat.mongooseQuery;
-  results = JSON.stringify(results);
-  results = JSON.parse(results);
-  if (!ApiFeat || !results) {
-    return res.status(404).json({
-      message: "No Project was found!",
-    });
-  }
-  let { filterType, filterValue } = req.query;
-  if (filterType && filterValue) {
-    results = results.filter(function (item) {
-      if (filterType == "name") {
-        return item.name.toLowerCase().includes(filterValue.toLowerCase());
-      }
-      if (filterType == "company") {
-        if (item.company) {
-          return item.company.name
-            .toLowerCase()
-            .includes(filterValue.toLowerCase());
-        }
-      }
-    });
-  }
+const getAllProjectFiles = catchAsync(async (req, res, next) => {
+  const memberId = new mongoose.Types.ObjectId(req.params.id);
 
+  let results = await projectModel.aggregate([
+    {
+      // Match projects where members are in the provided memberIds
+      $match: { members: memberId }
+    },
+    {
+      // Group by project _id
+      $group: {
+        _id: "$_id",
+        name: { $first: "$name" },
+        documents: { $first: "$documents" },
+      }
+    },
+    {
+      // Optionally, sort the projects by name or any other field
+      $sort: { name: 1 }
+    }
+  ]);
+  
+  // Populate documents and createdBy fields in each project
+  results = await projectModel.populate(results, { path: "documents" });
+  
   res.json({
     message: "Done",
     results,
-  });
-});
+  });});
 
 ////////////////////////////////// contractor \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 ////////////////////////////////// consultant \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
@@ -261,4 +251,5 @@ export {
   getAllProjectByStatusByAdmin,
   getAllProjectByStatusByUser,
   updateProjectMembers,
+  getAllProjectFiles,
 };

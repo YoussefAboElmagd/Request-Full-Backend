@@ -4,6 +4,11 @@ dotenv.config();
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import cors from "cors";
+import dbConnection from "./database/DBConnection.js";
+import { init } from "./src/modules/index.js";
+import { globalError } from "./src/utils/middleWare/globalError.js";
+
 const httpServer = createServer();
 const io = new Server(httpServer, {
   cors: {
@@ -13,10 +18,6 @@ const io = new Server(httpServer, {
 });
 const app = express();
 
-import cors from "cors";
-import dbConnection from "./database/DBConnection.js";
-import { init } from "./src/modules/index.js";
-import { globalError } from "./src/utils/middleWare/globalError.js";
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

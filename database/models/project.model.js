@@ -6,9 +6,13 @@ const projectSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    description: {
+      type: String,
+      required: true,
+    },
     status: {
       type: String,
-      enum: ["onGoing", "ending", "waiting","delayed"],
+      enum: ["onGoing", "ending","delayed"],
       default: "onGoing",
       required: true,
     },
@@ -20,11 +24,11 @@ const projectSchema = mongoose.Schema(
       },
     ],
     sDate: {
-      type: String,
+      type: Date,
       required: true,
     },
-    eDate: {
-      type: String,
+    dueDate: {
+      type: Date,
       required: true,
     },
     documents: {
@@ -44,6 +48,11 @@ const projectSchema = mongoose.Schema(
     },
     owner: {
       type: [mongoose.Schema.Types.ObjectId],
+      ref: "user",
+      required: true,
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       required: true,
     },

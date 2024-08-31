@@ -74,8 +74,6 @@ const updateprofilePic = catchAsync(async (req, res, next) => {
       files.forEach((file) => {
         const oldPath = path.join(directoryPath, file);
         const newPath = path.join(directoryPath, file.replace(/\s+/g, "-"));
-
-        console.log(oldPath,"oldPath","newPath", newPath);
         
         fsExtra.rename(oldPath, newPath, (err) => {
           if (err) {
@@ -90,7 +88,6 @@ const updateprofilePic = catchAsync(async (req, res, next) => {
       profilePic = profilePic[0];
     }
   }
-  console.log(profilePic, "profilePic");
   
   let updatedTask = await userModel.findByIdAndUpdate(
     id,
