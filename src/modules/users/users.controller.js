@@ -282,10 +282,10 @@ const getUserById = catchAsync(async (req, res, next) => {
 
 const updateUser = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-
-req.body.dateOfBirth = DateTime.fromISO(req.body.dateOfBirth).toISODate();
-console.log(req.body.dateOfBirth);
-
+if(req.body.dateOfBirth){
+  
+  req.body.dateOfBirth = DateTime.fromISO(req.body.dateOfBirth).toISODate();
+}
   let results = await userModel.findByIdAndUpdate(id, req.body, { new: true });
   !results && res.status(404).json({ message: "couldn't update! not found!" });
   results && res.json({ message: "updatedd", results });

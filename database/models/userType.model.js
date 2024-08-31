@@ -20,7 +20,9 @@ const userTypeSchema = mongoose.Schema(
   },
   { timestamps: true }
 );
-
+userTypeSchema.pre(/^find/, function () {
+  this.populate('rights.model');
+})
 
 
 export const userTypeModel = mongoose.model("userType", userTypeSchema);

@@ -81,15 +81,15 @@ const userSchema = mongoose.Schema(
       ref: "tag",
       // required: true,
     },
-    // role: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: "userType",
-    //   required: true,
-    // },
     role: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "userType",
       required: true,
     },
+    // role: {
+    //   type: String,
+    //   required: true,
+    // },
     verified: {
       type: Boolean,
       default: false,
@@ -130,4 +130,7 @@ userSchema.pre(/^delete/, { document: false, query: true }, async function () {
     removeFile("profilePic", doc.profilePic);
   }
 });
+userSchema.pre(/^find/, function () {
+  this.populate('role');
+})
 export const userModel = mongoose.model("user", userSchema);
