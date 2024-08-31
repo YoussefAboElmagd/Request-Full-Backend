@@ -18,11 +18,15 @@ const io = new Server(httpServer, {
 });
 const app = express();
 
-
+const corsOptions = {
+  origin: "*", 
+  methods: ["GET", "POST", "PUT", "DELETE"], // Specify allowed methods
+  credentials: true, // Allow credentials to be sent with requests
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("uploads"));
-app.use(cors());
 
 dbConnection();
 
