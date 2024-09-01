@@ -3,7 +3,6 @@ import { taskModel } from "../../../database/models/tasks.model.js";
 import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
-
 const createTask = catchAsync(async (req, res, next) => {
   req.body.taskId = generateUniqueId({
     length: 9,
@@ -151,46 +150,41 @@ const getTaskById = catchAsync(async (req, res, next) => {
   });
 });
 
-const updateTaskPhoto = catchAsync(async (req, res, next) => {
-  let { id } = req.params;
-  
-  let updatedTask = await taskModel.findByIdAndUpdate(
-    id,
-    { $push: { documents: req.body.documents } },
-    { new: true }
-  );
-
-  if (!updatedTask) {
-    return res.status(404).json({ message: "Couldn't update!  not found!" });
-  }
-  res
-    .status(200)
-    .json({ message: "Task updated successfully!", documents, resources });
-});
-
 const updateTask = catchAsync(async (req, res, next) => {
   let { id } = req.params;
   if (req.body.taskBudget < 0) {
     return res.status(404).json({ message: "Budget must be greater than 0" });
   }
- let {title,desc,priority,startDate,endDate,taskBudget,projectId,createdBy,project,documents}=req.body
-  let updatedTask = await taskModel.findByIdAndUpdate(id,
-    
-    {$push: { documents: req.body.documents } ,
-    title: title,
-    desc: desc,
-    priority: priority,
-    startDate: startDate,
-    endDate: endDate,
-    taskBudget: taskBudget,
-    projectId: projectId,
-    createdBy: createdBy,
-    project: project,
-    documents: documents
+  let {
+    title,
+    description,
+    priority,
+    startDate,
+    endDate,
+    taskBudget,
+    createdBy,
+    project,
+    documents,
+    assignees,
+  } = req.body;
+  let updatedTask = await taskModel.findByIdAndUpdate(
+    id,
+
+    {
+      $push: { documents, assignees },
+      title,
+      description,
+      priority,
+      startDate,
+      endDate,
+      taskBudget,
+      createdBy,
+      project,
+    },
+    {
+      new: true,
     }
-    , {
-    new: true,
-  });
+  );
 
   if (!updatedTask) {
     return res.status(404).json({ message: "Couldn't update!  not found!" });
@@ -216,7 +210,6 @@ export {
   getTaskById,
   deleteTask,
   getAllTaskByUser,
-  updateTaskPhoto,
   updateTask,
   getAllTaskByProject,
 };

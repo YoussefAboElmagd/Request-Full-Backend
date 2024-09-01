@@ -117,4 +117,10 @@ const deleteDocs = catchAsync(async (req, res, next) => {
     deleteDocs,
   });
 });
-export { updateDocs, createDocs, getAllDocsByProject, deleteDocs ,getAllDocsByTask };
+export {
+  updateDocs,
+  createDocs,
+  getAllDocsByProject,
+  deleteDocs,
+  getAllDocsByTask,
+};

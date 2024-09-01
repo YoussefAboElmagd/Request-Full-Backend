@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const messageSchema = mongoose.Schema(
   {
-    projectId: {
+    project: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "project",
       required: true,
