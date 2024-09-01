@@ -13,7 +13,6 @@ projectRouter.get(
 projectRouter.get("/user/status/:id",projectController.getAllProjectByStatusByUser);
 projectRouter.get("/files/:id",projectController.getAllProjectFiles);
 projectRouter.post("/", projectController.createProject);
-projectRouter.put("/members/:id", projectController.updateProjectMembers);
 projectRouter.put("/:id", projectController.updateProject);
 projectRouter.delete("/:id", projectController.deleteProject);
 
