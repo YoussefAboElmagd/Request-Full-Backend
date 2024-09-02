@@ -27,11 +27,11 @@ const taskSchema = mongoose.Schema(
       required: true,
     },
     startDate: {
-      type: String,
+      type: Date,
       required: true,
     },
     dueDate: {
-      type: String,
+      type: Date,
       required: true,
     },
     taskBudget: {
@@ -45,15 +45,19 @@ const taskSchema = mongoose.Schema(
     },
     taskStatus: {
       type: String,
-      enum: ["Done", "InProgress", "Waiting"],
-      default: "InProgress",
+      enum: ["completed", "working", "waiting"],
+      default: "working",
       required: true,
     },
     taskPriority: {
       type: String,
-      enum: ["Normal", "High", "Low"],
-      default: "Normal",
+      enum: ["medium", "High", "Low"],
+      default: "medium",
       required: true,
+    },
+    isDelayed: {
+      type: Boolean,
+      default: false,
     },
     model: {
       type: mongoose.Schema.Types.ObjectId,
@@ -65,4 +69,37 @@ const taskSchema = mongoose.Schema(
   { timestamps: true }
 );
 
+taskSchema.pre('save', function (next) {
+  if (this.dueDate && this.dueDate < new Date()) {
+    this.isDelayed = true;
+  } else {
+    this.isDelayed = false;
+  }
+  next();
+});
+
+taskSchema.post(/^find/, function (docs, next) {
+  docs.forEach((doc) => {
+    if (doc.dueDate && doc.dueDate < new Date()) {
+      doc.isDelayed = true;
+      doc.save();
+    }
+  });
+  next();
+});
+
+taskSchema.pre('findOneAndUpdate', function (next) {
+  const update = this.getUpdate();
+  if (update.dueDate && new Date(update.dueDate) < new Date()) {
+    this.setUpdate({ ...update, isDelayed: true });
+  } else if (update.dueDate) {
+    this.setUpdate({ ...update, isDelayed: false });
+  }
+  next();
+});
+
+
+// taskSchema.pre(/^find/, function () {
+//   this.populate('assignees','owner','consultant','mainConsultant','contractor');
+// })
 export const taskModel = mongoose.model("task", taskSchema);

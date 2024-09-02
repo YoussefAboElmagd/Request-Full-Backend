@@ -12,7 +12,7 @@ const projectSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["onGoing", "ending","delayed"],
+      enum: ["onGoing", "ending","delayed" ,"waiting"],
       default: "onGoing",
       required: true,
     },
@@ -36,6 +36,11 @@ const projectSchema = mongoose.Schema(
       ref: "document",
       // required: true,
     },
+    mainConsultant: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
+    },
     consultant: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "user",
@@ -47,7 +52,7 @@ const projectSchema = mongoose.Schema(
       required: true,
     },
     owner: {
-      type: [mongoose.Schema.Types.ObjectId],
+      type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       required: true,
     },
@@ -66,6 +71,11 @@ const projectSchema = mongoose.Schema(
       default: 0,
       required: true,
     },
+    remaining: {
+      type: Number,
+      default: 0,
+      required: true,
+    },
     members: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "user",
@@ -80,5 +90,7 @@ const projectSchema = mongoose.Schema(
   },
   { timestamps: true }
 );
-
+// projectSchema.pre(/^find/, function () {
+//   this.populate('members','owner','consultant','mainConsultant','contractor','tasks');
+// })
 export const projectModel = mongoose.model("project", projectSchema);

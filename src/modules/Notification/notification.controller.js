@@ -6,7 +6,7 @@ const getAllNotification = catchAsync(async (req, res, next) => {
   let { id } = req.params;
   let results = await notificationModel.find({
     receiver: id,
-  });
+  }).sort({ $natural: -1 });
   res.json({ message: "Done", results });
 });
 
