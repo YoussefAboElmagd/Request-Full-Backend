@@ -103,7 +103,7 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
 const getAllProjectByUser = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
     projectModel
-      .find({ members: { $in: req.params.id } })
+      .find({ members: { $in: req.params.id } }).sort({ $natural: -1 })
       .select("tasks name description budget")
       .populate("tasks").populate({
         path: 'tasks', 

@@ -2,6 +2,7 @@ import generateUniqueId from "generate-unique-id";
 import { taskModel } from "../../../database/models/tasks.model.js";
 import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
+import { projectModel } from "../../../database/models/project.model.js";
 
 const createTask = catchAsync(async (req, res, next) => {
   req.body.taskId = generateUniqueId({
@@ -12,7 +13,13 @@ const createTask = catchAsync(async (req, res, next) => {
   if (req.body.taskBudget && req.body.taskBudget >= 0) {
     let newTask = new taskModel(req.body);
     let addedTask = await newTask.save();
-
+    let addTaskToProject = await projectModel.findByIdAndUpdate(
+      req.body.project,
+      {
+        $push: { tasks: addedTask._id },
+      },
+      { new: true }
+    )
     res.status(201).json({
       message: " Task has been created successfully!",
       addedTask,

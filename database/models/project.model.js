@@ -90,7 +90,36 @@ const projectSchema = mongoose.Schema(
   },
   { timestamps: true }
 );
-// projectSchema.pre(/^find/, function () {
-//   this.populate('members','owner','consultant','mainConsultant','contractor','tasks');
-// })
+
+projectSchema.pre('save', function (next) {
+  if (this.dueDate && this.dueDate < new Date()) {
+    this.status = "delayed";
+  } 
+  next();
+});
+
+projectSchema.post(/^find/, function (docs, next) {
+  docs.forEach((doc) => {
+    if (doc.dueDate && doc.dueDate < new Date()) {
+      doc.status = "delayed";
+      doc.save();
+    }
+  });
+  next();
+});
+
+projectSchema.pre('findOneAndUpdate', function (next) {
+  const update = this.getUpdate();
+  if (update.dueDate && new Date(update.dueDate) < new Date()) {
+    this.setUpdate({ ...update, status: "delayed" });
+  } else if (update.dueDate) {
+    this.setUpdate({ ...update, status: "delayed" });
+  }
+  next();
+});
+
+
+projectSchema.pre(/^find/, function () {
+  this.populate('members','owner','consultant','mainConsultant','contractor','tasks');
+})
 export const projectModel = mongoose.model("project", projectSchema);
