@@ -128,6 +128,15 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
     name: project.name,
     taskCount: project.tasks.length 
   }));
+  results = results.map(project => {
+    const taskCountObj = projectTaskCounts.find(
+      taskCount => taskCount._id === project._id
+    );
+    return {
+      ...project,
+      taskCount: taskCountObj ? taskCountObj.taskCount : 0 // Default to 0 if not found
+    };
+  });
   let { filterType, filterValue } = req.query;
   if (filterType && filterValue) {
     results = results.filter(function (item) {
@@ -142,9 +151,6 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
       if (filterType == "budget") {
         return item.budget.toString().includes(filterValue);
       }
-      if (filterType == "createdBy") {
-        return item.createdBy.toLowerCase().includes(filterValue.toLowerCase());
-      }
     });
   }
 
@@ -154,7 +160,6 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
     countProjects: await projectModel.countDocuments({
       members: { $in: req.params.id },
     }),
-    countTasksPerProject: projectTaskCounts,
     totalTasks: await taskModel.countDocuments({ assignees: { $in: req.params.id } }),
     DelayedTasks: await taskModel.countDocuments({$and:[
       { assignees: { $in: req.params.id } },
@@ -328,7 +333,31 @@ const getAllDocsProject = catchAsync(async (req, res, next) => {
   });
 });
 
-const getAllProjectsFiles = catchAsync(async (req, res, next) => {
+const getAllProjectsFilesByAdmin = catchAsync(async (req, res, next) => {
+  let results = await projectModel.aggregate([
+    {
+      // Group by project _id
+      $group: {
+        _id: "$_id",
+        name: { $first: "$name" },
+        documents: { $first: "$documents" },
+      },
+    },
+    {
+      // Optionally, sort the projects by name or any other field
+      $sort: { name: 1 },
+    },
+  ]);
+
+  // Populate documents and createdBy fields in each project
+  results = await projectModel.populate(results, { path: "documents" });
+
+  res.json({
+    message: "Done",
+    results,
+  });
+});
+const getAllProjectsFilesByUser = catchAsync(async (req, res, next) => {
   const memberId = new mongoose.Types.ObjectId(req.params.id);
 
   let results = await projectModel.aggregate([
@@ -430,6 +459,7 @@ export {
   getAllDocsProject,
   getAllProjectByStatusByAdmin,
   getAllProjectByStatusByUser,
-  getAllProjectsFiles,
+  getAllProjectsFilesByUser,
   getAllProjectByUser,
+  getAllProjectsFilesByAdmin,
 };

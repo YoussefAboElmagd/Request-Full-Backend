@@ -1,14 +1,10 @@
-import generateUniqueId from "generate-unique-id";
 import { taskModel } from "../../../database/models/tasks.model.js";
 import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import { projectModel } from "../../../database/models/project.model.js";
 
 const createTask = catchAsync(async (req, res, next) => {
-  req.body.taskId = generateUniqueId({
-    length: 9,
-    useLetters: false,
-  });
+  req.body.assignees = req.body.createdBy;
   req.body.model = "66ba018d87b5d43dcd881f7e";
   if (req.body.taskBudget && req.body.taskBudget >= 0) {
     let newTask = new taskModel(req.body);

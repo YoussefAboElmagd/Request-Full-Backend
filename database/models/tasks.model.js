@@ -98,6 +98,9 @@ taskSchema.pre('findOneAndUpdate', function (next) {
   } else if (update.dueDate) {
     this.setUpdate({ ...update, isDelayed: false });
   }
+  if(update.taskStatus === "completed"){
+    this.setUpdate({ ...update, isDelayed: false });
+  }
   next();
 });
 
