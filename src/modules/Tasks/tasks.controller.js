@@ -39,21 +39,21 @@ const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
       message: "No Task was found!",
     });
   }
-  let { filterType, filterValue } = req.query;
-  if (filterType && filterValue) {
-    results = results.filter(function (item) {
-      if (filterType == "name") {
-        return item.name.toLowerCase().includes(filterValue.toLowerCase());
-      }
-      if (filterType == "company") {
-        if (item.company) {
-          return item.company.name
-            .toLowerCase()
-            .includes(filterValue.toLowerCase());
-        }
-      }
-    });
-  }
+  // let { filterType, filterValue } = req.query;
+  // if (filterType && filterValue) {
+  //   results = results.filter(function (item) {
+  //     if (filterType == "name") {
+  //       return item.name.toLowerCase().includes(filterValue.toLowerCase());
+  //     }
+  //     if (filterType == "company") {
+  //       if (item.company) {
+  //         return item.company.name
+  //           .toLowerCase()
+  //           .includes(filterValue.toLowerCase());
+  //       }
+  //     }
+  //   });
+  // }
 
   res.json({
     message: "Done",
@@ -63,7 +63,9 @@ const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
 });
 const getAllTaskByUser = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
-    taskModel.find({ createdBy: req.params.id }).populate("project"),
+    taskModel.find({$or:[{assignees: req.params.id},
+      { createdBy: req.params.id} ]}
+      ).populate("project"),
     req.query
   )
     .sort()
@@ -76,21 +78,21 @@ const getAllTaskByUser = catchAsync(async (req, res, next) => {
       message: "No Task was found!",
     });
   }
-  let { filterType, filterValue } = req.query;
-  if (filterType && filterValue) {
-    results = results.filter(function (item) {
-      if (filterType == "name") {
-        return item.name.toLowerCase().includes(filterValue.toLowerCase());
-      }
-      if (filterType == "company") {
-        if (item.company) {
-          return item.company.name
-            .toLowerCase()
-            .includes(filterValue.toLowerCase());
-        }
-      }
-    });
-  }
+  // let { filterType, filterValue } = req.query;
+  // if (filterType && filterValue) {
+  //   results = results.filter(function (item) {
+  //     if (filterType == "name") {
+  //       return item.name.toLowerCase().includes(filterValue.toLowerCase());
+  //     }
+  //     if (filterType == "company") {
+  //       if (item.company) {
+  //         return item.company.name
+  //           .toLowerCase()
+  //           .includes(filterValue.toLowerCase());
+  //       }
+  //     }
+  //   });
+  // }
 
   res.json({
     message: "Done",
