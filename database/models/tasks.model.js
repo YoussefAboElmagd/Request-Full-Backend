@@ -79,15 +79,18 @@ taskSchema.pre('save', function (next) {
 });
 
 taskSchema.post(/^find/, function (docs, next) {
+  if (!Array.isArray(docs)) {
+    docs = [docs]; // Convert to array if it's a single document
+  }
   docs.forEach((doc) => {
     if (doc.dueDate && doc.dueDate < new Date()) {
       doc.isDelayed = true;
       doc.save();
     }
   });
+
   next();
 });
-
 taskSchema.pre('findOneAndUpdate', function (next) {
   const update = this.getUpdate();
   if (update.dueDate && new Date(update.dueDate) < new Date()) {

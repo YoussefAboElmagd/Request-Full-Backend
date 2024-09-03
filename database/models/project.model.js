@@ -99,20 +99,23 @@ projectSchema.pre('save', function (next) {
 });
 
 projectSchema.post(/^find/, function (docs, next) {
+  if (!Array.isArray(docs)) {
+    docs = [docs]; // Convert to array if it's a single document
+  }
+
   docs.forEach((doc) => {
     if (doc.dueDate && doc.dueDate < new Date()) {
       doc.status = "delayed";
       doc.save();
     }
   });
+
   next();
 });
 
 projectSchema.pre('findOneAndUpdate', function (next) {
   const update = this.getUpdate();
   if (update.dueDate && new Date(update.dueDate) < new Date()) {
-    this.setUpdate({ ...update, status: "delayed" });
-  } else if (update.dueDate) {
     this.setUpdate({ ...update, status: "delayed" });
   }
   next();

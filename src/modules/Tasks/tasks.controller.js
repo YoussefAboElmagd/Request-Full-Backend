@@ -14,7 +14,7 @@ const createTask = catchAsync(async (req, res, next) => {
     let newTask = new taskModel(req.body);
     let addedTask = await newTask.save();
     let addTaskToProject = await projectModel.findByIdAndUpdate(
-      req.body.project,
+      addedTask.project,
       {
         $push: { tasks: addedTask._id },
       },
