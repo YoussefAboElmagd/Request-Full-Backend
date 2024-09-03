@@ -169,12 +169,13 @@ const updateTask = catchAsync(async (req, res, next) => {
     project,
     documents,
     assignees,
+    notes,
   } = req.body;
   let updatedTask = await taskModel.findByIdAndUpdate(
     id,
 
     {
-      $push: { documents, assignees },
+      $push: { documents, assignees,notes },
       title,
       description,
       priority,

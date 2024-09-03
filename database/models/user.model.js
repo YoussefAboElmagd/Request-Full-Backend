@@ -76,11 +76,16 @@ const userSchema = mongoose.Schema(
       immutable: true,
       required: true,
     },
-    tags: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref: "tag",
-      // required: true,
-    },
+    tags: [
+      {
+        name: {
+          type: String,
+        },
+        colorCode: {
+          type: String,
+        },
+      },
+    ],
     role: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "userType",

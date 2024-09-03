@@ -104,7 +104,7 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
     projectModel
   .find({ members: { $in: req.params.id } })
-  .sort({ $natural: -1 }).select("tasks name description")
+  .sort({ $natural: -1 }).select("tasks name")
   .populate({
     path: 'tasks',
     select: 'title taskPriority taskStatus assignees documents startDate dueDate notes', // Select taskStatus and other necessary fields
