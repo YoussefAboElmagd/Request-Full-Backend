@@ -113,11 +113,20 @@ projectSchema.post(/^find/, function (docs, next) {
   next();
 });
 
-projectSchema.pre('findOneAndUpdate', function (next) {
+projectSchema.pre('findOneAndUpdate', async function (next) {
   const update = this.getUpdate();
   if (update.dueDate && new Date(update.dueDate) < new Date()) {
     this.setUpdate({ ...update, status: "delayed" });
   }
+//   if (update['$push'] && Array.isArray(update['$push'].members)) {
+//     const doc = await this.model.findOne(this.getFilter());
+//     if (doc) {
+//         const newMembers = update['$push'].members.filter((item) => !doc.members.includes(item));
+//         doc.members.push(...newMembers);
+//         await doc.save();
+//     }
+// }
+  
   next();
 });
 

@@ -8,10 +8,17 @@ import { taskModel } from "../../../database/models/tasks.model.js";
 
 const createProject = catchAsync(async (req, res, next) => {
   req.body.model = "66ba015a73f994dd94dbc1e9";
-  req.body.members = req.body.createdBy;
   if (req.body.budget && req.body.budget >= 0) {
     let newProject = new projectModel(req.body);
-    let addedProject = await newProject.save();
+    let addedProject = await newProject
+    addedProject.members.push(addedProject.createdBy);
+    addedProject.members.push(addedProject.contractor);
+    addedProject.members.push(addedProject.owner);
+    addedProject.members.push(addedProject.consultant);
+    addedProject.members.push(addedProject.mainConsultant);
+    addedProject.members = addedProject.members.filter((item, index) => addedProject.members.indexOf(item) === index);
+
+    await addedProject.save();
     res.status(201).json({
       message: " Project has been created successfully!",
       addedProject,
@@ -152,7 +159,6 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
       }
     });
   }
-
 
   res.json({
     message: "Done",
