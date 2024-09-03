@@ -119,7 +119,7 @@ projectSchema.pre('findOneAndUpdate', function (next) {
 });
 
 
-projectSchema.pre(/^find/, function () {
-  this.populate('members','owner','consultant','mainConsultant','contractor','tasks');
-})
+// projectSchema.pre(/^find/, function () {
+//   this.populate('members','owner','consultant','mainConsultant','contractor','tasks');
+// })
 export const projectModel = mongoose.model("project", projectSchema);
