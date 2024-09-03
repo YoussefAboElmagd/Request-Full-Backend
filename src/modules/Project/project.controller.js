@@ -103,15 +103,18 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
 const getAllProjectByUser = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
     projectModel
-      .find({ members: { $in: req.params.id } }).sort({ $natural: -1 })
-      .select("tasks name description budget")
-      .populate("tasks").populate({
-        path: 'tasks', 
-        populate: {
-          path: 'assignees',
-          model: 'user', 
-        }}),
-    req.query
+  .find({ members: { $in: req.params.id } })
+  .sort({ $natural: -1 }).select("tasks name description budget")
+  .populate({
+    path: 'tasks',
+    select: 'title description taskStatus assignees', // Select taskStatus and other necessary fields
+    populate: {
+      path: 'assignees',
+      model: 'user',
+      select: '_id profilePic' // Select only _id and profilePic for assignees
+    }
+  }),
+      req.query
   )
     .sort()
     .search();
@@ -157,6 +160,13 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
 
   res.json({
     message: "Done",
+    results,
+  });
+});
+
+const getAllAnalyticsByUser = catchAsync(async (req, res, next) => {
+  res.json({
+    message: "Done",
     countProjects: await projectModel.countDocuments({
       members: { $in: req.params.id },
     }),
@@ -176,10 +186,8 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
       {taskStatus: "completed"}
     ]
     }),
-    results,
   });
 });
-
 const getAllProjectByStatusByAdmin = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
     projectModel
@@ -462,4 +470,5 @@ export {
   getAllProjectsFilesByUser,
   getAllProjectByUser,
   getAllProjectsFilesByAdmin,
+  getAllAnalyticsByUser,
 };

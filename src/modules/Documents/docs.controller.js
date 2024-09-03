@@ -4,6 +4,7 @@ import path from "path";
 import fsExtra from "fs-extra";
 import ApiFeature from "../../utils/apiFeature.js";
 import { taskModel } from "../../../database/models/tasks.model.js";
+import { projectModel } from "../../../database/models/project.model.js";
 
 const createDocs = catchAsync(async (req, res, next) => {
   let document = "";
@@ -48,6 +49,13 @@ const createDocs = catchAsync(async (req, res, next) => {
     uploadedBy,
     document,
   });
+  let addDocsToProject = await projectModel.findByIdAndUpdate(
+    savedDocs.project,
+    {
+      $push: { documents: savedDocs._id },
+    },
+    { new: true }
+  )
   res.status(201).json({
     message: "Docs created successfully!",
     savedDocs,

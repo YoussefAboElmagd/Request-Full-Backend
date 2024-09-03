@@ -8,6 +8,7 @@ projectRouter.get("/:id", projectController.getProjectById);
 projectRouter.get("/docs/:id", projectController.getAllDocsProject);
 projectRouter.get("/admin/status/",projectController.getAllProjectByStatusByAdmin);
 projectRouter.get("/user/:id", projectController.getAllProjectByUser);
+projectRouter.get("/user/analytics/:id", projectController.getAllAnalyticsByUser);
 projectRouter.get("/user/status/:id",projectController.getAllProjectByStatusByUser);
 projectRouter.get("/admin/files/",projectController.getAllProjectsFilesByAdmin);
 projectRouter.get("/user/files/:id",projectController.getAllProjectsFilesByUser);
