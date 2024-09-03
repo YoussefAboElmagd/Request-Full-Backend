@@ -104,10 +104,10 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
     projectModel
   .find({ members: { $in: req.params.id } })
-  .sort({ $natural: -1 }).select("tasks name description budget")
+  .sort({ $natural: -1 }).select("tasks name description")
   .populate({
     path: 'tasks',
-    select: 'title description taskStatus assignees', // Select taskStatus and other necessary fields
+    select: 'title taskPriority taskStatus assignees documents startDate dueDate notes', // Select taskStatus and other necessary fields
     populate: {
       path: 'assignees',
       model: 'user',
@@ -126,20 +126,16 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
       message: "No Project was found!",
     });
   }
-  const projectTaskCounts = results.map(project => ({
-    _id: project._id,
-    name: project.name,
-    taskCount: project.tasks.length 
-  }));
-  results = results.map(project => {
-    const taskCountObj = projectTaskCounts.find(
-      taskCount => taskCount._id === project._id
-    );
-    return {
-      ...project,
-      taskCount: taskCountObj ? taskCountObj.taskCount : 0 // Default to 0 if not found
-    };
-  });
+  results.forEach(project => {
+    project.taskCount= project.tasks.length 
+    project.tasks.forEach(task => {
+      task.documentsLength = task.documents.length;
+      task.notesLength = task.notes.length;
+      delete task.notes
+      delete task.updatedAt
+      delete task.isDelayed
+      delete task.documents;
+    })})
   let { filterType, filterValue } = req.query;
   if (filterType && filterValue) {
     results = results.filter(function (item) {

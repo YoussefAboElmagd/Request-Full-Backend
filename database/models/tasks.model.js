@@ -59,6 +59,13 @@ const taskSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    notes: [
+      {
+        content: { type: String },
+        postedBy: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
+        // required: true,
+      },
+    ],
     model: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "model",
