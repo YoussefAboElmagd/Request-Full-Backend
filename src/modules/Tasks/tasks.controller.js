@@ -102,7 +102,9 @@ const getAllTaskByUser = catchAsync(async (req, res, next) => {
 });
 const getAllTaskByProject = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
-    taskModel.find({ project: req.params.id }).populate("project"),
+    taskModel.find({ project: req.params.id }).populate("projects").populate({
+      path: 'assignees',
+      select: '_id profilePic'}),
     req.query
   )
     .sort()
