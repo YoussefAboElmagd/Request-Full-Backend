@@ -48,9 +48,6 @@ const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
       if (filterType == "taskPriority") {
         return item.taskPriority.toLowerCase().includes(filterValue.toLowerCase());
       }
-      if (filterType == "taskPriority") {
-        return item.taskPriority.toLowerCase().includes(filterValue.toLowerCase());
-      }
       if (filterType == "project") {
         return item.project.name.toLowerCase().includes(filterValue.toLowerCase());
       }
@@ -96,9 +93,6 @@ const getAllTaskByUser = catchAsync(async (req, res, next) => {
       if (filterType == "taskPriority") {
         return item.taskPriority.toLowerCase().includes(filterValue.toLowerCase());
       }
-      if (filterType == "taskPriority") {
-        return item.taskPriority.toLowerCase().includes(filterValue.toLowerCase());
-      }
       if (filterType == "project") {
         return item.project.name.toLowerCase().includes(filterValue.toLowerCase());
       }
@@ -117,9 +111,9 @@ const getAllTaskByUser = catchAsync(async (req, res, next) => {
 });
 const getAllTaskByProject = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
-    taskModel.find({ project: req.params.id }).populate("project").populate({
+    taskModel.find({ project: req.params.id }).populate({
       path: 'assignees',
-      select: '_id profilePic'}),
+      select: '_id profilePic name'}),
     req.query
   )
     .sort()
@@ -140,9 +134,6 @@ const getAllTaskByProject = catchAsync(async (req, res, next) => {
       }
       if (filterType == "taskStatus") {
         return item.taskStatus.toLowerCase().includes(filterValue.toLowerCase());
-      }
-      if (filterType == "taskPriority") {
-        return item.taskPriority.toLowerCase().includes(filterValue.toLowerCase());
       }
       if (filterType == "taskPriority") {
         return item.taskPriority.toLowerCase().includes(filterValue.toLowerCase());

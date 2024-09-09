@@ -112,7 +112,7 @@ taskSchema.pre('findOneAndUpdate', function (next) {
 });
 
 
-taskSchema.pre(/^find/, function () {
-  this.populate('assignees');
-})
+// taskSchema.pre(/^find/, function () {
+//   this.populate('assignees');
+// })
 export const taskModel = mongoose.model("task", taskSchema);

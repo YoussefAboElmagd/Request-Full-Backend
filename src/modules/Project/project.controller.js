@@ -7,7 +7,7 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import { taskModel } from "../../../database/models/tasks.model.js";
 
 const createProject = catchAsync(async (req, res, next) => {
-  req.body.model = "66ba015a73f994dd94dbc1e9";
+    req.body.model = "66ba015a73f994dd94dbc1e9";
     let newProject = new projectModel(req.body);
     let addedProject = await newProject
     addedProject.members.push(addedProject.createdBy);
@@ -86,16 +86,14 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
       // if (filterType == "date") {
       //   return item.dueDate.includes(filterValue);
       // }
-      if (filterType == "createdBy") {
+      if (filterType == "createdBy") {        
         return item.createdBy.name.toLowerCase().includes(filterValue.toLowerCase());
       }
-      if (filterType == "members") {
-        if (item.members[0]) {
-          return item.members[0].name
-            .toLowerCase()
-            .includes(filterValue.toLowerCase());
-        }
-      }
+      // if (filterType == "members") {
+      //   if (item.members) {
+      //    return item.members.filter(item => item.name.toLowerCase().includes(filterValue.toLowerCase()));
+      //   }
+      // }
     });
   }
 
@@ -116,7 +114,7 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
     populate: {
       path: 'assignees',
       model: 'user',
-      select: '_id profilePic' // Select only _id and profilePic for assignees
+      select: '_id name profilePic' // Select only _id and profilePic for assignees
     }
   }),
       req.query
