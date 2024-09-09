@@ -8,7 +8,6 @@ import { taskModel } from "../../../database/models/tasks.model.js";
 
 const createProject = catchAsync(async (req, res, next) => {
   req.body.model = "66ba015a73f994dd94dbc1e9";
-  if (req.body.budget && req.body.budget >= 0) {
     let newProject = new projectModel(req.body);
     let addedProject = await newProject
     addedProject.members.push(addedProject.createdBy);
@@ -23,9 +22,7 @@ const createProject = catchAsync(async (req, res, next) => {
       message: " Project has been created successfully!",
       addedProject,
     });
-  } else {
-    return res.status(404).json({ message: "Budget must be greater than 0" });
-  }
+
 });
 
 const getProjectById = catchAsync(async (req, res, next) => {
@@ -57,6 +54,7 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
       .populate("contractor")
       .populate("consultant")
       .populate("mainConsultant")
+      .populate("createdBy")
       .populate("members")
       .populate("owner"),
     req.query
@@ -77,6 +75,9 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
       if (filterType == "name") {
         return item.name.toLowerCase().includes(filterValue.toLowerCase());
       }
+      if (filterType == "status") {
+        return item.status.toLowerCase().includes(filterValue.toLowerCase());
+      }
       if (filterType == "description") {
         return item.description
           .toLowerCase()
@@ -85,11 +86,8 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
       // if (filterType == "date") {
       //   return item.dueDate.includes(filterValue);
       // }
-      if (filterType == "budget") {
-        return item.budget.toString().includes(filterValue);
-      }
       if (filterType == "createdBy") {
-        return item.createdBy.toLowerCase().includes(filterValue.toLowerCase());
+        return item.createdBy.name.toLowerCase().includes(filterValue.toLowerCase());
       }
       if (filterType == "members") {
         if (item.members[0]) {
@@ -153,9 +151,6 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
         return item.description
           .toLowerCase()
           .includes(filterValue.toLowerCase());
-      }
-      if (filterType == "budget") {
-        return item.budget.toString().includes(filterValue);
       }
     });
   }
@@ -226,11 +221,11 @@ const getAllProjectByStatusByAdmin = catchAsync(async (req, res, next) => {
       // if (filterType == "date") {
       //   return item.dueDate.includes(filterValue);
       // }
-      if (filterType == "budget") {
-        return item.budget.toString().includes(filterValue);
-      }
+      // if (filterType == "budget") {
+      //   return item.budget.toString().includes(filterValue);
+      // }
       if (filterType == "createdBy") {
-        return item.createdBy.toLowerCase().includes(filterValue.toLowerCase());
+        return item.createdBy.name.toLowerCase().includes(filterValue.toLowerCase());
       }
       if (filterType == "members") {
         if (item.members[0]) {
@@ -294,9 +289,9 @@ const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
       // if (filterType == "date") {
       //   return item.dueDate.includes(filterValue);
       // }
-      if (filterType == "budget") {
-        return item.budget.toString().includes(filterValue);
-      }
+      // if (filterType == "budget") {
+      //   return item.budget.toString().includes(filterValue);
+      // }
       if (filterType == "createdBy") {
         return item.createdBy.toLowerCase().includes(filterValue.toLowerCase());
       }
@@ -403,16 +398,15 @@ const getAllProjectsFilesByUser = catchAsync(async (req, res, next) => {
 
 const updateProject = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  if (req.body.budget < 0) {
-    return res.status(404).json({ message: "Budget must be greater than 0" });
-  }
+  // if (req.body.budget < 0) {
+  //   return res.status(404).json({ message: "Budget must be greater than 0" });
+  // }
   let {
     name,
     description,
     status,
     sDate,
     dueDate,
-    budget,
     documents,
     tasks,
     members,
@@ -428,7 +422,6 @@ const updateProject = catchAsync(async (req, res, next) => {
       status,
       sDate,
       dueDate,
-      budget,
       $push: {
         documents,
         tasks,

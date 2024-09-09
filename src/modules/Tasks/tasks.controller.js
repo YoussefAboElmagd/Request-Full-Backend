@@ -6,7 +6,6 @@ import { projectModel } from "../../../database/models/project.model.js";
 const createTask = catchAsync(async (req, res, next) => {
   req.body.assignees = req.body.createdBy;
   req.body.model = "66ba018d87b5d43dcd881f7e";
-  if (req.body.taskBudget && req.body.taskBudget >= 0) {
     let newTask = new taskModel(req.body);
     let addedTask = await newTask.save();
     let addTaskToProject = await projectModel.findByIdAndUpdate(
@@ -20,9 +19,7 @@ const createTask = catchAsync(async (req, res, next) => {
       message: " Task has been created successfully!",
       addedTask,
     });
-  } else {
-    return res.status(404).json({ message: "Budget must be greater than 0" });
-  }
+
 });
 
 const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
@@ -39,21 +36,30 @@ const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
       message: "No Task was found!",
     });
   }
-  // let { filterType, filterValue } = req.query;
-  // if (filterType && filterValue) {
-  //   results = results.filter(function (item) {
-  //     if (filterType == "name") {
-  //       return item.name.toLowerCase().includes(filterValue.toLowerCase());
-  //     }
-  //     if (filterType == "company") {
-  //       if (item.company) {
-  //         return item.company.name
-  //           .toLowerCase()
-  //           .includes(filterValue.toLowerCase());
-  //       }
-  //     }
-  //   });
-  // }
+  let { filterType, filterValue } = req.query;
+  if (filterType && filterValue) {
+    results = results.filter(function (item) {
+      if (filterType == "title") {
+        return item.title.toLowerCase().includes(filterValue.toLowerCase());
+      }
+      if (filterType == "taskStatus") {
+        return item.taskStatus.toLowerCase().includes(filterValue.toLowerCase());
+      }
+      if (filterType == "taskPriority") {
+        return item.taskPriority.toLowerCase().includes(filterValue.toLowerCase());
+      }
+      if (filterType == "taskPriority") {
+        return item.taskPriority.toLowerCase().includes(filterValue.toLowerCase());
+      }
+      if (filterType == "project") {
+        return item.project.name.toLowerCase().includes(filterValue.toLowerCase());
+      }
+      if (filterType == "isDelayed") {
+        return item.isDelayed.toString().includes(filterValue.toLowerCase());
+      }
+
+    });
+  }
 
   res.json({
     message: "Done",
@@ -78,21 +84,30 @@ const getAllTaskByUser = catchAsync(async (req, res, next) => {
       message: "No Task was found!",
     });
   }
-  // let { filterType, filterValue } = req.query;
-  // if (filterType && filterValue) {
-  //   results = results.filter(function (item) {
-  //     if (filterType == "name") {
-  //       return item.name.toLowerCase().includes(filterValue.toLowerCase());
-  //     }
-  //     if (filterType == "company") {
-  //       if (item.company) {
-  //         return item.company.name
-  //           .toLowerCase()
-  //           .includes(filterValue.toLowerCase());
-  //       }
-  //     }
-  //   });
-  // }
+  let { filterType, filterValue } = req.query;
+  if (filterType && filterValue) {
+    results = results.filter(function (item) {
+      if (filterType == "title") {
+        return item.title.toLowerCase().includes(filterValue.toLowerCase());
+      }
+      if (filterType == "taskStatus") {
+        return item.taskStatus.toLowerCase().includes(filterValue.toLowerCase());
+      }
+      if (filterType == "taskPriority") {
+        return item.taskPriority.toLowerCase().includes(filterValue.toLowerCase());
+      }
+      if (filterType == "taskPriority") {
+        return item.taskPriority.toLowerCase().includes(filterValue.toLowerCase());
+      }
+      if (filterType == "project") {
+        return item.project.name.toLowerCase().includes(filterValue.toLowerCase());
+      }
+      if (filterType == "isDelayed") {
+        return item.isDelayed.toString().includes(filterValue.toLowerCase());
+      }
+
+    });
+  }
 
   res.json({
     message: "Done",
@@ -118,16 +133,22 @@ const getAllTaskByProject = catchAsync(async (req, res, next) => {
   let { filterType, filterValue } = req.query;
   if (filterType && filterValue) {
     results = results.filter(function (item) {
-      if (filterType == "name") {
-        return item.name.toLowerCase().includes(filterValue.toLowerCase());
+      if (filterType == "title") {
+        return item.title.toLowerCase().includes(filterValue.toLowerCase());
       }
-      if (filterType == "company") {
-        if (item.company) {
-          return item.company.name
-            .toLowerCase()
-            .includes(filterValue.toLowerCase());
-        }
+      if (filterType == "taskStatus") {
+        return item.taskStatus.toLowerCase().includes(filterValue.toLowerCase());
       }
+      if (filterType == "taskPriority") {
+        return item.taskPriority.toLowerCase().includes(filterValue.toLowerCase());
+      }
+      if (filterType == "taskPriority") {
+        return item.taskPriority.toLowerCase().includes(filterValue.toLowerCase());
+      }
+      if (filterType == "isDelayed") {
+        return item.isDelayed.toString().includes(filterValue.toLowerCase());
+      }
+
     });
   }
 
@@ -157,16 +178,12 @@ const getTaskById = catchAsync(async (req, res, next) => {
 
 const updateTask = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  if (req.body.taskBudget < 0) {
-    return res.status(404).json({ message: "Budget must be greater than 0" });
-  }
   let {
     title,
     description,
     priority,
     startDate,
     endDate,
-    taskBudget,
     createdBy,
     project,
     documents,
@@ -183,7 +200,6 @@ const updateTask = catchAsync(async (req, res, next) => {
       priority,
       startDate,
       endDate,
-      taskBudget,
       createdBy,
       project,
     },

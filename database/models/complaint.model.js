@@ -4,20 +4,16 @@ const complaintSchema = mongoose.Schema(
   {
     complaintId: {
       type: String,
-      // required: true,
     },
     content: {
       type: String,
-      // required: true,
     },
     email: {
       type: String,
-      // required: true,
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
-      // required: true,
     },
     model: {
       type: mongoose.Schema.Types.ObjectId,

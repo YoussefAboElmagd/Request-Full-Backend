@@ -34,11 +34,11 @@ const taskSchema = mongoose.Schema(
       type: Date,
       required: true,
     },
-    taskBudget: {
-      type: Number,
-      default: 0,
-      required: true,
-    },
+    // taskBudget: {
+    //   type: Number,
+    //   default: 0,
+    //   required: true,
+    // },
     documents: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "document",

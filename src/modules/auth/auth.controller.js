@@ -7,13 +7,11 @@ import generateUniqueId from "generate-unique-id";
 import { sendEmail } from "../../email/sendEmail.js";
 
 export const signUp = catchAsync(async (req, res, next) => {
-  // let phoneFormat = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/; //+XX XXXXX XXXXX
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
   if (
     req.body.email !== "" &&
     req.body.email.match(emailFormat) &&
     req.body.phone !== "" &&
-    // req.body.phone.match(phoneFormat) &&
     req.body.phone.length > 10
   ) {
     let existUser = await userModel.findOne({ phone: req.body.phone });
@@ -101,6 +99,16 @@ export const signIn = catchAsync(async (req, res, next) => {
 // 2- verfy token
 // 3 if user of this token exist or not
 // 4- check if this token is the last one or not (change password )
+
+
+
+
+
+
+
+
+
+
 
 export const protectRoutes = catchAsync(async (req, res, next) => {
   let { token } = req.headers;
