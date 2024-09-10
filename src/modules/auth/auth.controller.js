@@ -100,18 +100,12 @@ export const forgetPassword = catchAsync(async (req, res, next) => {
     let { email } = req.body;
     let isFound = await userModel.findOne({ email });
     if (!isFound) return res.status(404).json({ message: "Email Not Found" });
-    if(isFound.verificationCode == req.body.verificationCode){
       sendEmail(isFound.email, isFound.verificationCode);
       await isFound.save();
-      let updatePassword = await userModel.findOneAndUpdate(
-        { _id: isFound._id },
-        { password: req.body.password }    ,
-        { new: true }
-      )
-      return res.json({ message: "Password updated successfully", });
-    }else{
-    return res.status(401).json({ message: "worng Code" });
-    }
+      let verificationCode = isFound.verificationCode
+      let id = isFound._id
+      return res.json({ message: "Verification Code",verificationCode ,id });
+    
     }else{
     return res.status(409).json({ message: "this email is not valid" });
   }
