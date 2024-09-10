@@ -94,6 +94,28 @@ export const signIn = catchAsync(async (req, res, next) => {
     return res.status(409).json({ message: "this email is not valid" });
   }
 });
+export const forgetPassword = catchAsync(async (req, res, next) => {
+  let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+  if (req.body.email !== "" && req.body.email.match(emailFormat)) {
+    let { email } = req.body;
+    let isFound = await userModel.findOne({ email });
+    if (!isFound) return res.status(404).json({ message: "Email Not Found" });
+    if(isFound.verificationCode == req.body.verificationCode){
+      sendEmail(isFound.email, isFound.verificationCode);
+      await isFound.save();
+      let updatePassword = await userModel.findOneAndUpdate(
+        { _id: isFound._id },
+        { password: req.body.password }    ,
+        { new: true }
+      )
+      return res.json({ message: "Password updated successfully", });
+    }else{
+    return res.status(401).json({ message: "worng Code" });
+    }
+    }else{
+    return res.status(409).json({ message: "this email is not valid" });
+  }
+});
 
 // 1- check we have token or not
 // 2- verfy token
