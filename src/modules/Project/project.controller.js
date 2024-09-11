@@ -32,7 +32,6 @@ const getProjectById = catchAsync(async (req, res, next) => {
   .populate("consultant")
   .populate("mainConsultant")
   .populate("members")
-  .populate("assignees")
   .populate("owner");
   !results && next(new AppError(`not found `, 404));
   results && res.json({ message: "Done", results });
