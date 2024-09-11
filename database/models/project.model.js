@@ -66,16 +66,16 @@ const projectSchema = mongoose.Schema(
       ref: "task",
       // required: true,
     },
-    // budget: {
-    //   type: Number,
-    //   default: 0,
-    //   required: true,
-    // },
-    // remaining: {
-    //   type: Number,
-    //   default: 0,
-    //   required: true,
-    // },
+    budget: {
+      type: Number,
+      default: 0,
+      required: true,
+    },
+    remaining: {
+      type: Number,
+      default: 0,
+      required: true,
+    },
     members: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "user",

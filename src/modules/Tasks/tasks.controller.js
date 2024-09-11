@@ -156,7 +156,7 @@ const getTaskById = catchAsync(async (req, res, next) => {
   let { id } = req.params;
   let results = await taskModel
     .findById(id)
-    .populate("createdBy")
+    .populate("assignees")
     .populate("project");
 
   if (!results) {
