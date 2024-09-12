@@ -166,7 +166,7 @@ const getAllUsersByAdmin = catchAsync(async (req, res, next) => {
   });
 });
 const getAllowners = catchAsync(async (req, res, next) => {
-  let ApiFeat = new ApiFeature(userModel.find({ role: "owner" }), req.query)
+  let ApiFeat = new ApiFeature(userModel.find({ role: "66d33a4b4ad80e468f231f83" }), req.query)
     .sort()
     .search();
 
@@ -174,7 +174,7 @@ const getAllowners = catchAsync(async (req, res, next) => {
   res.json({
     message: "Done",
 
-    count: await userModel.countDocuments({ role: "owner" }),
+    count: await userModel.countDocuments({ role: "66d33a4b4ad80e468f231f83" }),
     results,
   });
   if (!results) {
@@ -185,7 +185,7 @@ const getAllowners = catchAsync(async (req, res, next) => {
 });
 const getAllcontractors = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
-    userModel.find({ role: "contractor" }),
+    userModel.find({ role: "66d33ec44ad80e468f231f91" }),
     req.query
   )
     .sort()
@@ -195,7 +195,7 @@ const getAllcontractors = catchAsync(async (req, res, next) => {
   res.json({
     message: "Done",
 
-    count: await userModel.countDocuments({ role: "contractor" }),
+    count: await userModel.countDocuments({ role: "66d33ec44ad80e468f231f91" }),
     results,
   });
   if (!results) {
@@ -206,7 +206,7 @@ const getAllcontractors = catchAsync(async (req, res, next) => {
 });
 const getAllconsultant = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
-    userModel.find({ role: "consultant" }),
+    userModel.find({ role: "66d33e7a4ad80e468f231f8d" }),
     req.query
   )
     .sort()
@@ -216,7 +216,7 @@ const getAllconsultant = catchAsync(async (req, res, next) => {
   res.json({
     message: "Done",
 
-    count: await userModel.countDocuments({ role: "consultant" }),
+    count: await userModel.countDocuments({ role: "66d33e7a4ad80e468f231f8d" }),
     results,
   });
   if (!results) {
