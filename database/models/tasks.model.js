@@ -19,7 +19,7 @@ const taskSchema = mongoose.Schema(
       type: [mongoose.Schema.Types.ObjectId],
       ref: "user",
       default: [],
-      required: true,
+      // required: true,
     },
     project: {
       type: mongoose.Schema.Types.ObjectId,
