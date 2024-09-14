@@ -54,6 +54,102 @@ const updateprofilePic = catchAsync(async (req, res, next) => {
   }
   res.status(200).json({ message: "Task updated successfully!", profilePic });
 });
+const updateStamp = catchAsync(async (req, res, next) => {
+  let { id } = req.params;
+  let electronicStamp = "";
+  if (req.files.electronicStamp) {
+    req.body.electronicStamp =
+      req.files.electronicStamp &&
+      req.files.electronicStamp.map(
+        (file) =>
+          `http://62.72.32.44:8000/stamp/${file.filename
+            .split(" ")
+            .join("-")}`
+      );
+    const directoryPath = path.join(electronicStamp, "uploads/stamp");
+
+    fsExtra.readdir(directoryPath, (err, files) => {
+      if (err) {
+        return console.error("Unable to scan directory: " + err);
+      }
+
+      files.forEach((file) => {
+        const oldPath = path.join(directoryPath, file);
+        const newPath = path.join(directoryPath, file.replace(/\s+/g, "-"));
+
+        fsExtra.rename(oldPath, newPath, (err) => {
+          if (err) {
+            console.error("Error renaming file: ", err);
+          }
+        });
+      });
+    });
+
+    if (req.body.electronicStamp !== "") {
+      electronicStamp = req.body.electronicStamp;
+      electronicStamp = electronicStamp[0];
+    }
+  }
+
+  let updatedProfile = await userModel.findByIdAndUpdate(
+    id,
+    { electronicStamp: electronicStamp },
+    { new: true }
+  );
+
+  if (!updatedProfile) {
+    return res.status(404).json({ message: "Couldn't update!  not found!" });
+  }
+  res.status(200).json({ message: "Task updated successfully!", electronicStamp });
+});
+const updateCompanyLogo = catchAsync(async (req, res, next) => {
+  let { id } = req.params;
+  let companyLogo = "";
+  if (req.files.companyLogo) {
+    req.body.companyLogo =
+      req.files.companyLogo &&
+      req.files.companyLogo.map(
+        (file) =>
+          `http://62.72.32.44:8000/logo/${file.filename
+            .split(" ")
+            .join("-")}`
+      );
+    const directoryPath = path.join(companyLogo, "uploads/logo");
+
+    fsExtra.readdir(directoryPath, (err, files) => {
+      if (err) {
+        return console.error("Unable to scan directory: " + err);
+      }
+
+      files.forEach((file) => {
+        const oldPath = path.join(directoryPath, file);
+        const newPath = path.join(directoryPath, file.replace(/\s+/g, "-"));
+
+        fsExtra.rename(oldPath, newPath, (err) => {
+          if (err) {
+            console.error("Error renaming file: ", err);
+          }
+        });
+      });
+    });
+
+    if (req.body.companyLogo !== "") {
+      companyLogo = req.body.companyLogo;
+      companyLogo = companyLogo[0];
+    }
+  }
+
+  let updatedProfile = await userModel.findByIdAndUpdate(
+    id,
+    { companyLogo: companyLogo },
+    { new: true }
+  );
+
+  if (!updatedProfile) {
+    return res.status(404).json({ message: "Couldn't update!  not found!" });
+  }
+  res.status(200).json({ message: "Task updated successfully!", companyLogo });
+});
 const updateIdPhoto = catchAsync(async (req, res, next) => {
   let { id } = req.params;
   let idPhoto = "";
@@ -233,6 +329,14 @@ const getUserById = catchAsync(async (req, res, next) => {
   !results && next(new AppError(`not found `, 404));
   results && res.json({ message: "Done", results });
 });
+const getUserTags = catchAsync(async (req, res, next) => {
+  let { id } = req.params;
+
+  let results = await userModel.findById(id).select("tags");
+  !results && next(new AppError(`not found `, 404));
+results = results.tags
+  results && res.json({ message: "Done", results });
+});
 
 const updateUser = catchAsync(async (req, res, next) => {
   let { id } = req.params;
@@ -260,6 +364,8 @@ const updateUser = catchAsync(async (req, res, next) => {
     idNumber,
     expiryIdNumber,
     verified,
+    isSuperUser,
+    companyName,
   } = req.body;
   let results = await userModel.findByIdAndUpdate(
     id,
@@ -283,12 +389,29 @@ const updateUser = catchAsync(async (req, res, next) => {
       idNumber,
       expiryIdNumber,
       verified,
+      isSuperUser,
+      companyName,
     },
     { new: true }
   );
   !results && res.status(404).json({ message: "couldn't update! not found!" });
   results && res.json({ message: "updatedd", results });
 });
+const updateUser2 = catchAsync(async (req, res, next) => {
+  let { id } = req.params;
+  let {
+    projects,
+    tags,
+  } = req.body;
+  let results = await userModel.findByIdAndUpdate(
+    id,
+    {
+      $pull: { projects, tags },
+    },
+    { new: true }
+  );
+  !results && res.status(404).json({ message: "couldn't update! not found!" });
+  results && res.json({ message: "updatedd", results });});
 
 const deleteUser = catchAsync(async (req, res, next) => {
   let { id } = req.params;
@@ -308,6 +431,7 @@ export {
   getAllUsersByAdmin,
   getUserById,
   updateUser,
+  updateUser2,
   deleteUser,
   getAllowners,
   getAllcontractors,
@@ -315,4 +439,7 @@ export {
   addIdPhotos,
   updateprofilePic,
   updateIdPhoto,
+  getUserTags,
+  updateStamp,
+  updateCompanyLogo,
 };

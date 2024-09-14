@@ -21,6 +21,12 @@ const taskSchema = mongoose.Schema(
       default: [],
       // required: true,
     },
+    tags: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "tag",
+      default: [],
+      // required: true,
+    },
     project: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "project",
@@ -85,18 +91,27 @@ taskSchema.pre('save', function (next) {
   next();
 });
 
-taskSchema.post(/^find/, function (docs, next) {
+taskSchema.post(/^find/, function (documents, next) {
+  if (!Array.isArray(documents)) {
+    documents = [documents]; // Convert to array if it's a single document
+  }
+  next();
+});
+taskSchema.post(/^find/, async function (docs) {
   if (!Array.isArray(docs)) {
     docs = [docs]; // Convert to array if it's a single document
   }
-  docs.forEach((doc) => {
-    if (doc.dueDate && doc.dueDate < new Date()) {
-      doc.isDelayed = true;
-      doc.save();
+  const currentDate = new Date();
+  
+  // Check if docs is an array (when using find) or a single document
+  if (Array.isArray(docs)) {
+    for (const doc of docs) {
+      if (doc.dueDate && doc.dueDate < currentDate) {
+        doc.isDelayed = true;
+        await doc.save(); // Save if delayed
+      }
     }
-  });
-
-  next();
+  }
 });
 taskSchema.pre('findOneAndUpdate', function (next) {
   const update = this.getUpdate();

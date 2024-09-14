@@ -14,7 +14,9 @@ usersRouter.get("/owners/", usersController.getAllowners);
 usersRouter.get("/consultant/", usersController.getAllconsultant);
 usersRouter.get("/contractor/", usersController.getAllcontractors);
 usersRouter.get("/:id", usersController.getUserById);
+usersRouter.get("/tags/:id", usersController.getUserTags);
 usersRouter.put("/:id", usersController.updateUser);
+usersRouter.put("/pull/:id", usersController.updateUser2);
 usersRouter.delete("/:id", usersController.deleteUser);
 
 usersRouter.put(
@@ -36,5 +38,17 @@ usersRouter.put(
   uploadMixFile("photos", [{ name: "idPhoto" }]),
   fileSizeLimitErrorHandler,
   usersController.updateIdPhoto
+);
+usersRouter.put(
+  "/logo/:id",
+  uploadMixFile("logo", [{ name: "companyLogo" }]),
+  fileSizeLimitErrorHandler,
+  usersController.updateCompanyLogo
+);
+usersRouter.put(
+  "/stamp/:id",
+  uploadMixFile("stamp", [{ name: "electronicStamp" }]),
+  fileSizeLimitErrorHandler,
+  usersController.updateStamp
 );
 export default usersRouter;

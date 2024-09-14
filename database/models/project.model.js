@@ -16,6 +16,12 @@ const projectSchema = mongoose.Schema(
       default: "onGoing",
       required: true,
     },
+    // isAproved: {
+    //   type: String,
+    //   enum: ["aprroved", "Cancelled" ,"waitingForApproval"],
+    //   default: "waitingForApproval",
+    //   required: true,
+    // },
     notes: [
       {
         content: { type: String },

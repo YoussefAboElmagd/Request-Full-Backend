@@ -70,22 +70,33 @@ const userSchema = mongoose.Schema(
       type: String,
       default: "",
     },
+    companyName: {
+      type: String,
+    },
+    companyLogo: {
+      type: String,
+      default: "",
+    },
+    signature: {
+      type: String,
+      default: "",
+    },
+    electronicStamp: {
+      type: String,
+      default: "",
+    },
     model: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "model",
       immutable: true,
       required: true,
     },
-    tags: [
-      {
-        name: {
-          type: String,
-        },
-        colorCode: {
-          type: String,
-        },
-      },
-    ],
+    tags: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "tag",
+      default: [],
+      // required: true,
+    },
     role: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "userType",
@@ -100,6 +111,10 @@ const userSchema = mongoose.Schema(
     //   default: false,
     // },
     confirmedPhone: {
+      type: Boolean,
+      default: false,
+    },
+    isSuperUser: {
       type: Boolean,
       default: false,
     },

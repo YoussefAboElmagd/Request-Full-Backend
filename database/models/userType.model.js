@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const userTypeSchema = mongoose.Schema(
   {
-    name: {
+    jobTitle: {
       type: String,
       required: true,
     },
@@ -12,7 +12,7 @@ const userTypeSchema = mongoose.Schema(
         model: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "model",
-          required: true,
+          // required: true,
         },
         create: { type: Boolean, required: true },
         read: { type: Boolean, required: true },

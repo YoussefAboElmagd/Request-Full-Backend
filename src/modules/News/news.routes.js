@@ -5,7 +5,7 @@ const newsRouter = express.Router();
 
 newsRouter.post("/", newsController.createNews);
 newsRouter.get("/", newsController.getAllNews);
-newsRouter.put("/:id", newsController.getAllNews);
-newsRouter.delete("/:id", newsController.getAllNews);
+newsRouter.put("/:id", newsController.updateNews);
+newsRouter.delete("/:id", newsController.deleteNews);
 
 export default newsRouter;
