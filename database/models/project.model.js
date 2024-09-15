@@ -16,12 +16,46 @@ const projectSchema = mongoose.Schema(
       default: "onGoing",
       required: true,
     },
-    // isAproved: {
-    //   type: String,
-    //   enum: ["aprroved", "Cancelled" ,"waitingForApproval"],
-    //   default: "waitingForApproval",
-    //   required: true,
-    // },
+    isAproved: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+    approvalOfGeneralDocuments: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+    requestForApprovalOfMaterials: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+    isAproved: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+    workRequest: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+    approvalOfSchemes: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+    requestForReceiptOfWorks: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+    materialInspectionForm: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
     notes: [
       {
         content: { type: String },

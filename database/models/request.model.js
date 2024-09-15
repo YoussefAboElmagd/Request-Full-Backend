@@ -11,7 +11,7 @@ const requsetSchema = mongoose.Schema(
       required: true,
     },
     comment: {
-      type: String,
+      type: [String],
     },
     date: {
       type: Date,

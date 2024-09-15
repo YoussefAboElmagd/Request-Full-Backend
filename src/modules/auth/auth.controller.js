@@ -28,7 +28,7 @@ export const signUp = catchAsync(async (req, res, next) => {
   req.body.model = "66ba00b0e39d9694110fd3df";
   req.body.profilePic = "http://62.72.32.44:8000/profilePic/avatar.png";
   req.body.verificationCode = generateUniqueId({
-    length: 6,
+    length: 4,
     useLetters: false,
   });
   let results = new userModel(req.body);
@@ -54,14 +54,14 @@ export const signUp = catchAsync(async (req, res, next) => {
 //   ) {
 //     // if (req.body.phone !== "") {
 //     let { phone } = req.body.phone;
-//     let isFound = await userModel.findOne({ phone });
-//     if (!isFound) return res.status(404).json({ message: "User Not Found" });
-//     if (isFound) {
+//     let userData = await userModel.findOne({ phone });
+//     if (!userData) return res.status(404).json({ message: "User Not Found" });
+//     if (userData) {
 //       let token = jwt.sign(
-//         { name: isFound.name, userId: isFound._id },
+//         { name: userData.name, userId: userData._id },
 //         process.env.JWT_SECRET_KEY
 //       );
-//       return res.json({ message: "success", token, isFound });
+//       return res.json({ message: "success", token, userData });
 //     }
 //     return res.status(401).json({ message: "worng phone " });
 //   } else {
@@ -73,21 +73,21 @@ export const signIn = catchAsync(async (req, res, next) => {
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
   if (req.body.email !== "" && req.body.email.match(emailFormat)) {
     let { email, password } = req.body;
-    let isFound = await userModel.findOne({ email });
-    if (!isFound) return res.status(404).json({ message: "Email Not Found" });
-    const match = await bcrypt.compare(password, isFound.password);
-    if (match && isFound) {
-      isFound.verificationCode = generateUniqueId({
-        length: 6,
+    let userData = await userModel.findOne({ email });
+    if (!userData) return res.status(404).json({ message: "Email Not Found" });
+    const match = await bcrypt.compare(password, userData.password);
+    if (match && userData) {
+      userData.verificationCode = generateUniqueId({
+        length: 4,
         useLetters: false,
       });
-      sendEmail(isFound.email, isFound.verificationCode);
-      await isFound.save();
+      sendEmail(userData.email, userData.verificationCode);
+      await userData.save();
       let token = jwt.sign(
-        { name: isFound.name, userId: isFound._id },
+        { name: userData.name, userId: userData._id },
         process.env.JWT_SECRET_KEY
       );
-      return res.json({ message: "success", token, isFound });
+      return res.json({ message: "success", token, userData });
     }
     return res.status(401).json({ message: "worng email or password" });
   } else {
@@ -98,12 +98,12 @@ export const forgetPassword = catchAsync(async (req, res, next) => {
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
   if (req.body.email !== "" && req.body.email.match(emailFormat)) {
     let { email } = req.body;
-    let isFound = await userModel.findOne({ email });
-    if (!isFound) return res.status(404).json({ message: "Email Not Found" });
-      sendEmail(isFound.email, isFound.verificationCode);
-      await isFound.save();
-      let verificationCode = isFound.verificationCode
-      let id = isFound._id
+    let userData = await userModel.findOne({ email });
+    if (!userData) return res.status(404).json({ message: "Email Not Found" });
+      sendEmail(userData.email, userData.verificationCode);
+      await userData.save();
+      let verificationCode = userData.verificationCode
+      let id = userData._id
       return res.json({ message: "Verification Code",verificationCode ,id });
     
     }else{
