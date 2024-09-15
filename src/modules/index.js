@@ -13,6 +13,7 @@ import modelRouter from "./Model/model.routes.js";
 import userTypeRouter from "./User Type/userType.routes.js";
 import tagsRouter from "./Tags/tags.routes.js";
 import teamRouter from "./Team/team.routes.js";
+import requestRouter from "./Request/request.routes.js";
 
 export function init(app) {
   app.use("/api/v1/users", usersRouter);
@@ -30,9 +31,10 @@ export function init(app) {
   app.use("/api/v1/type", userTypeRouter);
   app.use("/api/v1/tags", tagsRouter);
   app.use("/api/v1/team", teamRouter);
+  app.use("/api/v1/request", requestRouter);
 
   app.use("/", (req, res, next) => {
-      res.send("Page Not Found");
+    res.send("Page Not Found");
     // next(res.status(404).json({ message: "Page Not Found" }));
   });
 

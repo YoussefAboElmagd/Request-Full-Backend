@@ -31,6 +31,10 @@ export const signUp = catchAsync(async (req, res, next) => {
     length: 4,
     useLetters: false,
   });
+  req.body.password = bcrypt.hashSync(
+    req.body.password,
+    Number(process.env.SALTED_VALUE)
+  );
   let results = new userModel(req.body);
   let token = jwt.sign(
     { name: results.name, userId: results._id },
@@ -75,7 +79,7 @@ export const signIn = catchAsync(async (req, res, next) => {
     let { email, password } = req.body;
     let userData = await userModel.findOne({ email });
     if (!userData) return res.status(404).json({ message: "Email Not Found" });
-    const match = await bcrypt.compare(password, userData.password);
+    const match = bcrypt.compareSync(password, userData.password);
     if (match && userData) {
       userData.verificationCode = generateUniqueId({
         length: 4,
@@ -100,13 +104,12 @@ export const forgetPassword = catchAsync(async (req, res, next) => {
     let { email } = req.body;
     let userData = await userModel.findOne({ email });
     if (!userData) return res.status(404).json({ message: "Email Not Found" });
-      sendEmail(userData.email, userData.verificationCode);
-      await userData.save();
-      let verificationCode = userData.verificationCode
-      let id = userData._id
-      return res.json({ message: "Verification Code",verificationCode ,id });
-    
-    }else{
+    sendEmail(userData.email, userData.verificationCode);
+    await userData.save();
+    let verificationCode = userData.verificationCode;
+    let id = userData._id;
+    return res.json({ message: "Verification Code", verificationCode, id });
+  } else {
     return res.status(409).json({ message: "this email is not valid" });
   }
 });
@@ -115,16 +118,6 @@ export const forgetPassword = catchAsync(async (req, res, next) => {
 // 2- verfy token
 // 3 if user of this token exist or not
 // 4- check if this token is the last one or not (change password )
-
-
-
-
-
-
-
-
-
-
 
 export const protectRoutes = catchAsync(async (req, res, next) => {
   let { token } = req.headers;

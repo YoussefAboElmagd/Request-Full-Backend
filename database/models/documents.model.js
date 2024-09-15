@@ -11,12 +11,12 @@ const documentsSchema = mongoose.Schema(
       ref: "project",
       required: true,
     },
-    status:{
+    status: {
       type: String,
-      enum: [ "pending","approved","rejected"],
+      enum: ["pending", "approved", "rejected"],
       default: "pending",
       required: true,
-    },  
+    },
     comment: {
       type: String,
       required: true,
@@ -32,11 +32,11 @@ const documentsSchema = mongoose.Schema(
       immutable: true,
       // required: true,
     },
-    },
+  },
   { timestamps: true }
 );
 documentsSchema.pre(/^find/, function () {
-  this.populate('uploadedBy','project');
-})
+  this.populate("uploadedBy", "project");
+});
 
 export const documentsModel = mongoose.model("document", documentsSchema);
