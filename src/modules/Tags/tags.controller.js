@@ -1,6 +1,7 @@
 import { tagsModel } from "../../../database/models/tags.model.js";
 import { userModel } from "../../../database/models/user.model.js";
 import ApiFeature from "../../utils/apiFeature.js";
+import AppError from "../../utils/appError.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const createTags = catchAsync(async (req, res, next) => {

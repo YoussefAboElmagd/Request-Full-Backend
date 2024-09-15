@@ -1,5 +1,6 @@
 import { requsetModel } from "../../../database/models/request.model.js";
 import ApiFeature from "../../utils/apiFeature.js";
+import AppError from "../../utils/appError.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const createRequest = catchAsync(async (req, res, next) => {
@@ -29,7 +30,13 @@ const getAllRequest = catchAsync(async (req, res, next) => {
     results,
   });
 });
+const getAllRequestByUser = catchAsync(async (req, res, next) => {
+  let { id } = req.params;
 
+  let results = await requsetModel.find({createdBy:id});
+  !results && next(new AppError(`not found `, 404));
+  results && res.json({ message: "Done", results });
+});
 const updateRequest = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const updatedRequest = await requsetModel.findByIdAndUpdate(id, req.body, {
@@ -55,4 +62,4 @@ const deleteRequest = catchAsync(async (req, res, next) => {
   });
 });
 
-export { createRequest, getAllRequest, updateRequest, deleteRequest };
+export { createRequest, getAllRequest, updateRequest, deleteRequest ,getAllRequestByUser };
