@@ -3,6 +3,7 @@ import { userModel } from "../../../database/models/user.model.js";
 import { userTypeModel } from "../../../database/models/userType.model.js";
 import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
+import bcrypt from "bcrypt";
 
 const createTeam = catchAsync(async (req, res, next) => {
   req.body.model = "66e5611c1771cb44cd6fc7de";
@@ -78,6 +79,10 @@ const updateTeam = catchAsync(async (req, res, next) => {
     if (existUser) {
       return res.status(404).json({ message: "Email already exist!" });
     }else{
+      password = bcrypt.hashSync(
+        password,
+        Number(process.env.SALTED_VALUE)
+      );
   let newUser = new userModel({ name,email, password});
   const savedUser = await newUser.save();
   let accesrights = new userTypeModel({ jobTitle, rights });

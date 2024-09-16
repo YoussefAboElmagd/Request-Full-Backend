@@ -81,7 +81,7 @@ export const signIn = catchAsync(async (req, res, next) => {
   if (req.body.email !== "" && req.body.email.match(emailFormat)) {
     let { email, password } = req.body;
     let userData = await userModel.findOne({ email });
-    // if (!userData) return res.status(404).json({ message: "Email Not Found" });
+    if (!userData) return res.status(401).json({ message: "worng email or password" });
     const match = bcrypt.compareSync(password, userData.password);
     if (match && userData) {
       userData.verificationCode = generateUniqueId({
