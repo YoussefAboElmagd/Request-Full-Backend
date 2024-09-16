@@ -23,7 +23,7 @@ export const signUp = catchAsync(async (req, res, next) => {
       return res.status(409).json({ message: "this email  already exist" });
     }
   } else {
-    return res.status(409).json({ message: "this phone is not valid" });
+    return res.status(409).json({ message: "this phone or email is not valid" });
   }
   req.body.model = "66ba00b0e39d9694110fd3df";
   req.body.profilePic = "http://62.72.32.44:8000/profilePic/avatar.png";

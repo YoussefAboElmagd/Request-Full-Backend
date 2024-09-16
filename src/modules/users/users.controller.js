@@ -198,9 +198,9 @@ const updateIdPhoto = catchAsync(async (req, res, next) => {
 });
 const addIdPhotos = catchAsync(async (req, res, next) => {
   let idPhoto = "";
-  console.log(req.body, "req.body");
-  console.log(req.file, "req.fiiles");
-  console.log(req.files, "req.fiiles");
+  // console.log(req.body, "req.body");
+  // console.log(req.file, "req.fiiles");
+  // console.log(req.files, "req.fiiles");
 
   req.body.idPhoto =
     req.files.idPhoto &&
@@ -366,6 +366,7 @@ const updateUser = catchAsync(async (req, res, next) => {
     verified,
     isSuperUser,
     companyName,
+    signature,
   } = req.body;
   let results = await userModel.findByIdAndUpdate(
     id,
@@ -391,6 +392,7 @@ const updateUser = catchAsync(async (req, res, next) => {
       verified,
       isSuperUser,
       companyName,
+      signature,
     },
     { new: true }
   );
