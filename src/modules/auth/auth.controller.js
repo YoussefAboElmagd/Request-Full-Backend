@@ -29,6 +29,7 @@ export const signUp = catchAsync(async (req, res, next) => {
   }
 
   req.body.model = "66ba00b0e39d9694110fd3df";
+  req.body.isSuperUser = true;
   req.body.profilePic = "http://62.72.32.44:8000/profilePic/avatar.png";
   req.body.verificationCode = generateUniqueId({
     length: 4,
@@ -107,6 +108,10 @@ export const forgetPassword = catchAsync(async (req, res, next) => {
     let { email } = req.body;
     let userData = await userModel.findOne({ email });
     if (!userData) return res.status(404).json({ message: "Email Not Found" });
+    userData.verificationCode = generateUniqueId({
+      length: 4,
+      useLetters: false,
+    });
     sendEmail(userData.email, userData.verificationCode);
     await userData.save();
     let verificationCode = userData.verificationCode;
