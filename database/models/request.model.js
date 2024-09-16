@@ -6,9 +6,26 @@ const requsetSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    projectName: {
+    supplier: {
       type: String,
-      required: true,
+      // required: true,
+    },
+    description: {
+      type: String,
+      // required: true,
+    },
+    qty: {
+      type: Number,
+      // required: true,
+    },
+    supplier: {
+      type: String,
+      // required: true,
+    },
+    project: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "project",
+      required: true, 
     },
     comment: {
       type: [String],
@@ -18,28 +35,39 @@ const requsetSchema = mongoose.Schema(
       required: true,
     },
     discipline: {
-      type: String,
-      enum: ["civil", "architectural", "mechanical","electrical","other"],
-      required: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "discipline",
+      required: true, 
     },
     actionCode: {
-      type: String,
-      enum: ["approved", "aprovedWithNote", "rejected","rejectedResubmit"],
-      required: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "actionCode",
+      required: true, 
+    },
+    units: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "unit",
+      // required: true, 
     },
     reason: {
       type: String,
       enum: ["removal", "installation", "testing","commissioning",],
       // required: true,
     },
-    document: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "document",
-    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       required: true,
+    },
+    Contractor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      // required: true,
+    },
+    consultant: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      // required: true,
     },
     reviewedBy: {
       type: mongoose.Schema.Types.ObjectId,

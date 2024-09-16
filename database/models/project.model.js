@@ -12,7 +12,7 @@ const projectSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["onGoing", "ending","delayed" ,"waiting"],
+      enum: ["onGoing", "ending","delayed","waiting"],
       default: "onGoing",
       required: true,
     },
@@ -27,11 +27,6 @@ const projectSchema = mongoose.Schema(
       required: true,
     },
     requestForApprovalOfMaterials: {
-      type: Boolean,
-      default: false,
-      required: true,
-    },
-    isAproved: {
       type: Boolean,
       default: false,
       required: true,

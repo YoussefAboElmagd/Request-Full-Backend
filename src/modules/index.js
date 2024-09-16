@@ -14,6 +14,9 @@ import userTypeRouter from "./User Type/userType.routes.js";
 import tagsRouter from "./Tags/tags.routes.js";
 import teamRouter from "./Team/team.routes.js";
 import requestRouter from "./Request/request.routes.js";
+import unitsRouter from "./Units/units.routes.js";
+import disciplineRouter from "./Discipline/discipline.routes.js";
+import actionRouter from "./actionCode/action.routes.js";
 
 export function init(app) {
   app.use("/api/v1/users", usersRouter);
@@ -32,6 +35,9 @@ export function init(app) {
   app.use("/api/v1/tags", tagsRouter);
   app.use("/api/v1/team", teamRouter);
   app.use("/api/v1/request", requestRouter);
+  app.use("/api/v1/units", unitsRouter);
+  app.use("/api/v1/discipline", disciplineRouter);
+  app.use("/api/v1/action", actionRouter);
 
   app.use("/", (req, res, next) => {
     res.send("Page Not Found");
