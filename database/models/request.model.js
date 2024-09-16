@@ -50,8 +50,8 @@ const requsetSchema = mongoose.Schema(
       // required: true, 
     },
     reason: {
-      type: String,
-      enum: ["removal", "installation", "testing","commissioning",],
+      type: mongoose.Schema.Types.ObjectId,
+      ref:"reason"
       // required: true,
     },
     createdBy: {
