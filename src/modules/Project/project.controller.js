@@ -130,7 +130,7 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
     });
   }
   results.forEach(project => {
-    project.taskCount= project.tasks.length 
+    project.taskCount= project.tasks.length
     project.tasks.forEach(task => {
       task.documentsLength = task.documents.length;
       task.notesLength = task.notes.length;
@@ -152,12 +152,61 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
       }
     });
   }
-
   res.json({
     message: "Done",
     results,
   });
 });
+
+// const getAllProjectByUserMobile = catchAsync(async (req, res, next) => {
+//   let ApiFeat = new ApiFeature(
+//     projectModel
+//   .find({ members: { $in: req.params.id } })
+//   .sort({ $natural: -1 }).populate({
+//       path: 'members',
+//       select: 'profilePic'
+//   }),
+//       req.query
+//   )
+//     .sort()
+//     .search();
+//   let results = await ApiFeat.mongooseQuery;
+//   results = JSON.stringify(results);
+//   results = JSON.parse(results);
+//   if (!ApiFeat || !results) {
+//     return res.status(404).json({
+//       message: "No Project was found!",
+//     });
+//   }
+//   results.forEach(project => {
+//     project.taskCount= project.tasks.length 
+//     project.tasks.forEach(task => {
+//       task.documentsLength = task.documents.length;
+//       task.notesLength = task.notes.length;
+//       delete task.notes
+//       delete task.updatedAt
+//       delete task.isDelayed
+//       delete task.documents;
+//     })})
+//   let { filterType, filterValue } = req.query;
+//   if (filterType && filterValue) {
+//     results = results.filter(function (item) {
+//       if (filterType == "name") {
+//         return item.name.toLowerCase().includes(filterValue.toLowerCase());
+//       }
+//       if (filterType == "description") {
+//         return item.description
+//           .toLowerCase()
+//           .includes(filterValue.toLowerCase());
+//       }
+//     });
+//   }
+
+//   res.json({
+//     message: "Done",
+//     results,
+//   });
+// });
 
 const getAllAnalyticsByUser = catchAsync(async (req, res, next) => {
   res.json({
@@ -166,7 +215,7 @@ const getAllAnalyticsByUser = catchAsync(async (req, res, next) => {
       members: { $in: req.params.id },
     }),
     totalTasks: await taskModel.countDocuments({ assignees: { $in: req.params.id } }),
-    DelayedTasks: await taskModel.countDocuments({$and:[
+    delayedTasks: await taskModel.countDocuments({$and:[
       { assignees: { $in: req.params.id } },
       {isDelayed: true}
     ]
@@ -464,4 +513,5 @@ export {
   getAllProjectByUser,
   getAllProjectsFilesByAdmin,
   getAllAnalyticsByUser,
+  // getAllProjectByUserMobile,
 };
