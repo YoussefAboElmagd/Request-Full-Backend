@@ -9,7 +9,7 @@ export function removeFiles(folderName, fieldName) {
   const photoPaths =
     fieldName &&
     fieldName.map((url) =>
-      url.replace(`https://tchatpro.com/${folderName}/`, "")
+      url.replace(`http://62.72.32.44:8000/${folderName}/`, "")
     );
   console.log(photoPaths);
 
@@ -35,10 +35,8 @@ export function removeFiles(folderName, fieldName) {
 }
 
 export function removeFile(folderName, fieldName) {
-  console.log(fieldName);
-
   const photoPath = fieldName.replace(
-    `https://tchatpro.com/${folderName}/`,
+    `http://62.72.32.44:8000/${folderName}/`,
     ""
   );
   const fullPath = path.resolve(`uploads/${folderName}`, photoPath);
@@ -58,3 +56,45 @@ export function removeFile(folderName, fieldName) {
     });
   });
 }
+export const photoUpload = (req, fieldName, uploadDirectory) => {
+  let fileUrl = "";
+
+  if (req.files && req.files[fieldName]) {
+    // Generate file URLs
+    req.body[fieldName] = req.files[fieldName].map((file) =>
+      `http://62.72.32.44:8000/${uploadDirectory}/${file.filename
+        .split(" ")
+        .join("-")}`
+    );
+
+    // Directory where the files are stored
+    const directoryPath = path.join(fileUrl, `uploads/${uploadDirectory}`);
+
+    // Rename files by replacing spaces with hyphens
+    fsExtra.readdir(directoryPath, (err, files) => {
+      if (err) {
+        return console.error("Unable to scan directory: " + err);
+      }
+      files.forEach((file) => {
+        const oldPath = path.join(directoryPath, file);
+        const newPath = path.join(directoryPath, file.replace(/\s+/g, "-"));
+
+        // Rename each file
+        fsExtra.rename(oldPath, newPath, (err) => {
+          if (err) {
+            console.error("Error renaming file: ", err);
+          }
+        });
+      });
+    });
+
+    // Assign the first file URL to the fileUrl variable
+    if (req.body[fieldName]) {
+      fileUrl = req.body[fieldName][0];
+    }
+  }
+
+  console.log(fileUrl);
+  
+  return fileUrl;
+};

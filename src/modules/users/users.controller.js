@@ -5,43 +5,11 @@ import AppError from "../../utils/appError.js";
 import path from "path";
 import fsExtra from "fs-extra";
 import { DateTime } from "luxon";
+import { photoUpload } from "../../utils/removeFiles.js";
 
 const updateprofilePic = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let profilePic = "";
-  if (req.files.profilePic) {
-    req.body.profilePic =
-      req.files.profilePic &&
-      req.files.profilePic.map(
-        (file) =>
-          `http://62.72.32.44:8000/profilePic/${file.filename
-            .split(" ")
-            .join("-")}`
-      );
-    const directoryPath = path.join(profilePic, "uploads/profilePic");
-
-    fsExtra.readdir(directoryPath, (err, files) => {
-      if (err) {
-        return console.error("Unable to scan directory: " + err);
-      }
-
-      files.forEach((file) => {
-        const oldPath = path.join(directoryPath, file);
-        const newPath = path.join(directoryPath, file.replace(/\s+/g, "-"));
-
-        fsExtra.rename(oldPath, newPath, (err) => {
-          if (err) {
-            console.error("Error renaming file: ", err);
-          }
-        });
-      });
-    });
-
-    if (req.body.profilePic !== "") {
-      profilePic = req.body.profilePic;
-      profilePic = profilePic[0];
-    }
-  }
+  const profilePic = photoUpload(req, "profilePic", "profilePic");
 
   let updatedProfile = await userModel.findByIdAndUpdate(
     id,
@@ -56,40 +24,8 @@ const updateprofilePic = catchAsync(async (req, res, next) => {
 });
 const updateStamp = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let electronicStamp = "";
-  if (req.files.electronicStamp) {
-    req.body.electronicStamp =
-      req.files.electronicStamp &&
-      req.files.electronicStamp.map(
-        (file) =>
-          `http://62.72.32.44:8000/stamp/${file.filename
-            .split(" ")
-            .join("-")}`
-      );
-    const directoryPath = path.join(electronicStamp, "uploads/stamp");
 
-    fsExtra.readdir(directoryPath, (err, files) => {
-      if (err) {
-        return console.error("Unable to scan directory: " + err);
-      }
-
-      files.forEach((file) => {
-        const oldPath = path.join(directoryPath, file);
-        const newPath = path.join(directoryPath, file.replace(/\s+/g, "-"));
-
-        fsExtra.rename(oldPath, newPath, (err) => {
-          if (err) {
-            console.error("Error renaming file: ", err);
-          }
-        });
-      });
-    });
-
-    if (req.body.electronicStamp !== "") {
-      electronicStamp = req.body.electronicStamp;
-      electronicStamp = electronicStamp[0];
-    }
-  }
+  const electronicStamp = photoUpload(req, "electronicStamp", "stamp");
 
   let updatedProfile = await userModel.findByIdAndUpdate(
     id,
@@ -100,44 +36,14 @@ const updateStamp = catchAsync(async (req, res, next) => {
   if (!updatedProfile) {
     return res.status(404).json({ message: "Couldn't update!  not found!" });
   }
-  res.status(200).json({ message: "Task updated successfully!", electronicStamp });
+  res
+    .status(200)
+    .json({ message: "Task updated successfully!", electronicStamp });
 });
 const updateCompanyLogo = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let companyLogo = "";
-  if (req.files.companyLogo) {
-    req.body.companyLogo =
-      req.files.companyLogo &&
-      req.files.companyLogo.map(
-        (file) =>
-          `http://62.72.32.44:8000/logo/${file.filename
-            .split(" ")
-            .join("-")}`
-      );
-    const directoryPath = path.join(companyLogo, "uploads/logo");
 
-    fsExtra.readdir(directoryPath, (err, files) => {
-      if (err) {
-        return console.error("Unable to scan directory: " + err);
-      }
-
-      files.forEach((file) => {
-        const oldPath = path.join(directoryPath, file);
-        const newPath = path.join(directoryPath, file.replace(/\s+/g, "-"));
-
-        fsExtra.rename(oldPath, newPath, (err) => {
-          if (err) {
-            console.error("Error renaming file: ", err);
-          }
-        });
-      });
-    });
-
-    if (req.body.companyLogo !== "") {
-      companyLogo = req.body.companyLogo;
-      companyLogo = companyLogo[0];
-    }
-  }
+  const companyLogo = photoUpload(req, "companyLogo", "logo");
 
   let updatedProfile = await userModel.findByIdAndUpdate(
     id,
@@ -152,40 +58,9 @@ const updateCompanyLogo = catchAsync(async (req, res, next) => {
 });
 const updateIdPhoto = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let idPhoto = "";
-  if (req.files.idPhoto) {
-    req.body.idPhoto =
-      req.files.idPhoto &&
-      req.files.idPhoto.map(
-        (file) =>
-          `http://62.72.32.44:8000/idPhoto/${file.filename
-            .split(" ")
-            .join("-")}`
-      );
-    const directoryPath = path.join(idPhoto, "uploads/photos");
 
-    fsExtra.readdir(directoryPath, (err, files) => {
-      if (err) {
-        return console.error("Unable to scan directory: " + err);
-      }
+  const idPhoto = photoUpload(req, "idPhoto", "photos");
 
-      files.forEach((file) => {
-        const oldPath = path.join(directoryPath, file);
-        const newPath = path.join(directoryPath, file.replace(/\s+/g, "-"));
-
-        fsExtra.rename(oldPath, newPath, (err) => {
-          if (err) {
-            console.error("Error renaming file: ", err);
-          }
-        });
-      });
-    });
-
-    if (req.body.idPhoto !== "") {
-      idPhoto = req.body.idPhoto;
-      idPhoto = idPhoto[0];
-    }
-  }
   let updatedProfile = await userModel.findByIdAndUpdate(
     id,
     { idPhoto: idPhoto },
@@ -199,85 +74,23 @@ const updateIdPhoto = catchAsync(async (req, res, next) => {
 });
 const updateSignature = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let signature = "";
-  if (req.files.signature) {
-    req.body.signature =
-      req.files.signature &&
-      req.files.signature.map(
-        (file) =>
-          `http://62.72.32.44:8000/signature/${file.filename
-            .split(" ")
-            .join("-")}`
-      );
-    const directoryPath = path.join(signature, "uploads/signature");
 
-    fsExtra.readdir(directoryPath, (err, files) => {
-      if (err) {
-        return console.error("Unable to scan directory: " + err);
-      }
-      files.forEach((file) => {
-        const oldPath = path.join(directoryPath, file);
-        const newPath = path.join(directoryPath, file.replace(/\s+/g, "-"));
+  const signatureUrl = photoUpload(req, "signature", "signature");
 
-        fsExtra.rename(oldPath, newPath, (err) => {
-          if (err) {
-            console.error("Error renaming file: ", err);
-          }
-        });
-      });
-    });
-
-    if (req.body.signature !== "") {
-      signature = req.body.signature;
-      signature = signature[0];
-    }
-  }
   let updatedProfile = await userModel.findByIdAndUpdate(
     id,
-    { signature: signature },
+    { signature: signatureUrl },
     { new: true }
   );
 
   if (!updatedProfile) {
     return res.status(404).json({ message: "Couldn't update!  not found!" });
   }
-  res.status(200).json({ message: "Task updated successfully!", signature });
+  res.status(200).json({ message: "Task updated successfully!", signatureUrl });
 });
 const addIdPhotos = catchAsync(async (req, res, next) => {
-  let idPhoto = "";
-  // console.log(req.body, "req.body");
-  // console.log(req.file, "req.fiiles");
-  // console.log(req.files, "req.fiiles");
+  const idPhoto = photoUpload(req, "idPhoto", "photos");
 
-  req.body.idPhoto =
-    req.files.idPhoto &&
-    req.files.idPhoto.map(
-      (file) =>
-        `http://62.72.32.44:8000/ids/${file.filename.split(" ").join("-")}`
-    );
-
-  const directoryPath = path.join(idPhoto, "uploads/photos");
-
-  fsExtra.readdir(directoryPath, (err, files) => {
-    if (err) {
-      return console.error("Unable to scan directory: " + err);
-    }
-    files.forEach((file) => {
-      const oldPath = path.join(directoryPath, file);
-      const newPath = path.join(directoryPath, file.replace(/\s+/g, "-"));
-
-      fsExtra.rename(oldPath, newPath, (err) => {
-        if (err) {
-          console.error("Error renaming file: ", err);
-        }
-      });
-    });
-  });
-
-  if (req.body.idPhoto) {
-    idPhoto = req.body.idPhoto;
-    idPhoto = idPhoto[0];
-  }
   if (idPhoto !== "") {
     let updatedProfile = await userModel.findByIdAndUpdate(
       req.params.id,
@@ -310,7 +123,10 @@ const getAllUsersByAdmin = catchAsync(async (req, res, next) => {
   });
 });
 const getAllowners = catchAsync(async (req, res, next) => {
-  let ApiFeat = new ApiFeature(userModel.find({ role: "66d33a4b4ad80e468f231f83" }), req.query)
+  let ApiFeat = new ApiFeature(
+    userModel.find({ role: "66d33a4b4ad80e468f231f83" }),
+    req.query
+  )
     .sort()
     .search();
 
@@ -382,7 +198,7 @@ const getUserTags = catchAsync(async (req, res, next) => {
 
   let results = await userModel.findById(id).select("tags");
   !results && next(new AppError(`not found `, 404));
-results = results.tags
+  results = results.tags;
   results && res.json({ message: "Done", results });
 });
 
@@ -449,10 +265,7 @@ const updateUser = catchAsync(async (req, res, next) => {
 });
 const updateUser2 = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let {
-    projects,
-    tags,
-  } = req.body;
+  let { projects, tags } = req.body;
   let results = await userModel.findByIdAndUpdate(
     id,
     {
@@ -461,7 +274,8 @@ const updateUser2 = catchAsync(async (req, res, next) => {
     { new: true }
   );
   !results && res.status(404).json({ message: "couldn't update! not found!" });
-  results && res.json({ message: "updatedd", results });});
+  results && res.json({ message: "updatedd", results });
+});
 
 const deleteUser = catchAsync(async (req, res, next) => {
   let { id } = req.params;
