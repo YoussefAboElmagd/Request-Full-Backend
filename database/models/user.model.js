@@ -118,11 +118,11 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    projects: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref: "project",
-      default: [],
-    },
+    // projects: {
+    //   type: [mongoose.Schema.Types.ObjectId],
+    //   ref: "project",
+    //   default: [],
+    // },
   },
   { timestamps: true }
 );
