@@ -40,6 +40,12 @@ usersRouter.put(
   usersController.updateIdPhoto
 );
 usersRouter.put(
+  "/signature/:id",
+  uploadMixFile("signature", [{ name: "signature" }]),
+  fileSizeLimitErrorHandler,
+  usersController.updateSignature
+);
+usersRouter.put(
   "/logo/:id",
   uploadMixFile("logo", [{ name: "companyLogo" }]),
   fileSizeLimitErrorHandler,

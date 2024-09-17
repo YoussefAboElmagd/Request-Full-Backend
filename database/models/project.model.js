@@ -137,12 +137,13 @@ projectSchema.post(/^find/, function (docs, next) {
   if (!Array.isArray(docs)) {
     docs = [docs]; // Convert to array if it's a single document
   }
-
   docs.forEach((doc) => {
-    if (doc.dueDate && doc.dueDate < new Date()) {
-      doc.status = "delayed";
-      doc.save();
-    }
+if(doc){
+  if (doc.dueDate && doc.dueDate < new Date()) {
+    doc.status = "delayed";
+    doc.save();
+  }
+}    
   });
 
   next();

@@ -183,6 +183,7 @@ const updateIdPhoto = catchAsync(async (req, res, next) => {
 
     if (req.body.idPhoto !== "") {
       idPhoto = req.body.idPhoto;
+      idPhoto = idPhoto[0];
     }
   }
   let updatedProfile = await userModel.findByIdAndUpdate(
@@ -195,6 +196,52 @@ const updateIdPhoto = catchAsync(async (req, res, next) => {
     return res.status(404).json({ message: "Couldn't update!  not found!" });
   }
   res.status(200).json({ message: "Task updated successfully!", idPhoto });
+});
+const updateSignature = catchAsync(async (req, res, next) => {
+  let { id } = req.params;
+  let signature = "";
+  if (req.files.signature) {
+    req.body.signature =
+      req.files.signature &&
+      req.files.signature.map(
+        (file) =>
+          `http://62.72.32.44:8000/signature/${file.filename
+            .split(" ")
+            .join("-")}`
+      );
+    const directoryPath = path.join(signature, "uploads/signature");
+
+    fsExtra.readdir(directoryPath, (err, files) => {
+      if (err) {
+        return console.error("Unable to scan directory: " + err);
+      }
+      files.forEach((file) => {
+        const oldPath = path.join(directoryPath, file);
+        const newPath = path.join(directoryPath, file.replace(/\s+/g, "-"));
+
+        fsExtra.rename(oldPath, newPath, (err) => {
+          if (err) {
+            console.error("Error renaming file: ", err);
+          }
+        });
+      });
+    });
+
+    if (req.body.signature !== "") {
+      signature = req.body.signature;
+      signature = signature[0];
+    }
+  }
+  let updatedProfile = await userModel.findByIdAndUpdate(
+    id,
+    { signature: signature },
+    { new: true }
+  );
+
+  if (!updatedProfile) {
+    return res.status(404).json({ message: "Couldn't update!  not found!" });
+  }
+  res.status(200).json({ message: "Task updated successfully!", signature });
 });
 const addIdPhotos = catchAsync(async (req, res, next) => {
   let idPhoto = "";
@@ -229,6 +276,7 @@ const addIdPhotos = catchAsync(async (req, res, next) => {
 
   if (req.body.idPhoto) {
     idPhoto = req.body.idPhoto;
+    idPhoto = idPhoto[0];
   }
   if (idPhoto !== "") {
     let updatedProfile = await userModel.findByIdAndUpdate(
@@ -444,4 +492,5 @@ export {
   getUserTags,
   updateStamp,
   updateCompanyLogo,
+  updateSignature,
 };

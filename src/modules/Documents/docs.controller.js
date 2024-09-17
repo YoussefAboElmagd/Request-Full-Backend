@@ -78,7 +78,7 @@ const getAllDocsByProject = catchAsync(async (req, res, next) => {
   res.json({
     message: "Done",
     page: ApiFeat.page,
-    count: await messageModel.countDocuments({ project: req.params.id }),
+    count: await documentsModel.countDocuments({ project: req.params.id }),
     results,
   });
 });

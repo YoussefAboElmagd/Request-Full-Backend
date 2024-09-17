@@ -78,8 +78,8 @@ const userSchema = mongoose.Schema(
       default: "",
     },
     signature: {
-      type: [String],
-      default: [],
+      type: String,
+      default: "",
     },
     electronicStamp: {
       type: String,
