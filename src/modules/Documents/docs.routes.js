@@ -20,8 +20,6 @@ docsRouter.post(
 );
 docsRouter.put(
   "/:id",
-  uploadMixFile("documents", [{ name: "document" }]),
-  fileSizeLimitErrorHandler,
   docsController.updateDocs
 );
 

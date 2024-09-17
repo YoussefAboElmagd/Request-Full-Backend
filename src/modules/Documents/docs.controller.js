@@ -7,36 +7,9 @@ import { taskModel } from "../../../database/models/tasks.model.js";
 import { projectModel } from "../../../database/models/project.model.js";
 
 const createDocs = catchAsync(async (req, res, next) => {
-  let document = "";
-  req.body.document =
-    req.files.document &&
-    req.files.document.map(
-      (file) =>
-        `http://localhost:8000/documents/${file.filename.split(" ").join("-")}`
-    );
 
-  const directoryPath = path.join(document, "uploads/documents");
+  const document = photoUpload(req, "document", "documents");
 
-  fsExtra.readdir(directoryPath, (err, files) => {
-    if (err) {
-      return console.error("Unable to scan directory: " + err);
-    }
-    files.forEach((file) => {
-      const oldPath = path.join(directoryPath, file);
-      const newPath = path.join(directoryPath, file.replace(/\s+/g, "-"));
-
-      fsExtra.rename(oldPath, newPath, (err) => {
-        if (err) {
-          console.error("Error renaming file: ", err);
-        }
-      });
-    });
-  });
-
-  if (req.body.document) {
-    document = req.body.document;
-    document = document[0];
-  }
   req.body.model = "66ba00e94554c396c5dd3e47";
 
   let { comment, project, status, uploadedBy } = req.body;
