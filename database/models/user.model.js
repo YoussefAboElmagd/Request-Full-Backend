@@ -101,7 +101,7 @@ const userSchema = mongoose.Schema(
     vocation: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "vocation",
-      default: "",
+      default: null,
       // required: true,
     },
     verified: {
