@@ -34,7 +34,6 @@ const userSchema = mongoose.Schema(
     },
     dateOfBirth: {
       type: Date,
-      default: "",
       // required:true
     },
     presentaddress: {
