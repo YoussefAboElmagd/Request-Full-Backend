@@ -1,13 +1,19 @@
 import mongoose from "mongoose";
 
-const vocationSchema = new mongoose.Schema({
-  name: {type : String,
-    required : true
-  }
-},{
-  timestamps : true
-})
+const vocationSchema = mongoose.Schema(
+  {
+    name: {
+      type: String,
+      unique: [true, "Name must be unique."],
+      required: true,
+    },
+  },
+  { timestamps: true }
+);
 
-const vocationModel = mongoose.model("vocation",vocationSchema)
+vocationSchema.pre(/^find/, function () {
+  this.populate("name");
+});
 
-export default vocationModel;
+export const vocationModel = mongoose.model("vocation", vocationSchema);
+
