@@ -36,7 +36,7 @@ const userSchema = mongoose.Schema(
       type: Date,
       // required:true
     },
-    presentaddress: {
+    presentAddress: {
       type: String,
       default: "",
       // required:true

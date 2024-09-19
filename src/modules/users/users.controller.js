@@ -154,13 +154,14 @@ const updateUser = catchAsync(async (req, res, next) => {
     tags,
     otp,
     confirmedPhone,
-    presentaddress,
+    presentAddress,
     city,
     country,
     postalCode,
     verified,
     isSuperUser,
     companyName,
+    vocation
   } = req.body;
   let results = await userModel.findByIdAndUpdate(
     id,
@@ -175,13 +176,14 @@ const updateUser = catchAsync(async (req, res, next) => {
       profilePic,
       verificationCode,
       confirmedPhone,
-      presentaddress,
+      presentAddress,
       city,
       country,
       postalCode,
       verified,
       isSuperUser,
       companyName,
+      vocation
     },
     { new: true }
   );

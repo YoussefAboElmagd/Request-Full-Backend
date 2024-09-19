@@ -1,11 +1,15 @@
-import express from "express";
-import * as vocationController from "./vocation.controller.js";
+import express from 'express'
 
-const vocationRouter = express.Router();
+import { getAllVocations,addVocation, updateVocation, deleteVocation} from './vocation.controller.js'
+const vocationRoute = express.Router()
 
-vocationRouter.post("/", vocationController.createVocation);
-vocationRouter.get("/", vocationController.getAllVocation);
-vocationRouter.put("/:id", vocationController.updateVocation);
-vocationRouter.delete("/:id", vocationController.deleteVocation);
 
-export default vocationRouter;
+vocationRoute.post("/",addVocation)
+vocationRoute.get("/",getAllVocations)
+vocationRoute.put("/:id",updateVocation)
+vocationRoute.delete("/:id",deleteVocation)
+
+
+
+
+export default vocationRoute;

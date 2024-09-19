@@ -100,6 +100,7 @@ const projectSchema = mongoose.Schema(
     team: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "team",
+      default: null,
       // required: true,
     },
     tasks: {
@@ -132,22 +133,23 @@ const projectSchema = mongoose.Schema(
   { timestamps: true }
 );
 
-projectSchema.pre('save', function (next) {
-  if (this.dueDate && this.dueDate < new Date()) {
-    this.status = "delayed";
-  } 
-  next();
-});
 
-projectSchema.post(/^find/, function (docs, next) {
+projectSchema.post(/^find/, async function (docs, next) {
   if (!Array.isArray(docs)) {
     docs = [docs]; // Convert to array if it's a single document
   }
-  docs.forEach((doc) => {
+  docs.forEach(async (doc) => {
 if(doc){
-  if (doc.dueDate && doc.dueDate < new Date()) {
+  if (doc.dueDate && doc.dueDate < new Date() && doc.status !== "ending") {
     doc.status = "delayed";
     doc.save();
+  }
+  if (doc.team) {
+    const team = await teamModel.findOne({ _id: doc.team });
+    if (team) {
+      const newMembers = team.members.filter((item) => !doc.members.includes(item));
+      doc.members.push(...newMembers);
+    }
   }
 }    
   });
@@ -157,7 +159,7 @@ if(doc){
 
 projectSchema.pre('findOneAndUpdate', async function (next) {
   const update = this.getUpdate();
-  if (update.dueDate && new Date(update.dueDate) < new Date()) {
+  if (update.dueDate && new Date(update.dueDate) < new Date() && update.status !== "ending") {
     this.setUpdate({ ...update, status: "delayed" });
   }
   if(update.team){
@@ -168,18 +170,23 @@ projectSchema.pre('findOneAndUpdate', async function (next) {
         await update.save();
     }
   }
-//   if (update['$push'] && Array.isArray(update['$push'].members)) {
-//     const doc = await this.model.findOne(this.getFilter());
-//     if (doc) {
-//         const newMembers = update['$push'].members.filter((item) => !doc.members.includes(item));
-//         doc.members.push(...newMembers);
-//         await doc.save();
-//     }
-// }
   
   next();
 });
+projectSchema.pre('find', async function (next) {
+  const query = this.getQuery();
+  if (query.team) {
+    const team = await teamModel.findOne({ _id: query.team });
+    if (team) {
+      const newMembers = team.members.filter((item) => !query.members.includes(item));
+      query.members = [...query.members, ...newMembers];
+      this.setQuery(query);
+      await this.save();
+    }
+  }
 
+  next();
+});
 
 // projectSchema.pre(/^find/, function () {
 //   this.populate('members','owner','consultant','mainConsultant','contractor','tasks');
