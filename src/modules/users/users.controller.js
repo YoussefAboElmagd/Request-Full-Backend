@@ -145,7 +145,6 @@ const updateUser = catchAsync(async (req, res, next) => {
   let {
     name,
     phone,
-    email,
     password,
     dateOfBirth,
     role,
@@ -159,12 +158,9 @@ const updateUser = catchAsync(async (req, res, next) => {
     city,
     country,
     postalCode,
-    idNumber,
-    expiryIdNumber,
     verified,
     isSuperUser,
     companyName,
-    signature,
   } = req.body;
   let results = await userModel.findByIdAndUpdate(
     id,
@@ -172,7 +168,6 @@ const updateUser = catchAsync(async (req, res, next) => {
       $push: { projects, tags },
       name,
       phone,
-      email,
       password,
       dateOfBirth,
       role,
@@ -184,12 +179,9 @@ const updateUser = catchAsync(async (req, res, next) => {
       city,
       country,
       postalCode,
-      idNumber,
-      expiryIdNumber,
       verified,
       isSuperUser,
       companyName,
-      signature,
     },
     { new: true }
   );

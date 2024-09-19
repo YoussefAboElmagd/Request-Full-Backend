@@ -34,33 +34,32 @@ const userSchema = mongoose.Schema(
     },
     dateOfBirth: {
       type: Date,
+      default: "",
       // required:true
     },
     presentaddress: {
       type: String,
+      default: "",
       // required:true
     },
     city: {
       type: String,
+      default: "",
       // required:true
     },
     country: {
       type: String,
+      default: "",
       // required:true
     },
     postalCode: {
       type: String,
+      default: "",
       // required:true
     },
     verificationCode: {
       type: String,
       // required:true
-    },
-    idNumber: {
-      type: String,
-    },
-    expiryIdNumber: {
-      type: String,
     },
     profilePic: {
       type: String,
@@ -68,6 +67,7 @@ const userSchema = mongoose.Schema(
     },
     companyName: {
       type: String,
+      default: "",
     },
     companyLogo: {
       type: String,
@@ -101,6 +101,7 @@ const userSchema = mongoose.Schema(
     vocation: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "vocation",
+      default: "",
       // required: true,
     },
     verified: {
