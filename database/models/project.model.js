@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { teamModel } from "./team.model.js";
 
 const projectSchema = mongoose.Schema(
   {
@@ -96,6 +97,11 @@ const projectSchema = mongoose.Schema(
       ref: "user",
       required: true,
     },
+    team: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "team",
+      // required: true,
+    },
     tasks: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "task",
@@ -153,6 +159,14 @@ projectSchema.pre('findOneAndUpdate', async function (next) {
   const update = this.getUpdate();
   if (update.dueDate && new Date(update.dueDate) < new Date()) {
     this.setUpdate({ ...update, status: "delayed" });
+  }
+  if(update.team){
+    const team = await teamModel.findOne({_id: update.team});
+    if(team){
+        const newMembers = team.members.filter((item) => !update.members.includes(item));
+        update.members.push(...newMembers);
+        await update.save();
+    }
   }
 //   if (update['$push'] && Array.isArray(update['$push'].members)) {
 //     const doc = await this.model.findOne(this.getFilter());

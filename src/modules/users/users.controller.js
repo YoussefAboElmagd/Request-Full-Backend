@@ -38,7 +38,7 @@ const updateStamp = catchAsync(async (req, res, next) => {
   }
   res
     .status(200)
-    .json({ message: "Task updated successfully!", electronicStamp });
+    .json({ message: "electronicStamp updated successfully!", electronicStamp });
 });
 const updateCompanyLogo = catchAsync(async (req, res, next) => {
   let { id } = req.params;
@@ -54,23 +54,26 @@ const updateCompanyLogo = catchAsync(async (req, res, next) => {
   if (!updatedProfile) {
     return res.status(404).json({ message: "Couldn't update!  not found!" });
   }
-  res.status(200).json({ message: "Task updated successfully!", companyLogo });
+  res.status(200).json({ message: "companyLogo updated successfully!", companyLogo });
 });
-const updateIdPhoto = catchAsync(async (req, res, next) => {
+
+const updateCollection = catchAsync(async (req, res, next) => {
   let { id } = req.params;
 
-  const idPhoto = photoUpload(req, "idPhoto", "photos");
+  const companyLogo = photoUpload(req, "companyLogo", "company");
+  const electronicStamp = photoUpload(req, "electronicStamp", "company");
+  const signature = photoUpload(req, "signature", "company");
 
   let updatedProfile = await userModel.findByIdAndUpdate(
     id,
-    { idPhoto: idPhoto },
+    { signature: signature , companyLogo: companyLogo, electronicStamp: electronicStamp},
     { new: true }
   );
 
   if (!updatedProfile) {
     return res.status(404).json({ message: "Couldn't update!  not found!" });
   }
-  res.status(200).json({ message: "Task updated successfully!", idPhoto });
+  res.status(200).json({ message: "signature updated successfully!", signature ,companyLogo, electronicStamp});
 });
 const updateSignature = catchAsync(async (req, res, next) => {
   let { id } = req.params;
@@ -88,23 +91,7 @@ const updateSignature = catchAsync(async (req, res, next) => {
   }
   res.status(200).json({ message: "Task updated successfully!", signatureUrl });
 });
-const addIdPhotos = catchAsync(async (req, res, next) => {
-  const idPhoto = photoUpload(req, "idPhoto", "photos");
 
-  if (idPhoto !== "") {
-    let updatedProfile = await userModel.findByIdAndUpdate(
-      req.params.id,
-      { idPhoto: idPhoto },
-      { new: true }
-    );
-    res.status(200).json({
-      message: "Photo created successfully!",
-      idPhoto,
-    });
-  } else {
-    res.status(400).json({ message: "File upload failed." });
-  }
-});
 
 const getAllUsersByAdmin = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(userModel.find(), req.query).sort().search();
@@ -213,7 +200,6 @@ const updateUser = catchAsync(async (req, res, next) => {
     email,
     password,
     dateOfBirth,
-    idPhoto,
     role,
     projects,
     profilePic,
@@ -241,7 +227,6 @@ const updateUser = catchAsync(async (req, res, next) => {
       email,
       password,
       dateOfBirth,
-      idPhoto,
       role,
       otp,
       profilePic,
@@ -300,9 +285,8 @@ export {
   getAllowners,
   getAllcontractors,
   getAllconsultant,
-  addIdPhotos,
+  updateCollection,
   updateprofilePic,
-  updateIdPhoto,
   getUserTags,
   updateStamp,
   updateCompanyLogo,

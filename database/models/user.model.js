@@ -66,10 +66,7 @@ const userSchema = mongoose.Schema(
       type: String,
       default: "",
     },
-    idPhoto: {
-      type: String,
-      default: "",
-    },
+
     companyName: {
       type: String,
     },

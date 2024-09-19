@@ -8,6 +8,9 @@ import { taskModel } from "../../../database/models/tasks.model.js";
 
 const createProject = catchAsync(async (req, res, next) => {
     req.body.model = "66ba015a73f994dd94dbc1e9";
+    if (req.body.budget < 0) {
+      return res.status(404).json({ message: "Budget must be greater than 0" });
+    }
     let newProject = new projectModel(req.body);
     let addedProject = await newProject
     addedProject.members.push(addedProject.createdBy);
@@ -445,9 +448,9 @@ const getAllProjectsFilesByUser = catchAsync(async (req, res, next) => {
 
 const updateProject = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  // if (req.body.budget < 0) {
-  //   return res.status(404).json({ message: "Budget must be greater than 0" });
-  // }
+  if (req.body.budget < 0) {
+    return res.status(404).json({ message: "Budget must be greater than 0" });
+  }
   let {
     name,
     description,
@@ -460,6 +463,8 @@ const updateProject = catchAsync(async (req, res, next) => {
     contractor,
     consultant,
     owner,
+    team,
+    budget,
   } = req.body;
   const updatedProject = await projectModel.findByIdAndUpdate(
     id,
@@ -477,6 +482,8 @@ const updateProject = catchAsync(async (req, res, next) => {
         consultant,
         owner,
       },
+      team,
+      budget,
     },
     { new: true }
   );

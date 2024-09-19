@@ -5,7 +5,6 @@ import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import bcrypt from "bcrypt";
 
-
 const createTeam = catchAsync(async (req, res, next) => {
   req.body.model = "66e5611c1771cb44cd6fc7de";
   const newTeam = new teamModel(req.body);
@@ -75,38 +74,34 @@ const getTeamById = catchAsync(async (req, res, next) => {
 
 const updateTeam = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  let { teamName, jobTitle, rights, name,email, password } = req.body;
-    let existUser = await userModel.findOne({ email: email })
-    if (existUser) {
-      return res.status(404).json({ message: "Email already exist!" });
-    }else{
-      password = bcrypt.hashSync(
-        password,
-        Number(process.env.SALTED_VALUE)
-      );
-  let newUser = new userModel({ name,email, password});
-  const savedUser = await newUser.save();
-  let accesrights = new userTypeModel({ jobTitle, rights });
-  const savedRights = await accesrights.save();
-  await userModel.findByIdAndUpdate(
-    savedUser._id,
-    { role: savedRights._id },
-    { new: true }
-  );
-  const updateeTeam = await teamModel.findByIdAndUpdate(
-    id,
-    { $push: { members: savedUser._id }, teamName },
-    { new: true }
-  );
-  if (!updateeTeam) {
-    return res.status(404).json({ message: "Team not found!" });
+  let { teamName, jobTitle, rights, name, email, password } = req.body;
+  let existUser = await userModel.findOne({ email: email });
+  if (existUser) {
+    return res.status(404).json({ message: "Email already exist!" });
+  } else {
+    password = bcrypt.hashSync(password, Number(process.env.SALTED_VALUE));
+    let newUser = new userModel({ name, email, password });
+    const savedUser = await newUser.save();
+    let accesrights = new userTypeModel({ jobTitle, rights });
+    const savedRights = await accesrights.save();
+    await userModel.findByIdAndUpdate(
+      savedUser._id,
+      { role: savedRights._id },
+      { new: true }
+    );
+    const updateeTeam = await teamModel.findByIdAndUpdate(
+      id,
+      { $push: { members: savedUser._id }, teamName },
+      { new: true }
+    );
+    if (!updateeTeam) {
+      return res.status(404).json({ message: "Team not found!" });
+    }
+    res.status(200).json({
+      message: "Tag Updated successfully!",
+      updateeTeam,
+    });
   }
-  res.status(200).json({
-    message: "Tag Updated successfully!",
-    updateeTeam,
-  });
-}
-
 });
 const updateTeamMembers = catchAsync(async (req, res, next) => {
   const { id } = req.params;
