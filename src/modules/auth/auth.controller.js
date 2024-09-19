@@ -7,14 +7,13 @@ import generateUniqueId from "generate-unique-id";
 import { sendEmail } from "../../email/sendEmail.js";
 
 export const signUp = catchAsync(async (req, res, next) => {
-  let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+  // let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
   if(    req.body.phone === "" &&
     req.body.phone.length < 10){
       return res.status(409).json({ message: "this phone is not valid" });
     }
   if (
-    req.body.email !== "" &&
-    req.body.email.match(emailFormat)
+    req.body.email !== "" 
   ) {
     let existUser = await userModel.findOne({ phone: req.body.phone });
     let existUser2 = await userModel.findOne({ email: req.body.email });
