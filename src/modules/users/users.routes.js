@@ -27,25 +27,6 @@ usersRouter.put(
   usersController.updateprofilePic
 );
 
-
-usersRouter.put(
-  "/signature/:id",
-  uploadMixFile("signature", [{ name: "signature" }]),
-  fileSizeLimitErrorHandler,
-  usersController.updateSignature
-);
-usersRouter.put(
-  "/logo/:id",
-  uploadMixFile("logo", [{ name: "companyLogo" }]),
-  fileSizeLimitErrorHandler,
-  usersController.updateCompanyLogo
-);
-usersRouter.put(
-  "/stamp/:id",
-  uploadMixFile("stamp", [{ name: "electronicStamp" }]),
-  fileSizeLimitErrorHandler,
-  usersController.updateStamp
-);
 usersRouter.put(
   "/company/:id",
   uploadMixFile("company", [{ name: "companyLogo" },{ name: "electronicStamp" }, { name: "signature" }, ]),

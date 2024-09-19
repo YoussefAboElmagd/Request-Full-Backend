@@ -2,8 +2,6 @@ import { userModel } from "../../../database/models/user.model.js";
 import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import AppError from "../../utils/appError.js";
-import path from "path";
-import fsExtra from "fs-extra";
 import { DateTime } from "luxon";
 import { photoUpload } from "../../utils/removeFiles.js";
 
@@ -22,40 +20,7 @@ const updateprofilePic = catchAsync(async (req, res, next) => {
   }
   res.status(200).json({ message: "Task updated successfully!", profilePic });
 });
-const updateStamp = catchAsync(async (req, res, next) => {
-  let { id } = req.params;
 
-  const electronicStamp = photoUpload(req, "electronicStamp", "stamp");
-
-  let updatedProfile = await userModel.findByIdAndUpdate(
-    id,
-    { electronicStamp: electronicStamp },
-    { new: true }
-  );
-
-  if (!updatedProfile) {
-    return res.status(404).json({ message: "Couldn't update!  not found!" });
-  }
-  res
-    .status(200)
-    .json({ message: "electronicStamp updated successfully!", electronicStamp });
-});
-const updateCompanyLogo = catchAsync(async (req, res, next) => {
-  let { id } = req.params;
-
-  const companyLogo = photoUpload(req, "companyLogo", "logo");
-
-  let updatedProfile = await userModel.findByIdAndUpdate(
-    id,
-    { companyLogo: companyLogo },
-    { new: true }
-  );
-
-  if (!updatedProfile) {
-    return res.status(404).json({ message: "Couldn't update!  not found!" });
-  }
-  res.status(200).json({ message: "companyLogo updated successfully!", companyLogo });
-});
 
 const updateCollection = catchAsync(async (req, res, next) => {
   let { id } = req.params;
@@ -73,25 +38,8 @@ const updateCollection = catchAsync(async (req, res, next) => {
   if (!updatedProfile) {
     return res.status(404).json({ message: "Couldn't update!  not found!" });
   }
-  res.status(200).json({ message: "signature updated successfully!", signature ,companyLogo, electronicStamp});
+  res.status(200).json({ message: "Company Files updated successfully!", signature ,companyLogo, electronicStamp});
 });
-const updateSignature = catchAsync(async (req, res, next) => {
-  let { id } = req.params;
-
-  const signatureUrl = photoUpload(req, "signature", "signature");
-
-  let updatedProfile = await userModel.findByIdAndUpdate(
-    id,
-    { signature: signatureUrl },
-    { new: true }
-  );
-
-  if (!updatedProfile) {
-    return res.status(404).json({ message: "Couldn't update!  not found!" });
-  }
-  res.status(200).json({ message: "Task updated successfully!", signatureUrl });
-});
-
 
 const getAllUsersByAdmin = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(userModel.find(), req.query).sort().search();
@@ -288,7 +236,4 @@ export {
   updateCollection,
   updateprofilePic,
   getUserTags,
-  updateStamp,
-  updateCompanyLogo,
-  updateSignature,
 };

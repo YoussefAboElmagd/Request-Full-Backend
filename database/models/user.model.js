@@ -66,7 +66,6 @@ const userSchema = mongoose.Schema(
       type: String,
       default: "",
     },
-
     companyName: {
       type: String,
     },
@@ -98,6 +97,11 @@ const userSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "userType",
       required: true,
+    },
+    vocation: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "vocation",
+      // required: true,
     },
     verified: {
       type: Boolean,
