@@ -101,6 +101,31 @@ export const signIn = catchAsync(async (req, res, next) => {
     return res.status(409).json({ message: "this email is not valid" });
   }
 });
+
+export const resend = catchAsync(async (req, res, next) => {
+  if (req.body.email !== "" ) {
+    let { email } = req.body;
+    let userData = await userModel.findOne({ email });
+    if (!userData) return res.status(401).json({ message: "worng email or password" });
+    if (userData) {
+      userData.verificationCode = generateUniqueId({
+        length: 4,
+        useLetters: false,
+      });
+      sendEmail(userData.email, userData.verificationCode);
+      await userData.save();
+      let token = jwt.sign(
+        { name: userData.name, userId: userData._id },
+        process.env.JWT_SECRET_KEY
+      )
+      let verificationCode = userData.verificationCode;
+      return res.json({ message: "success",verificationCode, userData ,token});
+    }
+    return res.status(401).json({ message: "worng email " });
+  } else {
+    return res.status(409).json({ message: "this email is not valid" });
+  }
+});
 export const forgetPassword = catchAsync(async (req, res, next) => {
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
   if (req.body.email !== "" && req.body.email.match(emailFormat)) {

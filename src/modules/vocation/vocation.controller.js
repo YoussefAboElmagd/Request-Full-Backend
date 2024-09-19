@@ -1,4 +1,4 @@
-import vocationModel from "../../../database/models/vocation.model.js";
+import {vocationModel} from "../../../database/models/vocation.model.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 
