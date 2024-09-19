@@ -153,5 +153,6 @@ userSchema.pre(/^delete/, { document: false, query: true }, async function () {
 userSchema.pre(/^find/, function () {
   this.populate("role");
   this.populate("tags");
+  this.populate("vocation");
 });
 export const userModel = mongoose.model("user", userSchema);
