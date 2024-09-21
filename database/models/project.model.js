@@ -159,20 +159,30 @@ if(doc){
 
 projectSchema.pre('findOneAndUpdate', async function (next) {
   const update = this.getUpdate();
+
+  // Check if the dueDate needs to update the status
   if (update.dueDate && new Date(update.dueDate) < new Date() && update.status !== "ending") {
     this.setUpdate({ ...update, status: "delayed" });
   }
-  if(update.team){
-    const team = await teamModel.findOne({_id: update.team});
-    if(team){
-        const newMembers = team.members.filter((item) => !update.members.includes(item));
-        update.members.push(...newMembers);
-        await update.save();
+
+  // If team is being updated
+  if (update.team) {
+    const team = await teamModel.findOne({ _id: update.team });
+    if (team) {
+      // Fetch the current project document to retrieve existing members
+      const currentProject = await this.model.findOne(this.getQuery());
+      const currentMembers = currentProject.members || [];
+      const newMembers = team.members.filter((item) => !currentMembers.includes(item));
+      this.setUpdate({
+        ...update,
+        members: [...currentMembers, ...newMembers]
+      });
     }
   }
-  
+
   next();
 });
+
 projectSchema.pre('find', async function (next) {
   const query = this.getQuery();
   if (query.team) {

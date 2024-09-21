@@ -4,7 +4,6 @@ import * as teamController from "./team.controller.js";
 const teamRouter = express.Router();
 
 teamRouter.post("/", teamController.createTeam);
-// teamRouter.post("/email/", teamController.findUserEmail);
 teamRouter.get("/", teamController.getAllTeamByAdmin);
 teamRouter.get("/user/:id", teamController.getAllTeamByUser);
 teamRouter.get("/:id", teamController.getTeamById);

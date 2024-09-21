@@ -161,56 +161,6 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
   });
 });
 
-// const getAllProjectByUserMobile = catchAsync(async (req, res, next) => {
-//   let ApiFeat = new ApiFeature(
-//     projectModel
-//   .find({ members: { $in: req.params.id } })
-//   .sort({ $natural: -1 }).populate({
-//       path: 'members',
-//       select: 'profilePic'
-//   }),
-//       req.query
-//   )
-//     .sort()
-//     .search();
-//   let results = await ApiFeat.mongooseQuery;
-//   results = JSON.stringify(results);
-//   results = JSON.parse(results);
-//   if (!ApiFeat || !results) {
-//     return res.status(404).json({
-//       message: "No Project was found!",
-//     });
-//   }
-//   results.forEach(project => {
-//     project.taskCount= project.tasks.length 
-//     project.tasks.forEach(task => {
-//       task.documentsLength = task.documents.length;
-//       task.notesLength = task.notes.length;
-//       delete task.notes
-//       delete task.updatedAt
-//       delete task.isDelayed
-//       delete task.documents;
-//     })})
-//   let { filterType, filterValue } = req.query;
-//   if (filterType && filterValue) {
-//     results = results.filter(function (item) {
-//       if (filterType == "name") {
-//         return item.name.toLowerCase().includes(filterValue.toLowerCase());
-//       }
-//       if (filterType == "description") {
-//         return item.description
-//           .toLowerCase()
-//           .includes(filterValue.toLowerCase());
-//       }
-//     });
-//   }
-
-//   res.json({
-//     message: "Done",
-//     results,
-//   });
-// });
-
 const getAllAnalyticsByUser = catchAsync(async (req, res, next) => {
   res.json({
     message: "Done",
@@ -387,6 +337,36 @@ const getAllDocsProject = catchAsync(async (req, res, next) => {
     count: documents.length,
   });
 });
+const getAllMembersProject = catchAsync(async (req, res, next) => {
+  let ApiFeat = new ApiFeature(
+    projectModel.findById(req.params.id).populate({
+      path: 'members',
+      model: 'user',
+      select: '_id name profilePic' // Select only _id and profilePic for assignees
+    }),
+    req.query
+  )
+    .sort()
+    .search();
+
+  let results = await ApiFeat.mongooseQuery;
+
+  if (!ApiFeat || !results) {
+    return res.status(404).json({
+      message: "No Project was found!",
+    });
+  }  
+  let members = [];
+  if (results.members) {
+    members = results.members;
+  }
+
+  res.json({
+    message: "Done",
+    count: members.length,
+    members,
+  });
+});
 
 const getAllProjectsFilesByAdmin = catchAsync(async (req, res, next) => {
   let results = await projectModel.aggregate([
@@ -443,8 +423,6 @@ const getAllProjectsFilesByUser = catchAsync(async (req, res, next) => {
   });
 });
 
-////////////////////////////////// contractor \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-////////////////////////////////// consultant \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 const updateProject = catchAsync(async (req, res, next) => {
   const { id } = req.params;
@@ -520,5 +498,5 @@ export {
   getAllProjectByUser,
   getAllProjectsFilesByAdmin,
   getAllAnalyticsByUser,
-  // getAllProjectByUserMobile,
+  getAllMembersProject,
 };
