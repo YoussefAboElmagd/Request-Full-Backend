@@ -92,6 +92,10 @@ const userSchema = mongoose.Schema(
       default: [],
       // required: true,
     },
+    team: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "team",
+    },
     role: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "userType",

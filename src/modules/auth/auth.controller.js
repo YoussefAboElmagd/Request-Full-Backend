@@ -151,7 +151,8 @@ export const forgetPassword = catchAsync(async (req, res, next) => {
     await userData.save();
     let verificationCode = userData.verificationCode;
     let id = userData._id;
-    return res.json({ message: "Verification Code", verificationCode, id });
+    let UserEmail = userData.email;
+    return res.json({ message: "Verification Code", verificationCode, id ,UserEmail});
   } else {
     return res.status(409).json({ message: "this email is not valid" });
   }
