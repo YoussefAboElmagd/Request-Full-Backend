@@ -201,4 +201,7 @@ projectSchema.pre('find', async function (next) {
 // projectSchema.pre(/^find/, function () {
 //   this.populate('members','owner','consultant','mainConsultant','contractor','tasks');
 // })
+projectSchema.pre(/^find/, function () {
+  this.populate('tags');
+})
 export const projectModel = mongoose.model("project", projectSchema);

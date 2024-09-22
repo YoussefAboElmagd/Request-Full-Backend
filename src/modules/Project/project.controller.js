@@ -33,6 +33,7 @@ const getProjectById = catchAsync(async (req, res, next) => {
 
   let results = await projectModel.findById(id).populate("contractor")
   .populate("consultant")
+  .populate("tags")
   .populate("mainConsultant")
   .populate("members")
   .populate("owner");
@@ -109,18 +110,20 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
 const getAllProjectByUser = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
     projectModel
-  .find({ members: { $in: req.params.id } })
-  .sort({ $natural: -1 }).select("tasks name")
-  .populate({
-    path: 'tasks',
-    select: 'title taskPriority taskStatus assignees documents startDate dueDate notes', // Select taskStatus and other necessary fields
-    populate: {
-      path: 'assignees',
-      model: 'user',
-      select: '_id name profilePic' // Select only _id and profilePic for assignees
-    }
-  }),
-      req.query
+      .find({ members: { $in: req.params.id } })
+      .sort({ $natural: -1 })
+      .select("tasks name")
+      .populate({
+        path: 'tasks',
+        select: 'title taskPriority taskStatus assignees documents startDate dueDate notes',
+        match: { assignees: { $in: req.params.id } }, // Filter tasks with the assignee matching req.params.id
+        populate: {
+          path: 'assignees',
+          model: 'user',
+          select: '_id name profilePic'
+        }
+      }),
+    req.query
   )
     .sort()
     .search();
