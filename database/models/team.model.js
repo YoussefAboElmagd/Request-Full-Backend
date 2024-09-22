@@ -2,10 +2,6 @@ import mongoose from "mongoose";
 
 const teamSchema = mongoose.Schema(
   {
-    teamName: {
-      type: String,
-      required: true,
-    },
     members: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "user",
@@ -29,13 +25,13 @@ const teamSchema = mongoose.Schema(
 
 teamSchema.pre(/^find/, function (next) {
   this.select().lean(); // Ensure we're working with plain objects (faster for calculations)
-  
+
   next(); // Move to the next middleware/operation
 });
 teamSchema.post(/^find/, function (docs) {
   if (Array.isArray(docs)) {
     docs.forEach((doc) => {
-      doc.memberCount = doc.members ? doc.members.length : 1; 
+      doc.memberCount = doc.members ? doc.members.length : 1;
     });
   } else if (docs) {
     docs.memberCount = docs.members ? docs.members.length : 1;

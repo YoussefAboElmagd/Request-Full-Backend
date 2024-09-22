@@ -5,16 +5,14 @@ import AppError from "../../utils/appError.js";
 import { userModel } from "../../../database/models/user.model.js";
 import generateUniqueId from "generate-unique-id";
 import { sendEmail } from "../../email/sendEmail.js";
+import { teamModel } from "../../../database/models/team.model.js";
 
 export const signUp = catchAsync(async (req, res, next) => {
   // let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
-  if(    req.body.phone === "" &&
-    req.body.phone.length < 10){
-      return res.status(409).json({ message: "this phone is not valid" });
-    }
-  if (
-    req.body.email !== "" 
-  ) {
+  if (req.body.phone === "" && req.body.phone.length < 10) {
+    return res.status(409).json({ message: "this phone is not valid" });
+  }
+  if (req.body.email !== "") {
     let existUser = await userModel.findOne({ phone: req.body.phone });
     let existUser2 = await userModel.findOne({ email: req.body.email });
     if (existUser) {
@@ -44,10 +42,16 @@ export const signUp = catchAsync(async (req, res, next) => {
     process.env.JWT_SECRET_KEY
   );
   sendEmail(results.email, results.verificationCode);
-
+  let model = "66e5611c1771cb44cd6fc7de";
+  let createdBy = results._id;
+  const newTeam = new teamModel({createdBy , model});
+  const savedTeam = await newTeam;
+  savedTeam.members.push(savedTeam.createdBy);
+  results.team = savedTeam._id
+  await savedTeam.save();
   await results.save();
   await results.populate("role");
-  res.json({ message: "added", token, results });
+  res.json({ message: "added", token, results ,savedTeam });
 });
 
 // export const signIn = catchAsync(async (req, res, next) => {
@@ -81,7 +85,8 @@ export const signIn = catchAsync(async (req, res, next) => {
   if (req.body.email !== "" && req.body.email.match(emailFormat)) {
     let { email, password } = req.body;
     let userData = await userModel.findOne({ email });
-    if (!userData) return res.status(401).json({ message: "worng email or password" });
+    if (!userData)
+      return res.status(401).json({ message: "worng email or password" });
     const match = bcrypt.compareSync(password, userData.password);
     if (match && userData) {
       userData.verificationCode = generateUniqueId({
@@ -103,10 +108,11 @@ export const signIn = catchAsync(async (req, res, next) => {
 });
 
 export const resend = catchAsync(async (req, res, next) => {
-  if (req.body.email !== "" ) {
+  if (req.body.email !== "") {
     let { email } = req.body;
     let userData = await userModel.findOne({ email });
-    if (!userData) return res.status(401).json({ message: "worng email or password" });
+    if (!userData)
+      return res.status(401).json({ message: "worng email or password" });
     if (userData) {
       userData.verificationCode = generateUniqueId({
         length: 4,
@@ -117,9 +123,14 @@ export const resend = catchAsync(async (req, res, next) => {
       let token = jwt.sign(
         { name: userData.name, userId: userData._id },
         process.env.JWT_SECRET_KEY
-      )
+      );
       let verificationCode = userData.verificationCode;
-      return res.json({ message: "success",verificationCode, userData ,token});
+      return res.json({
+        message: "success",
+        verificationCode,
+        userData,
+        token,
+      });
     }
     return res.status(401).json({ message: "worng email " });
   } else {
