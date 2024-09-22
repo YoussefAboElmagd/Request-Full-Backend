@@ -33,7 +33,6 @@ const getProjectById = catchAsync(async (req, res, next) => {
 
   let results = await projectModel.findById(id).populate("contractor")
   .populate("consultant")
-  .populate("tags")
   .populate("mainConsultant")
   .populate("members")
   .populate("owner");
