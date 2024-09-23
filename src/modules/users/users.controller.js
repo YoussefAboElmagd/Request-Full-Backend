@@ -25,17 +25,19 @@ const updateprofilePic = catchAsync(async (req, res, next) => {
 const updateCollection = catchAsync(async (req, res, next) => {
   let { id } = req.params;
 
+  const updates = {};
   const companyLogo = photoUpload(req, "companyLogo", "company");
   const electronicStamp = photoUpload(req, "electronicStamp", "company");
   const signature = photoUpload(req, "signature", "company");
-
-  let updatedProfile = await userModel.findByIdAndUpdate(
-    id,
-    { signature: signature , companyLogo: companyLogo, electronicStamp: electronicStamp},
-    { new: true }
-  );
-
-  if (!updatedProfile) {
+  
+  if (signature) updates.signature = signature;
+  if (companyLogo) updates.companyLogo = companyLogo;
+  if (electronicStamp) updates.electronicStamp = electronicStamp;
+  
+  if (Object.keys(updates).length > 0) {
+    const updatedProfile = await userModel.findByIdAndUpdate(id, updates, { new: true });
+  }
+  else{
     return res.status(404).json({ message: "Couldn't update!  not found!" });
   }
   res.status(200).json({ message: "Company Files updated successfully!", signature ,companyLogo, electronicStamp});

@@ -99,7 +99,8 @@ export const signIn = catchAsync(async (req, res, next) => {
         { name: userData.name, userId: userData._id },
         process.env.JWT_SECRET_KEY
       );
-      return res.json({ message: "success", token, userData });
+      let lastSignIn = new Date()
+      return res.json({ message: "success", token, userData ,lastSignIn });
     }
     return res.status(401).json({ message: "worng email or password" });
   } else {
