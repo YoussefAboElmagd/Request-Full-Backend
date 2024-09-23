@@ -50,17 +50,21 @@ const taskSchema = mongoose.Schema(
     },
     taskStatus: {
       type: String,
-      enum: ["completed", "working", "waiting"],
+      enum: ["completed","working", "waiting"],
       default: "working",
       required: true,
     },
     taskPriority: {
       type: String,
-      enum: ["medium", "high", "low"],
+      enum: ["medium", "high","low"],
       default: "medium",
       required: true,
     },
     isDelayed: {
+      type: Boolean,
+      default: false,
+    },
+    isConfirmed: {
       type: Boolean,
       default: false,
     },

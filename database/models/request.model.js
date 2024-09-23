@@ -94,5 +94,11 @@ const requsetSchema = mongoose.Schema(
   { timestamps: true }
 );
 
+requsetSchema.pre(/^find/, function () {
+  this.populate('actionCode');
+  this.populate('units');
+  this.populate('discipline');
+  this.populate('reason');
+})
 
 export const requsetModel = mongoose.model("requset", requsetSchema);
