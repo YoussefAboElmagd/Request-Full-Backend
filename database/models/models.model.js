@@ -10,6 +10,4 @@ const modelSchema = mongoose.Schema(
   { timestamps: true }
 );
 
-
-
 export const modelModel = mongoose.model("model", modelSchema);

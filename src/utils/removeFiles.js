@@ -61,10 +61,11 @@ export const photoUpload = (req, fieldName, uploadDirectory) => {
 
   if (req.files && req.files[fieldName]) {
     // Generate file URLs
-    req.body[fieldName] = req.files[fieldName].map((file) =>
-      `http://62.72.32.44:8000/${uploadDirectory}/${file.filename
-        .split(" ")
-        .join("-")}`
+    req.body[fieldName] = req.files[fieldName].map(
+      (file) =>
+        `http://62.72.32.44:8000/${uploadDirectory}/${file.filename
+          .split(" ")
+          .join("-")}`
     );
 
     // Directory where the files are stored
@@ -95,6 +96,6 @@ export const photoUpload = (req, fieldName, uploadDirectory) => {
   }
 
   console.log(fileUrl);
-  
+
   return fileUrl;
 };

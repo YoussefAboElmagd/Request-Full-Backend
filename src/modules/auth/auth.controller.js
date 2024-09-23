@@ -27,6 +27,7 @@ export const signUp = catchAsync(async (req, res, next) => {
 
   req.body.model = "66ba00b0e39d9694110fd3df";
   req.body.isSuperUser = true;
+  req.body.dateOfBirth = new Date ("1950/01/02");
   // req.body.profilePic = "http://62.72.32.44:8000/profilePic/profile.png";
   req.body.verificationCode = generateUniqueId({
     length: 4,
@@ -44,14 +45,14 @@ export const signUp = catchAsync(async (req, res, next) => {
   sendEmail(results.email, results.verificationCode);
   let model = "66e5611c1771cb44cd6fc7de";
   let createdBy = results._id;
-  const newTeam = new teamModel({createdBy , model});
+  const newTeam = new teamModel({ createdBy, model });
   const savedTeam = await newTeam;
   savedTeam.members.push(savedTeam.createdBy);
-  results.team = savedTeam._id
+  results.team = savedTeam._id;
   await savedTeam.save();
   await results.save();
   await results.populate("role");
-  res.json({ message: "added", token, results ,savedTeam });
+  res.json({ message: "added", token, results, savedTeam });
 });
 
 // export const signIn = catchAsync(async (req, res, next) => {
@@ -99,8 +100,8 @@ export const signIn = catchAsync(async (req, res, next) => {
         { name: userData.name, userId: userData._id },
         process.env.JWT_SECRET_KEY
       );
-      let lastSignIn = new Date()
-      return res.json({ message: "success", token, userData ,lastSignIn });
+      let lastSignIn = new Date();
+      return res.json({ message: "success", token, userData, lastSignIn });
     }
     return res.status(401).json({ message: "worng email or password" });
   } else {
@@ -153,7 +154,12 @@ export const forgetPassword = catchAsync(async (req, res, next) => {
     let verificationCode = userData.verificationCode;
     let id = userData._id;
     let UserEmail = userData.email;
-    return res.json({ message: "Verification Code", verificationCode, id ,UserEmail});
+    return res.json({
+      message: "Verification Code",
+      verificationCode,
+      id,
+      UserEmail,
+    });
   } else {
     return res.status(409).json({ message: "this email is not valid" });
   }
