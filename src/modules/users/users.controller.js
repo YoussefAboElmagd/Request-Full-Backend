@@ -51,7 +51,7 @@ const updateCollection = catchAsync(async (req, res, next) => {
   else{
     return res.status(404).json({ message: "Couldn't update!  not found!" });
   }
-  res.status(200).json({ message: "Company Files updated successfully!", signature ,companyLogo, electronicStamp});
+  res.status(200).json({ message: "Company Files updated successfully!", updates});
 });
 
 const getAllUsersByAdmin = catchAsync(async (req, res, next) => {
@@ -174,7 +174,10 @@ const updateUser = catchAsync(async (req, res, next) => {
     verified,
     isSuperUser,
     companyName,
-    vocation
+    vocation,
+    offersAndPackages,
+    notifications,
+    renewalSubscription,
   } = req.body;
   let results = await userModel.findByIdAndUpdate(
     id,
@@ -196,7 +199,10 @@ const updateUser = catchAsync(async (req, res, next) => {
       verified,
       isSuperUser,
       companyName,
-      vocation
+      vocation,
+      offersAndPackages,
+      notifications,
+      renewalSubscription,
     },
     { new: true }
   );
