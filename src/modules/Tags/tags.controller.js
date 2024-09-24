@@ -33,7 +33,7 @@ const getAllTagsByAdmin = catchAsync(async (req, res, next) => {
 const getAllTagsByUser = catchAsync(async (req, res, next) => {
   let { id } = req.params;
 
-  let results = await tagsModel.find({ createdBy: id }).select("tags");
+  let results = await tagsModel.find({ createdBy: id });
   !results && next(new AppError(`not found `, 404));
   results && res.json({ message: "Done", results });
 });
