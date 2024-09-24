@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import AppError from "../../src/utils/appError.js";
 
 const tagsSchema = mongoose.Schema(
   {
@@ -24,5 +25,18 @@ const tagsSchema = mongoose.Schema(
   },
   { timestamps: true }
 );
+
+tagsSchema.pre("save", async function (next) {
+  const tag = this;
+
+  const userExists = await mongoose.model("user").exists({ _id: tag.createdBy });
+
+  if (!userExists) {
+    const error = new AppError("The `createdBy` user does not exist, cannot save this tag.",404);
+    return next(error);
+  }
+
+  next();
+});
 
 export const tagsModel = mongoose.model("tag", tagsSchema);

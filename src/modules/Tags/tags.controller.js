@@ -1,4 +1,5 @@
 import { tagsModel } from "../../../database/models/tags.model.js";
+import { userModel } from "../../../database/models/user.model.js";
 import ApiFeature from "../../utils/apiFeature.js";
 import AppError from "../../utils/appError.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
@@ -32,10 +33,14 @@ const getAllTagsByAdmin = catchAsync(async (req, res, next) => {
 });
 const getAllTagsByUser = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-
-  let results = await tagsModel.find({ createdBy: id });
-  !results && next(new AppError(`not found `, 404));
-  results && res.json({ message: "Done", results });
+  let userResults = await userModel.findById(id)
+  if(userResults){
+    let results = await tagsModel.find({ createdBy: id });
+    !results && next(new AppError(`not found `, 404));
+    results && res.json({ message: "Done", results });
+  }else{
+    res.json({message:" User Id Not Found"})
+}
 });
 
 const updateTags = catchAsync(async (req, res, next) => {
