@@ -86,12 +86,12 @@ const userSchema = mongoose.Schema(
       immutable: true,
       required: true,
     },
-    tags: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref: "tag",
-      default: [],
-      // required: true,
-    },
+    // tags: {
+    //   type: [mongoose.Schema.Types.ObjectId],
+    //   ref: "tag",
+    //   default: [],
+    //   // required: true,
+    // },
     team: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "team",
@@ -120,6 +120,18 @@ const userSchema = mongoose.Schema(
       default: false,
     },
     isSuperUser: {
+      type: Boolean,
+      default: false,
+    },
+    offersAndPackages: {
+      type: Boolean,
+      default: false,
+    },
+    notifications: {
+      type: Boolean,
+      default: false,
+    },
+    renewalSubscription: {
       type: Boolean,
       default: false,
     },

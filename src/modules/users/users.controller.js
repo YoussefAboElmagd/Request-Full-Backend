@@ -4,6 +4,7 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import AppError from "../../utils/appError.js";
 import { DateTime } from "luxon";
 import { photoUpload } from "../../utils/removeFiles.js";
+import { contactUs } from "../../email/sendEmail.js";
 
 const updateprofilePic = catchAsync(async (req, res, next) => {
   let { id } = req.params;
@@ -22,6 +23,14 @@ const updateprofilePic = catchAsync(async (req, res, next) => {
 });
 
 
+const postMessage = catchAsync(async (req, res, next) => {
+  let { id } = req.params;
+  let user = await userModel.findById(id);
+  !user && res.status(404).json({ message: "couldn't post! not found!" });
+  contactUs( user.name,user.email,req.body.message);
+  res.json({ message: "Message sent to admin", user });
+});
+
 const updateCollection = catchAsync(async (req, res, next) => {
   let { id } = req.params;
 
@@ -33,7 +42,9 @@ const updateCollection = catchAsync(async (req, res, next) => {
   if (signature) updates.signature = signature;
   if (companyLogo) updates.companyLogo = companyLogo;
   if (electronicStamp) updates.electronicStamp = electronicStamp;
-  
+  if(req.body.companyName){
+    updates.companyName = req.body.companyName
+  }
   if (Object.keys(updates).length > 0) {
     const updatedProfile = await userModel.findByIdAndUpdate(id, updates, { new: true });
   }
@@ -232,4 +243,5 @@ export {
   updateCollection,
   updateprofilePic,
   getUserTags,
+  postMessage,
 };
