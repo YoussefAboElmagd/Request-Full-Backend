@@ -164,6 +164,9 @@ userSchema.pre(/^delete/, { document: false, query: true }, async function () {
   const doc = await this.model.findOne(this.getFilter());
   if (doc) {
     removeFile("profilePic", doc.profilePic);
+    removeFile("company", doc.companyLogo);
+    removeFile("company", doc.electronicStamp);
+    removeFile("company", doc.signature);
   }
 });
 userSchema.pre(/^find/, function () {

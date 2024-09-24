@@ -5,7 +5,7 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const createTags = catchAsync(async (req, res, next) => {
   req.body.model = "66e5570f78313d16a73caa9a";
-
+  req.body.createdBy = req.params.id
   const newComp = new tagsModel(req.body);
   const savedComp = await newComp.save();
 
