@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { teamModel } from "./team.model.js";
 
 const projectSchema = mongoose.Schema(
   {
@@ -123,6 +122,10 @@ const projectSchema = mongoose.Schema(
       ref: "user",
       default: [],
     },
+    tags: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "tag",
+      default: [],},
     model: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "model",
