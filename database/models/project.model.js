@@ -99,7 +99,6 @@ const projectSchema = mongoose.Schema(
     team: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "team",
-      default: null,
       // required: true,
     },
     tasks: {
@@ -125,7 +124,8 @@ const projectSchema = mongoose.Schema(
     tags: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "tag",
-      default: [],},
+      default: [],
+    },
     model: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "model",

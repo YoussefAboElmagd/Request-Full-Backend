@@ -35,7 +35,8 @@ const getProjectById = catchAsync(async (req, res, next) => {
   .populate("consultant")
   .populate("mainConsultant")
   .populate("members")
-  .populate("team")
+  .populate("tags")
+  // .populate("team")
   .populate("owner");
   !results && next(new AppError(`not found `, 404));
   results && res.json({ message: "Done", results });
@@ -61,7 +62,7 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
         .populate("consultant")
         .populate("mainConsultant")
         .populate("createdBy")
-        .populate("team")
+        // .populate("team")
         .populate("members")
         .populate("owner"),
       req.query
@@ -482,6 +483,7 @@ const updateProject = catchAsync(async (req, res, next) => {
     owner,
     team,
     budget,
+    tags,
   } = req.body;
   const updatedProject = await projectModel.findByIdAndUpdate(
     id,
@@ -498,6 +500,7 @@ const updateProject = catchAsync(async (req, res, next) => {
         contractor,
         consultant,
         owner,
+        tags,
       },
       team,
       budget,

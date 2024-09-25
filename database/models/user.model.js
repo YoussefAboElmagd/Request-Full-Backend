@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import { removeFile } from "../../src/utils/removeFiles.js";
 import { tagsModel } from "./tags.model.js";
+import { teamModel } from "./team.model.js";
 
 const userSchema = mongoose.Schema(
   {
@@ -165,6 +166,7 @@ userSchema.pre(/^delete/, { document: false, query: true }, async function () {
   const doc = await this.model.findOne(this.getFilter());
   if (doc) {
     await tagsModel.deleteMany({ createdBy: doc._id });
+    await teamModel.deleteMany({ createdBy: doc._id });
     removeFile("profilePic", doc.profilePic);
     removeFile("company", doc.companyLogo);
     removeFile("company", doc.electronicStamp);
@@ -174,6 +176,5 @@ userSchema.pre(/^delete/, { document: false, query: true }, async function () {
 userSchema.pre(/^find/, function () {
   this.populate("role");
   this.populate("vocation");
-  // this.populate("tags");
 });
 export const userModel = mongoose.model("user", userSchema);
