@@ -144,13 +144,13 @@ if(doc){
     doc.status = "delayed";
     doc.save();
   }
-  if (doc.team) {
-    const team = await teamModel.findOne({ _id: doc.team });
-    if (team) {
-      const newMembers = team.members.filter((item) => !doc.members.includes(item));
-      doc.members.push(...newMembers);
-    }
-  }
+  // if (doc.team) {
+  //   const team = await teamModel.findOne({ _id: doc.team });
+  //   if (team) {
+  //     const newMembers = team.members.filter((item) => !doc.members.includes(item));
+  //     doc.members.push(...newMembers);
+  //   }
+  // }
 }    
   });
 
@@ -166,37 +166,37 @@ projectSchema.pre('findOneAndUpdate', async function (next) {
   }
 
   // If team is being updated
-  if (update.team) {
-    const team = await teamModel.findOne({ _id: update.team });
-    if (team) {
-      // Fetch the current project document to retrieve existing members
-      const currentProject = await this.model.findOne(this.getQuery());
-      const currentMembers = currentProject.members || [];
-      const newMembers = team.members.filter((item) => !currentMembers.includes(item));
-      this.setUpdate({
-        ...update,
-        members: [...currentMembers, ...newMembers]
-      });
-    }
-  }
+  // if (update.team) {
+  //   const team = await teamModel.findOne({ _id: update.team });
+  //   if (team) {
+  //     // Fetch the current project document to retrieve existing members
+  //     const currentProject = await this.model.findOne(this.getQuery());
+  //     const currentMembers = currentProject.members || [];
+  //     const newMembers = team.members.filter((item) => !currentMembers.includes(item));
+  //     this.setUpdate({
+  //       ...update,
+  //       members: [...currentMembers, ...newMembers]
+  //     });
+  //   }
+  // }
 
   next();
 });
 
-projectSchema.pre('find', async function (next) {
-  const query = this.getQuery();
-  if (query.team) {
-    const team = await teamModel.findOne({ _id: query.team });
-    if (team) {
-      const newMembers = team.members.filter((item) => !query.members.includes(item));
-      query.members = [...query.members, ...newMembers];
-      this.setQuery(query);
-      await this.save();
-    }
-  }
+// projectSchema.pre('find', async function (next) {
+//   const query = this.getQuery();
+//   if (query.team) {
+//     const team = await teamModel.findOne({ _id: query.team });
+//     if (team) {
+//       const newMembers = team.members.filter((item) => !query.members.includes(item));
+//       query.members = [...query.members, ...newMembers];
+//       this.setQuery(query);
+//       await this.save();
+//     }
+//   }
 
-  next();
-});
+//   next();
+// });
 
 // projectSchema.pre(/^find/, function () {
 //   this.populate('members','owner','consultant','mainConsultant','contractor','tasks');

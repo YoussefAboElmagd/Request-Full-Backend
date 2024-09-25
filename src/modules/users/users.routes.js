@@ -18,7 +18,7 @@ usersRouter.get("/tags/:id", usersController.getUserTags);
 usersRouter.put("/:id", usersController.updateUser);
 usersRouter.put("/pull/:id", usersController.updateUser2);
 usersRouter.delete("/:id", usersController.deleteUser);
-usersRouter.post("/email/:id", usersController.postMessage);
+usersRouter.post("/contactUs/:id", usersController.postMessage);
 
 usersRouter.put(
   "/photo/:id",
