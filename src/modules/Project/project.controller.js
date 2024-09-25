@@ -51,19 +51,36 @@ const getProjectById = catchAsync(async (req, res, next) => {
 ////////////////////////////////// admin \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
-  let ApiFeat = new ApiFeature(
-    projectModel
-      .find()
-      .populate("contractor")
-      .populate("consultant")
-      .populate("mainConsultant")
-      .populate("createdBy")
-      .populate("members")
-      .populate("owner"),
-    req.query
-  )
-    .sort()
-    .search();
+  let ApiFeat = null ;
+  if(req.query.status == "all"){
+    ApiFeat = new ApiFeature(
+      projectModel
+        .find()
+        .populate("contractor")
+        .populate("consultant")
+        .populate("mainConsultant")
+        .populate("createdBy")
+        .populate("members")
+        .populate("owner"),
+      req.query
+    )
+      .sort()
+      .search();
+  }else{
+    ApiFeat = new ApiFeature(
+      projectModel
+        .find({status: req.query.status})
+        .populate("contractor")
+        .populate("consultant")
+        .populate("mainConsultant")
+        .populate("createdBy")
+        .populate("members")
+        .populate("owner"),
+      req.query
+    )
+      .sort()
+      .search();
+  }
   let results = await ApiFeat.mongooseQuery;
   results = JSON.stringify(results);
   results = JSON.parse(results);
@@ -187,87 +204,105 @@ const getAllAnalyticsByUser = catchAsync(async (req, res, next) => {
     }),
   });
 });
-const getAllProjectByStatusByAdmin = catchAsync(async (req, res, next) => {
-  let ApiFeat = new ApiFeature(
-    projectModel
-      .find({ status: req.query.status })
-      .populate("contractor")
-      .populate("consultant")
-      .populate("mainConsultant")
-      .populate("members")
-      .populate("owner"),
-    req.query
-  )
-    .sort()
-    .search();
-  let results = await ApiFeat.mongooseQuery;
-  results = JSON.stringify(results);
-  results = JSON.parse(results);
-  if (!ApiFeat || !results) {
-    return res.status(404).json({
-      message: "No Project was found!",
-    });
-  }
+// const getAllProjectByStatusByAdmin = catchAsync(async (req, res, next) => {
+//   let ApiFeat = new ApiFeature(
+//     projectModel
+//       .find({ status: req.query.status })
+//       .populate("contractor")
+//       .populate("consultant")
+//       .populate("mainConsultant")
+//       .populate("members")
+//       .populate("owner"),
+//     req.query
+//   )
+//     .sort()
+//     .search();
+//   let results = await ApiFeat.mongooseQuery;
+//   results = JSON.stringify(results);
+//   results = JSON.parse(results);
+//   if (!ApiFeat || !results) {
+//     return res.status(404).json({
+//       message: "No Project was found!",
+//     });
+//   }
 
-  let { filterType, filterValue } = req.query;
-  if (filterType && filterValue) {
-    results = results.filter(function (item) {
-      if (filterType == "name") {
-        return item.name.toLowerCase().includes(filterValue.toLowerCase());
-      }
-      if (filterType == "description") {
-        return item.description
-          .toLowerCase()
-          .includes(filterValue.toLowerCase());
-      }
-      // if (filterType == "date") {
-      //   return item.dueDate.includes(filterValue);
-      // }
-      // if (filterType == "budget") {
-      //   return item.budget.toString().includes(filterValue);
-      // }
-      if (filterType == "createdBy") {
-        return item.createdBy.name.toLowerCase().includes(filterValue.toLowerCase());
-      }
-      if (filterType == "members") {
-        if (item.members[0]) {
-          return item.members[0].name
-            .toLowerCase()
-            .includes(filterValue.toLowerCase());
-        }
-      }
-    });
-  }
+//   let { filterType, filterValue } = req.query;
+//   if (filterType && filterValue) {
+//     results = results.filter(function (item) {
+//       if (filterType == "name") {
+//         return item.name.toLowerCase().includes(filterValue.toLowerCase());
+//       }
+//       if (filterType == "description") {
+//         return item.description
+//           .toLowerCase()
+//           .includes(filterValue.toLowerCase());
+//       }
+//       // if (filterType == "date") {
+//       //   return item.dueDate.includes(filterValue);
+//       // }
+//       // if (filterType == "budget") {
+//       //   return item.budget.toString().includes(filterValue);
+//       // }
+//       if (filterType == "createdBy") {
+//         return item.createdBy.name.toLowerCase().includes(filterValue.toLowerCase());
+//       }
+//       if (filterType == "members") {
+//         if (item.members[0]) {
+//           return item.members[0].name
+//             .toLowerCase()
+//             .includes(filterValue.toLowerCase());
+//         }
+//       }
+//     });
+//   }
 
-  res.json({
-    message: "Done",
-    count: await projectModel.countDocuments({ status: req.query.status }),
-    results,
-  });
-});
+//   res.json({
+//     message: "Done",
+//     count: await projectModel.countDocuments({ status: req.query.status }),
+//     results,
+//   });
+// });
 const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
   let foundUser = await userModel.findById(req.params.id);
-  // console.log(foundUser,"foundUser");
   if (!foundUser) {
     return res.status(404).json({ message: "User not found!" });
   }
-  let ApiFeat = new ApiFeature(
-    projectModel
-      .find({
-        $and: [
-          { _id: { $in: foundUser.projects } },
-          { status: req.query.status },
-        ],
-      })
-      .populate("contractor")
-      .populate("consultant")
-      .populate("mainConsultant")
-      .populate("members")
-      .populate("owner"),
-    req.query
-  )
-    .sort()
-    .search();
+  let ApiFeat = null;
+  if(req.query.status == "all"){
+    
+    ApiFeat = new ApiFeature(
+      projectModel
+        .find(
+            { members: { $in: req.params.id } },
+        )
+        .populate("contractor")
+        .populate("consultant")
+        .populate("mainConsultant")
+        .populate("members")
+        .populate("owner"),
+      req.query
+    )
+      .sort()
+      .search();
+  }else{
+    ApiFeat = new ApiFeature(
+      projectModel
+        .find({
+          $and: [
+            { members: { $in: req.params.id } },
+            { status: req.query.status },
+          ],
+        })
+        .populate("contractor")
+        .populate("consultant")
+        .populate("mainConsultant")
+        .populate("members")
+        .populate("owner"),
+      req.query
+    )
+      .sort()
+      .search();
+  }
   let results = await ApiFeat.mongooseQuery;
   results = JSON.stringify(results);
   results = JSON.parse(results);
@@ -309,7 +344,7 @@ const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
 
   res.json({
     message: "Done",
-    count: await projectModel.countDocuments(),
+    count: await projectModel.countDocuments({ members: { $in: req.params.id } }),
     results,
   });
 });
@@ -494,7 +529,7 @@ export {
   createProject,
   getProjectById,
   getAllDocsProject,
-  getAllProjectByStatusByAdmin,
+  // getAllProjectByStatusByAdmin,
   getAllProjectByStatusByUser,
   getAllProjectsFilesByUser,
   getAllProjectByUser,
