@@ -7,37 +7,49 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import { taskModel } from "../../../database/models/tasks.model.js";
 
 const createProject = catchAsync(async (req, res, next) => {
-    req.body.model = "66ba015a73f994dd94dbc1e9";
-    if (req.body.budget < 0) {
-      return res.status(404).json({ message: "Budget must be greater than 0" });
-    }
-    let newProject = new projectModel(req.body);
-    let addedProject = await newProject
-    addedProject.members.push(addedProject.createdBy);
-    addedProject.members.push(addedProject.contractor);
-    addedProject.members.push(addedProject.owner);
-    addedProject.members.push(addedProject.consultant);
-    addedProject.members.push(addedProject.mainConsultant);
-    addedProject.members = addedProject.members.filter((item, index) => addedProject.members.indexOf(item) === index);
+  req.body.model = "66ba015a73f994dd94dbc1e9";
+  if (req.body.budget < 0) {
+    return res.status(404).json({ message: "Budget must be greater than 0" });
+  }
+  let newProject = new projectModel(req.body);
+  let addedProject = await newProject;
+  addedProject.members.push(addedProject.createdBy);
+  addedProject.members.push(addedProject.contractor);
+  addedProject.members.push(addedProject.owner);
+  addedProject.members.push(addedProject.consultant);
+  addedProject.members.push(addedProject.mainConsultant);
+  addedProject.members = addedProject.members.filter(
+    (item, index) => addedProject.members.indexOf(item) === index
+  );
 
-    await addedProject.save();
-    res.status(201).json({
-      message: " Project has been created successfully!",
-      addedProject,
-    });
-
+  await addedProject.save();
+  res.status(201).json({
+    message: " Project has been created successfully!",
+    addedProject,
+  });
 });
 
 const getProjectById = catchAsync(async (req, res, next) => {
   let { id } = req.params;
 
-  let results = await projectModel.findById(id).populate("contractor")
-  .populate("consultant")
-  .populate("mainConsultant")
-  .populate("members")
-  .populate("tags")
-  // .populate("team")
-  .populate("owner");
+  let results = await projectModel
+    .findById(id)
+    .populate("contractor")
+    .populate("consultant")
+    .populate("mainConsultant")
+    .populate("members")
+    .populate("tags")
+    .populate({
+      path: "team",
+      select:
+        "members",
+      populate: {
+        path: "members",
+        model: "user",
+        select: "_id name profilePic",
+      },
+    })
+    .populate("owner");
   !results && next(new AppError(`not found `, 404));
   results && res.json({ message: "Done", results });
   if (!ApiFeat || !results) {
@@ -53,8 +65,8 @@ const getProjectById = catchAsync(async (req, res, next) => {
 ////////////////////////////////// admin \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
-  let ApiFeat = null ;
-  if(req.query.status == "all"){
+  let ApiFeat = null;
+  if (req.query.status == "all") {
     ApiFeat = new ApiFeature(
       projectModel
         .find()
@@ -69,10 +81,10 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
     )
       .sort()
       .search();
-  }else{
+  } else {
     ApiFeat = new ApiFeature(
       projectModel
-        .find({status: req.query.status})
+        .find({ status: req.query.status })
         .populate("contractor")
         .populate("consultant")
         .populate("mainConsultant")
@@ -109,8 +121,10 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
       // if (filterType == "date") {
       //   return item.dueDate.includes(filterValue);
       // }
-      if (filterType == "createdBy") {        
-        return item.createdBy.name.toLowerCase().includes(filterValue.toLowerCase());
+      if (filterType == "createdBy") {
+        return item.createdBy.name
+          .toLowerCase()
+          .includes(filterValue.toLowerCase());
       }
       // if (filterType == "members") {
       //   if (item.members) {
@@ -127,25 +141,55 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
   });
 });
 const getAllProjectByUser = catchAsync(async (req, res, next) => {
-  let ApiFeat = new ApiFeature(
-    projectModel
-      .find({ members: { $in: req.params.id } })
-      .sort({ $natural: -1 })
-      .select("tasks name")
-      .populate({
-        path: 'tasks',
-        select: 'title taskPriority taskStatus assignees documents startDate dueDate notes',
-        match: { assignees: { $in: req.params.id } }, // Filter tasks with the assignee matching req.params.id
-        populate: {
-          path: 'assignees',
-          model: 'user',
-          select: '_id name profilePic'
-        }
-      }),
-    req.query
-  )
-    .sort()
-    .search();
+  let ApiFeat = null;
+
+  if (
+    req.user.role._id == "66d33a4b4ad80e468f231f83" ||
+    req.user.role._id == "66d33e7a4ad80e468f231f8d" ||
+    req.user.role._id == "66d33ec44ad80e468f231f91"
+  ) {
+    ApiFeat = new ApiFeature(
+      projectModel
+        .find({ members: { $in: req.params.id } })
+        .sort({ $natural: -1 })
+        .select("tasks name")
+        .populate({
+          path: "tasks",
+          select:
+            "title taskPriority taskStatus assignees documents startDate dueDate notes",
+          populate: {
+            path: "assignees",
+            model: "user",
+            select: "_id name profilePic",
+          },
+        }),
+      req.query
+    )
+      .sort()
+      .search();
+  } else {
+    ApiFeat = new ApiFeature(
+      projectModel
+        .find({ members: { $in: req.params.id } })
+        .sort({ $natural: -1 })
+        .select("tasks name")
+        .populate({
+          path: "tasks",
+          select:
+            "title taskPriority taskStatus assignees documents startDate dueDate notes",
+          match: { assignees: { $in: req.params.id } }, // Filter tasks with the assignee matching req.params.id
+          populate: {
+            path: "assignees",
+            model: "user",
+            select: "_id name profilePic",
+          },
+        }),
+      req.query
+    )
+      .sort()
+      .search();
+  }
+
   let results = await ApiFeat.mongooseQuery;
   results = JSON.stringify(results);
   results = JSON.parse(results);
@@ -154,16 +198,17 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
       message: "No Project was found!",
     });
   }
-  results.forEach(project => {
-    project.taskCount= project.tasks.length
-    project.tasks.forEach(task => {
+  results.forEach((project) => {
+    project.taskCount = project.tasks.length;
+    project.tasks.forEach((task) => {
       task.documentsLength = task.documents.length;
       task.notesLength = task.notes.length;
-      delete task.notes
-      delete task.updatedAt
-      delete task.isDelayed
+      delete task.notes;
+      delete task.updatedAt;
+      delete task.isDelayed;
       delete task.documents;
-    })})
+    });
+  });
   let { filterType, filterValue } = req.query;
   if (filterType && filterValue) {
     results = results.filter(function (item) {
@@ -189,95 +234,34 @@ const getAllAnalyticsByUser = catchAsync(async (req, res, next) => {
     countProjects: await projectModel.countDocuments({
       members: { $in: req.params.id },
     }),
-    totalTasks: await taskModel.countDocuments({ assignees: { $in: req.params.id } }),
-    delayedTasks: await taskModel.countDocuments({$and:[
-      { assignees: { $in: req.params.id } },
-      {isDelayed: true}
-    ]
+    totalTasks: await taskModel.countDocuments({
+      assignees: { $in: req.params.id },
     }),
-    inProgressTasks: await taskModel.countDocuments({$and:[
-      { assignees: { $in: req.params.id } },
-      {taskStatus: "working"}
-    ]
+    delayedTasks: await taskModel.countDocuments({
+      $and: [{ assignees: { $in: req.params.id } }, { isDelayed: true }],
     }),
-    completedTasks: await taskModel.countDocuments({$and:[
-      { assignees: { $in: req.params.id } },
-      {taskStatus: "completed"}
-    ]
+    inProgressTasks: await taskModel.countDocuments({
+      $and: [{ assignees: { $in: req.params.id } }, { taskStatus: "working" }],
+    }),
+    completedTasks: await taskModel.countDocuments({
+      $and: [
+        { assignees: { $in: req.params.id } },
+        { taskStatus: "completed" },
+      ],
     }),
   });
 });
-// const getAllProjectByStatusByAdmin = catchAsync(async (req, res, next) => {
-//   let ApiFeat = new ApiFeature(
-//     projectModel
-//       .find({ status: req.query.status })
-//       .populate("contractor")
-//       .populate("consultant")
-//       .populate("mainConsultant")
-//       .populate("members")
-//       .populate("owner"),
-//     req.query
-//   )
-//     .sort()
-//     .search();
-//   let results = await ApiFeat.mongooseQuery;
-//   results = JSON.stringify(results);
-//   results = JSON.parse(results);
-//   if (!ApiFeat || !results) {
-//     return res.status(404).json({
-//       message: "No Project was found!",
-//     });
-//   }
 
-//   let { filterType, filterValue } = req.query;
-//   if (filterType && filterValue) {
-//     results = results.filter(function (item) {
-//       if (filterType == "name") {
-//         return item.name.toLowerCase().includes(filterValue.toLowerCase());
-//       }
-//       if (filterType == "description") {
-//         return item.description
-//           .toLowerCase()
-//           .includes(filterValue.toLowerCase());
-//       }
-//       // if (filterType == "date") {
-//       //   return item.dueDate.includes(filterValue);
-//       // }
-//       // if (filterType == "budget") {
-//       //   return item.budget.toString().includes(filterValue);
-//       // }
-//       if (filterType == "createdBy") {
-//         return item.createdBy.name.toLowerCase().includes(filterValue.toLowerCase());
-//       }
-//       if (filterType == "members") {
-//         if (item.members[0]) {
-//           return item.members[0].name
-//             .toLowerCase()
-//             .includes(filterValue.toLowerCase());
-//         }
-//       }
-//     });
-//   }
-
-//   res.json({
-//     message: "Done",
-//     count: await projectModel.countDocuments({ status: req.query.status }),
-//     results,
-//   });
-// });
 const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
   let foundUser = await userModel.findById(req.params.id);
   if (!foundUser) {
     return res.status(404).json({ message: "User not found!" });
   }
   let ApiFeat = null;
-  if(req.query.status == "all"){
-    
+  if (req.query.status == "all") {
     ApiFeat = new ApiFeature(
       projectModel
-        .find(
-            { members: { $in: req.params.id } },
-        )
+        .find({ members: { $in: req.params.id } })
         .populate("contractor")
         .populate("consultant")
         .populate("mainConsultant")
@@ -287,7 +271,7 @@ const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
     )
       .sort()
       .search();
-  }else{
+  } else {
     ApiFeat = new ApiFeature(
       projectModel
         .find({
@@ -326,12 +310,6 @@ const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
           .toLowerCase()
           .includes(filterValue.toLowerCase());
       }
-      // if (filterType == "date") {
-      //   return item.dueDate.includes(filterValue);
-      // }
-      // if (filterType == "budget") {
-      //   return item.budget.toString().includes(filterValue);
-      // }
       if (filterType == "createdBy") {
         return item.createdBy.toLowerCase().includes(filterValue.toLowerCase());
       }
@@ -347,7 +325,9 @@ const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
 
   res.json({
     message: "Done",
-    count: await projectModel.countDocuments({ members: { $in: req.params.id } }),
+    count: await projectModel.countDocuments({
+      members: { $in: req.params.id },
+    }),
     results,
   });
 });
@@ -380,9 +360,9 @@ const getAllDocsProject = catchAsync(async (req, res, next) => {
 const getAllMembersProject = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
     projectModel.findById(req.params.id).populate({
-      path: 'members',
-      model: 'user',
-      select: '_id name profilePic' // Select only _id and profilePic for assignees
+      path: "members",
+      model: "user",
+      select: "_id name profilePic", // Select only _id and profilePic for assignees
     }),
     req.query
   )
@@ -395,7 +375,7 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
     return res.status(404).json({
       message: "No Project was found!",
     });
-  }  
+  }
   let members = [];
   if (results.members) {
     members = results.members;
@@ -462,7 +442,6 @@ const getAllProjectsFilesByUser = catchAsync(async (req, res, next) => {
     results,
   });
 });
-
 
 const updateProject = catchAsync(async (req, res, next) => {
   const { id } = req.params;

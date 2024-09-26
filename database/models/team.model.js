@@ -23,11 +23,7 @@ const teamSchema = mongoose.Schema(
   { timestamps: true }
 );
 
-teamSchema.pre(/^find/, function (next) {
-  this.select().lean(); // Ensure we're working with plain objects (faster for calculations)
 
-  next(); // Move to the next middleware/operation
-});
 teamSchema.post(/^find/, function (docs) {
   if (Array.isArray(docs)) {
     docs.forEach((doc) => {
