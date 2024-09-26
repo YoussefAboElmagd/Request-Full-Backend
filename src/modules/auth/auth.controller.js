@@ -171,7 +171,10 @@ export const forgetPassword = catchAsync(async (req, res, next) => {
 // 4- check if this token is the last one or not (change password )
 
 export const protectRoutes = catchAsync(async (req, res, next) => {
-  let { token } = req.headers;
+
+const authorizationHeader = req.headers.authorization; // Get the Authorization header
+
+  const token = authorizationHeader.split(' ')[1];
   if (!token) {
     return next(new AppError(`please login first`, 401));
   }
