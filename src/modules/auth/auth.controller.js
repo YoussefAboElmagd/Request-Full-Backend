@@ -172,7 +172,7 @@ export const forgetPassword = catchAsync(async (req, res, next) => {
 
 export const protectRoutes = catchAsync(async (req, res, next) => {
 
-const authorizationHeader = req.headers.authorization; // Get the Authorization header
+const authorizationHeader = req.headers.authorization;
 
   const token = authorizationHeader.split(' ')[1];
   if (!token) {
