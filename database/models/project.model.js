@@ -16,6 +16,12 @@ const projectSchema = mongoose.Schema(
       default: "onGoing",
       required: true,
     },
+    projectPriority: {
+      type: String,
+      enum: ["medium", "high","low"],
+      default: "medium",
+      required: true,
+    },
     isAproved: {
       type: Boolean,
       default: false,
