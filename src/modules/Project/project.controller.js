@@ -465,10 +465,12 @@ const updateProject = catchAsync(async (req, res, next) => {
     members,
     contractor,
     consultant,
+    mainConsultant,
     owner,
     team,
     budget,
     tags,
+    notes,
   } = req.body;
   const updatedProject = await projectModel.findByIdAndUpdate(
     id,
@@ -490,8 +492,49 @@ const updateProject = catchAsync(async (req, res, next) => {
         members,
         contractor,
         consultant,
-        owner,
         tags,
+        notes
+      },
+      owner,
+      mainConsultant,
+      team,
+      budget,
+    },
+    { new: true }
+  );
+
+  if (!updatedProject) {
+    return res.status(404).json({ message: "Project not found!" });
+  }
+  res.status(200).json({
+    message: "project updated successfully!",
+    updatedProject,
+  });
+});
+const updateProject2 = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+
+  let {
+    documents,
+    tasks,
+    members,
+    contractor,
+    consultant,
+    team,
+    tags,
+    notes,
+  } = req.body;
+  const updatedProject = await projectModel.findByIdAndUpdate(
+    id,
+    {
+      $pull: {
+        documents,
+        tasks,
+        members,
+        contractor,
+        consultant,
+        tags,
+        notes
       },
       team,
       budget,
@@ -532,4 +575,5 @@ export {
   getAllProjectsFilesByAdmin,
   getAllAnalyticsByUser,
   getAllMembersProject,
+  updateProject2,
 };

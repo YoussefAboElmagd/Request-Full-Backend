@@ -208,6 +208,30 @@ const updateTask = catchAsync(async (req, res, next) => {
 
   res.status(200).json({ message: "Task updated successfully!", updatedTask });
 });
+const updateTask2 = catchAsync(async (req, res, next) => {
+  let { id } = req.params;
+  let {
+    documents,
+    assignees,
+    notes,
+  } = req.body;
+  let updatedTask = await taskModel.findByIdAndUpdate(
+    id,
+
+    {
+      $pull: { documents, assignees,notes },
+    },
+    {
+      new: true,
+    }
+  );
+
+  if (!updatedTask) {
+    return res.status(404).json({ message: "Couldn't update!  not found!" });
+  }
+
+  res.status(200).json({ message: "Task updated successfully!", updatedTask });
+});
 const deleteTask = catchAsync(async (req, res, next) => {
   let { id } = req.params;
 
@@ -227,5 +251,6 @@ export {
   deleteTask,
   getAllTaskByUser,
   updateTask,
+  updateTask2,
   getAllTaskByProject,
 };

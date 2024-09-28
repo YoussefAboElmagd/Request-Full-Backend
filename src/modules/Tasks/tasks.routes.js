@@ -10,6 +10,7 @@ taskRouter.get("/:id", taskController.getTaskById);
 taskRouter.get("/project/:id", taskController.getAllTaskByProject);
 taskRouter.post("/", taskController.createTask);
 taskRouter.put("/:id", taskController.updateTask);
+taskRouter.put("/pull/:id", taskController.updateTask2);
 taskRouter.delete("/:id", taskController.deleteTask);
 
 export default taskRouter;
