@@ -422,36 +422,50 @@ const getAllProjectsFilesByAdmin = catchAsync(async (req, res, next) => {
     {
       $project: {
         // _id: 1, // Include project ID
-        name: 1, // Include project name
+        name: 1,
         tasks: {
           _id: 1,
           title: 1,
           documents: 1,
           tags: 1,
           
-        }, // Only return specific fields from the tasks
+        }, 
       },
     },
     {
-      $sort: { name: 1 }, // Optionally sort by project name
+      $sort: { name: 1 }, 
     },
   ]);
   results = await projectModel.populate(results, {
-    path: "tasks.tags", // Correct path for the nested populate
+    path: "tasks.tags", 
     model: "tag",
-    select: "name colorCode", // Ensure you're using the correct model for tags
+    select: "name colorCode", 
   });
   results = await projectModel.populate(results, {
-    path: "tasks.documents", // Correct path for the nested populate
+    path: "tasks.documents", 
     model: "document",
-    select: "document", // Ensure you're using the correct model for tags
+    select: "document", 
   });
-  // results = await projectModel.populate(results, { path: "documents" });
   results.forEach((project) => {
     project.tasks = project.tasks.filter((task) => {
       return task.documents.length > 0; // Keep tasks with non-empty documents
     });
   });
+  let { filterType, filterValue } = req.query;
+  if (filterType && filterValue) {
+    results = results.filter(function (item) {
+      if (filterType == "project") {
+        return item.name.toLowerCase().includes(filterValue.toLowerCase());
+      }
+      // if (filterType == "tags") {
+      //   if(item.tasks){
+      //     return item.tasks.some((task) => {
+      //       return task.title.toLowerCase().includes(filterValue.toLowerCase());
+      //     });
+      //   }
+      // }
+    });
+  }
   res.json({
     message: "Done",
     results,
