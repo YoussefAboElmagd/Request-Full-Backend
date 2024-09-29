@@ -72,11 +72,11 @@ const projectSchema = mongoose.Schema(
       type: Date,
       required: true,
     },
-    documents: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref: "document",
-      // required: true,
-    },
+    // documents: {
+    //   type: [mongoose.Schema.Types.ObjectId],
+    //   ref: "document",
+    //   // required: true,
+    // },
     mainConsultant: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",

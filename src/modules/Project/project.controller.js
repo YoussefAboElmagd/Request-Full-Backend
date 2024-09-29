@@ -388,55 +388,115 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
   });
 });
 
+// const getAllProjectsFilesByAdmin = catchAsync(async (req, res, next) => {
+//   let results = await taskModel.aggregate([
+//     {
+//       $group: {
+//         _id: "$project", // Group by project _id
+//         project: { $first: "$project" }, // Show the project _id
+//         tasks: {
+//           $push: {
+//             _id: "$_id",
+//             title: "$title",
+//             documents: "$documents",
+//             tags: "$tags",
+//           },
+//         },
+//       },
+//     },
+//     {
+//       // Optionally, sort the results by project ID or any other field
+//       $sort: { _id: 1 },
+//     },
+//   ]);
+
+//   // Step 2: Populate the project name using the project ID
+//   results = await taskModel.populate(results, { 
+//     path: "project", // Populate the project details
+//     select: "name" // Only fetch the project name
+//   });
+//   results = await taskModel.populate(results, { 
+//     path: "tags", // Populate the project details
+//     select: "name" // Only fetch the project name
+//   });
+
+//   // results = await taskModel.populate(results, { path: "documents" });
+
+//   res.json({
+//     message: "Done",
+//     results,
+//   });
+// });
+
 const getAllProjectsFilesByAdmin = catchAsync(async (req, res, next) => {
   let results = await projectModel.aggregate([
     {
-      // Group by project _id
-      $group: {
-        _id: "$_id",
-        name: { $first: "$name" },
-        documents: { $first: "$documents" },
+      $lookup: {
+        from: "tasks", // Assuming the tasks collection is named "tasks"
+        localField: "_id", // Project _id
+        foreignField: "project", // The field in Task model that references the project
+        as: "tasks", // The field to store the related tasks
       },
     },
     {
-      // Optionally, sort the projects by name or any other field
-      $sort: { name: 1 },
+      $project: {
+        // _id: 1, // Include project ID
+        name: 1, // Include project name
+        tasks: {
+          _id: 1,
+          title: 1,
+          documents: 1,
+          tags: 1,
+        }, // Only return specific fields from the tasks
+      },
+    },
+    {
+      $sort: { name: 1 }, // Optionally sort by project name
     },
   ]);
-
-  // Populate documents and createdBy fields in each project
-  results = await projectModel.populate(results, { path: "documents" });
+  results = await projectModel.populate(results, {
+    path: "tasks.tags", // Correct path for the nested populate
+    model: "tag",
+    select: "name", // Ensure you're using the correct model for tags
+  });
+  // results = await projectModel.populate(results, { path: "documents" });
 
   res.json({
     message: "Done",
     results,
   });
 });
+
 const getAllProjectsFilesByUser = catchAsync(async (req, res, next) => {
   const memberId = new mongoose.Types.ObjectId(req.params.id);
 
   let results = await projectModel.aggregate([
     {
-      // Match projects where members are in the provided memberIds
       $match: { members: memberId },
     },
     {
-      // Group by project _id
-      $group: {
-        _id: "$_id",
-        name: { $first: "$name" },
-        documents: { $first: "$documents" },
+      $project: {
+        name: 1, 
+        tasks: {
+          _id: 1,
+          title: 1,
+          documents: 1,
+          tags: 1,
+        }, 
       },
     },
     {
-      // Optionally, sort the projects by name or any other field
       $sort: { name: 1 },
     },
   ]);
 
-  // Populate documents and createdBy fields in each project
-  results = await projectModel.populate(results, { path: "documents" });
+  results = await projectModel.populate(results, {
+    path: "tasks.tags", 
+    model: "tag",
+    select: "name",
+  });
 
+  // results = await projectModel.populate(results, { path: "documents" });
   res.json({
     message: "Done",
     results,

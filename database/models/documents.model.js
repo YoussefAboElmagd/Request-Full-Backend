@@ -8,7 +8,7 @@ const documentsSchema = mongoose.Schema(
     },
     project: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "project",
+      ref: "task",
       required: true,
     },
     status: {
