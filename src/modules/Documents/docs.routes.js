@@ -8,7 +8,7 @@ import {
 const docsRouter = express.Router();
 
 
-docsRouter.get("/project/:id", docsController.getAllDocsByProject);
+// docsRouter.get("/project/:id", docsController.getAllDocsByProject);
 docsRouter.get("/task/:id", docsController.getAllDocsByTask);
 docsRouter.delete("/:id", docsController.deleteDocs);
 

@@ -107,14 +107,14 @@ taskSchema.post(/^find/, async function (docs) {
   const currentDate = new Date();
   
   // Check if docs is an array (when using find) or a single document
-  if (Array.isArray(docs)) {
-    for (const doc of docs) {
-      if (doc.dueDate && doc.dueDate < currentDate) {
-        doc.isDelayed = true;
-        await doc.save(); // Save if delayed
-      }
-    }
-  }
+  // if (Array.isArray(docs)) {
+  //   for (const doc of docs) {
+  //     if (doc.dueDate && doc.dueDate < currentDate) {
+  //       doc.isDelayed = true;
+  //       await doc.save(); // Save if delayed
+  //     }
+  //   }
+  // }
 });
 taskSchema.pre('findOneAndUpdate', function (next) {
   const update = this.getUpdate();

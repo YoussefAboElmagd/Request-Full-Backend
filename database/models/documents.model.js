@@ -6,7 +6,7 @@ const documentsSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    project: {
+    task: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "task",
       required: true,

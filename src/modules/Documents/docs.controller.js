@@ -1,10 +1,8 @@
 import { documentsModel } from "../../../database/models/documents.model.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
-import path from "path";
-import fsExtra from "fs-extra";
 import ApiFeature from "../../utils/apiFeature.js";
 import { taskModel } from "../../../database/models/tasks.model.js";
-import { projectModel } from "../../../database/models/project.model.js";
+import { photoUpload } from "../../utils/removeFiles.js";
 
 const createDocs = catchAsync(async (req, res, next) => {
 
@@ -12,49 +10,33 @@ const createDocs = catchAsync(async (req, res, next) => {
 
   req.body.model = "66ba00e94554c396c5dd3e47";
 
-  let { comment, project, status, uploadedBy } = req.body;
-  // const newDocs = new documentsModel({comment,project,status,uploadedBy, document});
+  let { comment, task, status, uploadedBy } = req.body;
+  // const newDocs = new documentsModel({comment,task,status,uploadedBy, document});
   // const savedDocs = await newDocs.save();
   const savedDocs = await documentsModel.insertMany({
     comment,
-    project,
+    task,
     status,
     uploadedBy,
     document,
   });
-  let addDocsToProject = await projectModel.findByIdAndUpdate(
-    savedDocs.project,
+  savedDocs.forEach(async (doc) => {
+    
+  await taskModel.findByIdAndUpdate(
+    doc.task,
     {
-      $push: { documents: savedDocs._id },
+      $push: { documents: doc._id },
     },
     { new: true }
   )
+})
+  
   res.status(201).json({
     message: "Docs created successfully!",
     savedDocs,
   });
 });
 
-const getAllDocsByProject = catchAsync(async (req, res, next) => {
-  let ApiFeat = new ApiFeature(
-    documentsModel.find({ project: req.params.id }),
-    req.query
-  );
-  let results = await ApiFeat.mongooseQuery;
-  results = JSON.stringify(results);
-  results = JSON.parse(results);
-  if (!ApiFeat || !results) {
-    return res.status(404).json({
-      message: "No Docs was found!",
-    });
-  }
-  res.json({
-    message: "Done",
-    page: ApiFeat.page,
-    count: await documentsModel.countDocuments({ project: req.params.id }),
-    results,
-  });
-});
 const getAllDocsByTask = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
     taskModel.find({ _id: req.params.id }),
@@ -101,7 +83,6 @@ const deleteDocs = catchAsync(async (req, res, next) => {
 export {
   updateDocs,
   createDocs,
-  getAllDocsByProject,
   deleteDocs,
   getAllDocsByTask,
 };

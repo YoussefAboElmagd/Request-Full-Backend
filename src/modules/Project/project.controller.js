@@ -459,6 +459,11 @@ const getAllProjectsFilesByAdmin = catchAsync(async (req, res, next) => {
     model: "tag",
     select: "name", // Ensure you're using the correct model for tags
   });
+  results = await projectModel.populate(results, {
+    path: "tasks.documents", // Correct path for the nested populate
+    model: "document",
+    select: "document", // Ensure you're using the correct model for tags
+  });
   // results = await projectModel.populate(results, { path: "documents" });
 
   res.json({
