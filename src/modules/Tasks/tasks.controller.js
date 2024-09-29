@@ -110,8 +110,28 @@ const getAllTaskByUser = catchAsync(async (req, res, next) => {
   });
 });
 const getAllTaskByProject = catchAsync(async (req, res, next) => {
-  let ApiFeat = new ApiFeature(
-    taskModel.find({ project: req.params.id }).populate({
+  let ApiFeat = null
+  if (req.query.status == "all") {
+    ApiFeat = new ApiFeature(
+      taskModel.find({ project: req.params.id }).populate({
+        path: 'assignees',
+        select: '_id profilePic name'}),
+      req.query
+    )
+      .sort()
+      .search();
+  } else {
+    ApiFeat = new ApiFeature(
+      taskModel.find({ project: req.params.id }).populate({
+        path: 'assignees',
+        select: '_id profilePic name'}),
+      req.query
+    )
+      .sort()
+      .search();
+  }
+  ApiFeat = new ApiFeature(
+    taskModel.find({$and:[{ project: req.params.id }, {taskStatus: req.query.status}]}).populate({
       path: 'assignees',
       select: '_id profilePic name'}),
     req.query
