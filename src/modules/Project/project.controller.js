@@ -428,6 +428,7 @@ const getAllProjectsFilesByAdmin = catchAsync(async (req, res, next) => {
           title: 1,
           documents: 1,
           tags: 1,
+          
         }, // Only return specific fields from the tasks
       },
     },
@@ -446,7 +447,11 @@ const getAllProjectsFilesByAdmin = catchAsync(async (req, res, next) => {
     select: "document", // Ensure you're using the correct model for tags
   });
   // results = await projectModel.populate(results, { path: "documents" });
-
+  results.forEach((project) => {
+    project.tasks = project.tasks.filter((task) => {
+      return task.documents.length > 0; // Keep tasks with non-empty documents
+    });
+  });
   res.json({
     message: "Done",
     results,
