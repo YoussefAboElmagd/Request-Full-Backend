@@ -122,7 +122,7 @@ const getAllTaskByProject = catchAsync(async (req, res, next) => {
       .search();
   } else {
     ApiFeat = new ApiFeature(
-      taskModel.find({ project: req.params.id }).populate({
+      taskModel.find({$and:[{ project: req.params.id }, {taskStatus: req.query.status}]}).populate({
         path: 'assignees',
         select: '_id profilePic name'}),
       req.query
@@ -130,14 +130,6 @@ const getAllTaskByProject = catchAsync(async (req, res, next) => {
       .sort()
       .search();
   }
-  ApiFeat = new ApiFeature(
-    taskModel.find({$and:[{ project: req.params.id }, {taskStatus: req.query.status}]}).populate({
-      path: 'assignees',
-      select: '_id profilePic name'}),
-    req.query
-  )
-    .sort()
-    .search();
   let results = await ApiFeat.mongooseQuery;
   results = JSON.stringify(results);
   results = JSON.parse(results);
