@@ -26,6 +26,10 @@ const documentsSchema = mongoose.Schema(
       ref: "user",
       required: true,
     },
+    tag: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "tag",
+    },
     model: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "model",

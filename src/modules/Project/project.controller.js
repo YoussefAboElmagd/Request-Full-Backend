@@ -420,52 +420,77 @@ const getAllProjectsFilesByAdmin = catchAsync(async (req, res, next) => {
       },
     },
     {
-      $project: {
-        // _id: 1, // Include project ID
-        name: 1,
-        tasks: {
-          _id: 1,
-          title: 1,
-          documents: 1,
-          tags: 1,
-          
-        }, 
+      $unwind: "$tasks", // Unwind tasks array so we can group by tags
+    },
+    {
+      $match: {
+        "tasks.documents": { $exists: true, $not: { $size: 0 } }, // Only include tasks that have documents
       },
     },
     {
-      $sort: { name: 1 }, 
+      $lookup: {
+        from: "tags", // Assuming the tags collection is named "tags"
+        localField: "tasks.tags", // The field in Task model that references the tag
+        foreignField: "_id", // The field in Tag model
+        as: "taskTags", // Store the related tag info in `taskTags`
+      },
+    },
+    {
+      $unwind: "$taskTags", // Unwind taskTags to prepare for grouping
+    },
+    {
+      $group: {
+        _id: {
+          project: "$_id", // Group by project ID
+          tag: "$taskTags", // Group by tag object (contains _id, name, and colorCode)
+        },
+        tasks: {
+          $push: {
+            _id: "$tasks._id", // Push the task ID into the array
+            title: "$tasks.title", // Optionally include title or other task fields
+            documents: "$tasks.documents", // Optionally include documents
+          },
+        },
+        projectName: { $first: "$name" }, // Keep project name
+      },
+    },
+    {
+      $group: {
+        _id: "$_id.project", // Now group by the project ID again
+        projectName: { $first: "$projectName" }, // Project name
+        tags: {
+          $push: {
+            tag: "$_id.tag", // Push the tag info
+            tasks: "$tasks", // Include tasks grouped by tag
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 1, // Include project ID
+        projectName: 1, // Include project name
+        tags: 1, // Include tags grouped with tasks
+      },
+    },
+    {
+      $sort: { projectName: 1 }, // Sort by project name
     },
   ]);
+  
+  // If you want to populate the tags' details (assuming they weren't already populated)
   results = await projectModel.populate(results, {
-    path: "tasks.tags", 
+    path: "tags.tag",
     model: "tag",
-    select: "name colorCode", 
+    select: "name colorCode",
   });
+  
   results = await projectModel.populate(results, {
-    path: "tasks.documents", 
+    path: "tags.tasks.documents", 
     model: "document",
     select: "document", 
   });
-  results.forEach((project) => {
-    project.tasks = project.tasks.filter((task) => {
-      return task.documents.length > 0; // Keep tasks with non-empty documents
-    });
-  });
-  let { filterType, filterValue } = req.query;
-  if (filterType && filterValue) {
-    results = results.filter(function (item) {
-      if (filterType == "project") {
-        return item.name.toLowerCase().includes(filterValue.toLowerCase());
-      }
-      // if (filterType == "tags") {
-      //   if(item.tasks){
-      //     return item.tasks.some((task) => {
-      //       return task.title.toLowerCase().includes(filterValue.toLowerCase());
-      //     });
-      //   }
-      // }
-    });
-  }
+
   res.json({
     message: "Done",
     results,

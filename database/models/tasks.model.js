@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { documentsModel } from "./documents.model.js";
 
 const taskSchema = mongoose.Schema(
   {
@@ -39,11 +40,6 @@ const taskSchema = mongoose.Schema(
       type: Date,
       required: true,
     },
-    // taskBudget: {
-    //   type: Number,
-    //   default: 0,
-    //   required: true,
-    // },
     documents: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "document",
@@ -104,8 +100,15 @@ if(doc){
     doc.taskStatus = "delayed";
     doc.save();
   }
+  if (doc.documents && doc.documents.length > 0) {
+    await documentsModel.updateMany(
+      { _id: { $in: doc.documents } },
+      { $set: { tag: doc.tags } } 
+    );
+    doc.save();
 }
-});
+}
+  });
 });
 taskSchema.pre('findOneAndUpdate', function (next) {
   const update = this.getUpdate();
