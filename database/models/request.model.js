@@ -22,11 +22,11 @@ const requsetSchema = mongoose.Schema(
       type: String,
       // required: true,
     },
-    project: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "project",
-      required: true, 
-    },
+    // project: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "project",
+    //   required: true, 
+    // },
     comment: {
       type: [String],
     },
