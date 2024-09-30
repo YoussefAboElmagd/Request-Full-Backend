@@ -149,7 +149,7 @@ projectSchema.post(/^find/, async function (docs, next) {
   }
   docs.forEach(async (doc) => {
 if(doc){
-  if (doc.dueDate && doc.dueDate < new Date() && doc.status !== "ending") {
+  if (doc.dueDate && doc.dueDate < new Date() && doc.status !== "completed") {
     doc.status = "delayed";
     doc.save();
   }
