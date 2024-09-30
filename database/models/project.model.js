@@ -12,8 +12,8 @@ const projectSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["onGoing", "ending","delayed","waiting"],
-      default: "onGoing",
+      enum: ["working", "ending","delayed","waiting"],
+      default: "working",
       required: true,
     },
     projectPriority: {
