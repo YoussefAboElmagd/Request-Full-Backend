@@ -12,7 +12,7 @@ const projectSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["working", "ending","delayed","waiting"],
+      enum: ["working", "completed","delayed","waiting"],
       default: "working",
       required: true,
     },
