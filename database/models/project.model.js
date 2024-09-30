@@ -170,7 +170,7 @@ projectSchema.pre('findOneAndUpdate', async function (next) {
   const update = this.getUpdate();
 
   // Check if the dueDate needs to update the status
-  if (update.dueDate && new Date(update.dueDate) < new Date() && update.status !== "ending") {
+  if (update.dueDate && new Date(update.dueDate) < new Date() && update.status !== "completed") {
     this.setUpdate({ ...update, status: "delayed" });
   }
 

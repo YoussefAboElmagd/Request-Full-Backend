@@ -33,7 +33,7 @@ const getAllRequest = catchAsync(async (req, res, next) => {
 const getAllRequestByUser = catchAsync(async (req, res, next) => {
   let { id } = req.params;
 
-  let results = await requsetModel.find({createdBy:id});
+  let results = await requsetModel.find({ createdBy: id });
   !results && next(new AppError(`not found `, 404));
   results && res.json({ message: "Done", results });
 });
@@ -62,4 +62,10 @@ const deleteRequest = catchAsync(async (req, res, next) => {
   });
 });
 
-export { createRequest, getAllRequest, updateRequest, deleteRequest ,getAllRequestByUser };
+export {
+  createRequest,
+  getAllRequest,
+  updateRequest,
+  deleteRequest,
+  getAllRequestByUser,
+};

@@ -50,7 +50,7 @@ const taskSchema = mongoose.Schema(
     },
     taskStatus: {
       type: String,
-      enum: ["completed","working", "waiting"],
+      enum: ["working", "completed","delayed","waiting"],
       default: "working",
       required: true,
     },
@@ -59,10 +59,6 @@ const taskSchema = mongoose.Schema(
       enum: ["medium", "high","low"],
       default: "medium",
       required: true,
-    },
-    isDelayed: {
-      type: Boolean,
-      default: false,
     },
     isConfirmed: {
       type: Boolean,
@@ -87,10 +83,8 @@ const taskSchema = mongoose.Schema(
 
 taskSchema.pre('save', function (next) {
   if (this.dueDate && this.dueDate < new Date()) {
-    this.isDelayed = true;
-  } else {
-    this.isDelayed = false;
-  }
+    this.taskStatus = "delayed";
+  } 
   next();
 });
 
@@ -104,28 +98,21 @@ taskSchema.post(/^find/, async function (docs) {
   if (!Array.isArray(docs)) {
     docs = [docs]; // Convert to array if it's a single document
   }
-  const currentDate = new Date();
-  
-  // Check if docs is an array (when using find) or a single document
-  // if (Array.isArray(docs)) {
-  //   for (const doc of docs) {
-  //     if (doc.dueDate && doc.dueDate < currentDate) {
-  //       doc.isDelayed = true;
-  //       await doc.save(); // Save if delayed
-  //     }
-  //   }
-  // }
+  docs.forEach(async (doc) => {
+if(doc){
+  if (doc.dueDate && doc.dueDate < new Date() && doc.taskStatus !== "completed") {
+    doc.taskStatus = "delayed";
+    doc.save();
+  }
+}
+});
 });
 taskSchema.pre('findOneAndUpdate', function (next) {
   const update = this.getUpdate();
-  if (update.dueDate && new Date(update.dueDate) < new Date()) {
-    this.setUpdate({ ...update, isDelayed: true });
-  } else if (update.dueDate) {
-    this.setUpdate({ ...update, isDelayed: false });
+  if (update.dueDate && new Date(update.dueDate) < new Date() && update.status !== "completed") {
+    this.setUpdate({ ...update, taskStatus: "delayed" });
   }
-  if(update.taskStatus === "completed"){
-    this.setUpdate({ ...update, isDelayed: false });
-  }
+
   next();
 });
 

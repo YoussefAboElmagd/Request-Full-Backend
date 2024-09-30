@@ -51,10 +51,6 @@ const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
       if (filterType == "project") {
         return item.project.name.toLowerCase().includes(filterValue.toLowerCase());
       }
-      if (filterType == "isDelayed") {
-        return item.isDelayed.toString().includes(filterValue.toLowerCase());
-      }
-
     });
   }
 
@@ -96,10 +92,6 @@ const getAllTaskByUser = catchAsync(async (req, res, next) => {
       if (filterType == "project") {
         return item.project.name.toLowerCase().includes(filterValue.toLowerCase());
       }
-      if (filterType == "isDelayed") {
-        return item.isDelayed.toString().includes(filterValue.toLowerCase());
-      }
-
     });
   }
 
@@ -150,10 +142,6 @@ const getAllTaskByProject = catchAsync(async (req, res, next) => {
       if (filterType == "taskPriority") {
         return item.taskPriority.toLowerCase().includes(filterValue.toLowerCase());
       }
-      if (filterType == "isDelayed") {
-        return item.isDelayed.toString().includes(filterValue.toLowerCase());
-      }
-
     });
   }
 
