@@ -470,7 +470,7 @@ const getAllProjectsFilesByAdmin = catchAsync(async (req, res, next) => {
 
 const getAllProjectsFilesByUser = catchAsync(async (req, res, next) => {
   const memberId = new mongoose.Types.ObjectId(req.params.id);
-
+  
   let results = await projectModel.aggregate(
     [
       {
@@ -478,10 +478,10 @@ const getAllProjectsFilesByUser = catchAsync(async (req, res, next) => {
       },
       {
         $lookup: {
-          from: "tasks", // Assuming the tasks collection is named "tasks"
+          from: "tasks", // Join with the tasks collection
           localField: "_id", // Project _id
-          foreignField: "project", // The field in Task model that references the project
-          as: "tasks", // The field to store the related tasks
+          foreignField: "project", // Field in Task model that references the project
+          as: "tasks", // Store related tasks in `tasks`
         },
       },
       {
@@ -489,9 +489,9 @@ const getAllProjectsFilesByUser = catchAsync(async (req, res, next) => {
       },
       {
         $lookup: {
-          from: "tags", // Assuming the tags collection is named "tags"
+          from: "tags", // Join with the tags collection
           localField: "tasks.tags", // The field in Task model that references the tag
-          foreignField: "_id", // The field in Tag model
+          foreignField: "_id", // Field in Tag model
           as: "taskTags", // Store the related tag info in `taskTags`
         },
       },
@@ -500,16 +500,14 @@ const getAllProjectsFilesByUser = catchAsync(async (req, res, next) => {
       },
       {
         $group: {
-          _id: { 
-            project: "$_id", // Group by project ID
-            tag: "$taskTags", // Group by tag object (contains _id, name, and colorCode)
-          },
-          projectName: { $first: "$name" }, // Keep project name
-          tasks: {
-            $push: {
-              _id: "$tasks._id", // Push task ID into the array
-              title: "$tasks.title", // Optionally include title or other task fields
-              documents: "$tasks.documents", // Optionally include documents
+          _id: "$_id", // Group by project ID
+          projectName: { $first: "$name" }, // Keep the project name
+          tags: {
+            $addToSet: {
+              _id: "$taskTags._id", // Tag ID
+              name: "$taskTags.name", // Tag name
+              colorCode: "$taskTags.colorCode", // Tag color code
+              createdBy: "$taskTags.createdBy", // Who created the tag
             },
           },
         },
@@ -518,11 +516,11 @@ const getAllProjectsFilesByUser = catchAsync(async (req, res, next) => {
         $project: {
           _id: 1, // Include project ID
           projectName: 1, // Include project name
-          tags: 1, // Include tags grouped with tasks
+          tags: 1, // Include only tags (no tasks)
         },
       },
       {
-        $sort: { projectName: 1 }, // Sort by project name
+        $sort: { projectName: 1 }, // Sort the projects by name
       },
     ]);
 
