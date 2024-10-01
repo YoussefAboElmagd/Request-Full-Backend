@@ -591,7 +591,7 @@ const getFilesByTags = catchAsync(async (req, res, next) => {
       model: "document",
       select: "document", // Ensure you're using the correct field
     });
-    
+    results = results[0]
     res.json({
     message: "Done",
     results,
@@ -653,11 +653,16 @@ const getTagsByProject = catchAsync(async (req, res, next) => {
     ]
     
     );
-    results = results[0];
+    if (results.length == 0) {
+      results = { tags: [] }   
+    }else{
+      results = results[0];
+    }
     res.json({
     message: "Done",
     results,
   });
+    
 });
 
 const updateProject = catchAsync(async (req, res, next) => {
