@@ -595,6 +595,68 @@ const getFilesByTags = catchAsync(async (req, res, next) => {
     results,
   });
 });
+const getTagsByProject = catchAsync(async (req, res, next) => {
+  const projectId = new mongoose.Types.ObjectId(req.params.id);
+
+  let results = await projectModel.aggregate(
+    [
+      {
+        $match: {
+          _id: projectId, 
+        }
+      },
+      {
+        $lookup: {
+          from: "tasks",
+          localField: "_id", 
+          foreignField: "project", 
+          as: "tasks", 
+        },
+      },
+      {
+        $unwind: "$tasks", 
+      },
+      {
+        $lookup: {
+          from: "tags", 
+          localField: "tasks.tags", 
+          foreignField: "_id", 
+          as: "taskTags", 
+        },
+      },
+      {
+        $unwind: "$taskTags", 
+      },
+      {
+        $group: {
+          _id: "$_id", 
+          projectName: { $first: "$name" }, 
+          tags: {
+            $addToSet: {
+              _id: "$taskTags._id", 
+              name: "$taskTags.name", 
+              colorCode: "$taskTags.colorCode", 
+              createdBy: "$taskTags.createdBy", 
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          projectName: 1, 
+          tags: 1,
+        },
+      }
+    ]
+    
+    );
+    results = results[0];
+    res.json({
+    message: "Done",
+    results,
+  });
+});
 
 const updateProject = catchAsync(async (req, res, next) => {
   const { id } = req.params;
@@ -729,4 +791,5 @@ export {
   getAllAnalyticsByUser,
   getAllMembersProject,
   updateProject2,
+  getTagsByProject,
 };
