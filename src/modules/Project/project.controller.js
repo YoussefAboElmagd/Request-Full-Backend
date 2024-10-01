@@ -410,87 +410,58 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
 
 
 const getAllProjectsFilesByAdmin = catchAsync(async (req, res, next) => {
-  let results = await projectModel.aggregate([
-    {
-      $lookup: {
-        from: "tasks", // Assuming the tasks collection is named "tasks"
-        localField: "_id", // Project _id
-        foreignField: "project", // The field in Task model that references the project
-        as: "tasks", // The field to store the related tasks
-      },
-    },
-    {
-      $unwind: "$tasks", // Unwind tasks array so we can group by tags
-    },
-    {
-      $match: {
-        "tasks.documents": { $exists: true, $not: { $size: 0 } }, // Only include tasks that have documents
-      },
-    },
-    {
-      $lookup: {
-        from: "tags", // Assuming the tags collection is named "tags"
-        localField: "tasks.tags", // The field in Task model that references the tag
-        foreignField: "_id", // The field in Tag model
-        as: "taskTags", // Store the related tag info in `taskTags`
-      },
-    },
-    {
-      $unwind: "$taskTags", // Unwind taskTags to prepare for grouping
-    },
-    {
-      $group: {
-        _id: {
-          project: "$_id", // Group by project ID
-          tag: "$taskTags", // Group by tag object (contains _id, name, and colorCode)
+  let results = await projectModel.aggregate(
+    [
+      {
+        $lookup: {
+          from: "tasks", // Assuming the tasks collection is named "tasks"
+          localField: "_id", // Project _id
+          foreignField: "project", // The field in Task model that references the project
+          as: "tasks", // The field to store the related tasks
         },
-        tasks: {
-          $push: {
-            _id: "$tasks._id", // Push the task ID into the array
-            title: "$tasks.title", // Optionally include title or other task fields
-            documents: "$tasks.documents", // Optionally include documents
+      },
+      {
+        $unwind: "$tasks", // Unwind tasks to access each task individually
+      },
+      {
+        $lookup: {
+          from: "tags", // Assuming the tags collection is named "tags"
+          localField: "tasks.tags", // The field in Task model that references the tag
+          foreignField: "_id", // The field in Tag model
+          as: "taskTags", // Store the related tag info in `taskTags`
+        },
+      },
+      {
+        $unwind: "$taskTags", // Unwind taskTags to handle each tag individually
+      },
+      {
+        $group: {
+          _id: { 
+            project: "$_id", // Group by project ID
+            tag: "$taskTags", // Group by tag object (contains _id, name, and colorCode)
           },
-        },
-        projectName: { $first: "$name" }, // Keep project name
-      },
-    },
-    {
-      $group: {
-        _id: "$_id.project", // Now group by the project ID again
-        projectName: { $first: "$projectName" }, // Project name
-        tags: {
-          $push: {
-            tag: "$_id.tag", // Push the tag info
-            tasks: "$tasks", // Include tasks grouped by tag
+          projectName: { $first: "$name" }, // Keep project name
+          tasks: {
+            $push: {
+              _id: "$tasks._id", // Push task ID into the array
+              title: "$tasks.title", // Optionally include title or other task fields
+              documents: "$tasks.documents", // Optionally include documents
+            },
           },
         },
       },
-    },
-    {
-      $project: {
-        _id: 1, // Include project ID
-        projectName: 1, // Include project name
-        tags: 1, // Include tags grouped with tasks
+      {
+        $project: {
+          _id: 1, // Include project ID
+          projectName: 1, // Include project name
+          tags: 1, // Include tags grouped with tasks
+        },
       },
-    },
-    {
-      $sort: { projectName: 1 }, // Sort by project name
-    },
-  ]);
-  
-  // If you want to populate the tags' details (assuming they weren't already populated)
-  results = await projectModel.populate(results, {
-    path: "tags.tag",
-    model: "tag",
-    select: "name colorCode",
-  });
-  
-  results = await projectModel.populate(results, {
-    path: "tags.tasks.documents", 
-    model: "document",
-    select: "document", 
-  });
-
+      {
+        $sort: { projectName: 1 }, // Sort by project name
+      },
+    ]);
+    
   res.json({
     message: "Done",
     results,
@@ -500,34 +471,128 @@ const getAllProjectsFilesByAdmin = catchAsync(async (req, res, next) => {
 const getAllProjectsFilesByUser = catchAsync(async (req, res, next) => {
   const memberId = new mongoose.Types.ObjectId(req.params.id);
 
-  let results = await projectModel.aggregate([
-    {
-      $match: { members: memberId },
-    },
-    {
-      $project: {
-        name: 1, 
-        tasks: {
-          _id: 1,
-          title: 1,
-          documents: 1,
-          tags: 1,
-        }, 
+  let results = await projectModel.aggregate(
+    [
+      {
+        $match: { members: memberId },
       },
-    },
-    {
-      $sort: { name: 1 },
-    },
-  ]);
+      {
+        $lookup: {
+          from: "tasks", // Assuming the tasks collection is named "tasks"
+          localField: "_id", // Project _id
+          foreignField: "project", // The field in Task model that references the project
+          as: "tasks", // The field to store the related tasks
+        },
+      },
+      {
+        $unwind: "$tasks", // Unwind tasks to access each task individually
+      },
+      {
+        $lookup: {
+          from: "tags", // Assuming the tags collection is named "tags"
+          localField: "tasks.tags", // The field in Task model that references the tag
+          foreignField: "_id", // The field in Tag model
+          as: "taskTags", // Store the related tag info in `taskTags`
+        },
+      },
+      {
+        $unwind: "$taskTags", // Unwind taskTags to handle each tag individually
+      },
+      {
+        $group: {
+          _id: { 
+            project: "$_id", // Group by project ID
+            tag: "$taskTags", // Group by tag object (contains _id, name, and colorCode)
+          },
+          projectName: { $first: "$name" }, // Keep project name
+          tasks: {
+            $push: {
+              _id: "$tasks._id", // Push task ID into the array
+              title: "$tasks.title", // Optionally include title or other task fields
+              documents: "$tasks.documents", // Optionally include documents
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 1, // Include project ID
+          projectName: 1, // Include project name
+          tags: 1, // Include tags grouped with tasks
+        },
+      },
+      {
+        $sort: { projectName: 1 }, // Sort by project name
+      },
+    ]);
 
-  results = await projectModel.populate(results, {
-    path: "tasks.tags", 
-    model: "tag",
-    select: "name colorCode", // Ensure you're using the correct model for tags
-  });
-
-  // results = await projectModel.populate(results, { path: "documents" });
   res.json({
+    message: "Done",
+    results,
+  });
+});
+const getFilesByTags = catchAsync(async (req, res, next) => {
+  const tagId = new mongoose.Types.ObjectId(req.params.id);
+
+  let results = await projectModel.aggregate(
+    [
+      {
+        $lookup: {
+          from: "tasks", // Assuming the tasks collection is named "tasks"
+          localField: "_id", // Project _id
+          foreignField: "project", // The field in Task model that references the project
+          as: "tasks", // The field to store the related tasks
+        },
+      },
+      {
+        $unwind: "$tasks", // Unwind tasks to access each task individually
+      },
+      {
+        $lookup: {
+          from: "tags", // Assuming the tags collection is named "tags"
+          localField: "tasks.tags", // The field in Task model that references the tag
+          foreignField: "_id", // The field in Tag model
+          as: "taskTags", // Store the related tag info in `taskTags`
+        },
+      },
+      {
+        $unwind: "$taskTags", // Unwind taskTags to handle each tag individually
+      },
+      {
+        $match: {
+          "taskTags._id": tagId, // Filter by the tag ID you want to search for
+        },
+      },
+      {
+        $group: {
+          _id: "$taskTags._id", // Group by the tag ID
+          tagName: { $first: "$taskTags.name" }, // Keep the tag name
+          tasks: {
+            $push: {
+              _id: "$tasks._id", // Task ID
+              title: "$tasks.title", // Task title
+              documents: "$tasks.documents", // Task documents
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 1, // Include tag ID
+          tagName: 1, // Include tag name
+          tasks: 1, // Include tasks with task name and documents
+        },
+      },
+    ]
+    );
+
+    results = await projectModel.populate(results, {
+      path: "tasks.documents", // Correct path for the nested populate
+      model: "document",
+      select: "document", // Ensure you're using the correct field
+    });
+    
+    res.json({
     message: "Done",
     results,
   });
@@ -658,7 +723,7 @@ export {
   createProject,
   getProjectById,
   getAllDocsProject,
-  // getAllProjectByStatusByAdmin,
+  getFilesByTags,
   getAllProjectByStatusByUser,
   getAllProjectsFilesByUser,
   getAllProjectByUser,
