@@ -565,6 +565,7 @@ const getFilesByTags = catchAsync(async (req, res, next) => {
         $group: {
           _id: "$taskTags._id", // Group by the tag ID
           tagName: { $first: "$taskTags.name" }, // Keep the tag name
+          tagColor: { $first: "$taskTags.colorCode" }, // Keep the tag name
           tasks: {
             $push: {
               _id: "$tasks._id", // Task ID
@@ -578,6 +579,7 @@ const getFilesByTags = catchAsync(async (req, res, next) => {
         $project: {
           _id: 1, // Include tag ID
           tagName: 1, // Include tag name
+          tagColor: 1, // Include tag name
           tasks: 1, // Include tasks with task name and documents
         },
       },
