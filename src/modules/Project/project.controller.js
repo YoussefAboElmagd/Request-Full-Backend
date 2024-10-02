@@ -597,6 +597,77 @@ const getFilesByTags = catchAsync(async (req, res, next) => {
     results,
   });
 });
+const getFilesForDownload = catchAsync(async (req, res, next) => {
+  const tagId = new mongoose.Types.ObjectId(req.params.id);
+
+  let results = await projectModel.aggregate(
+    [
+      {
+        $lookup: {
+          from: "tasks", // Assuming the tasks collection is named "tasks"
+          localField: "_id", // Project _id
+          foreignField: "project", // The field in Task model that references the project
+          as: "tasks", // The field to store the related tasks
+        },
+      },
+      {
+        $unwind: "$tasks", // Unwind tasks to access each task individually
+      },
+      {
+        $lookup: {
+          from: "tags", // Assuming the tags collection is named "tags"
+          localField: "tasks.tags", // The field in Task model that references the tag
+          foreignField: "_id", // The field in Tag model
+          as: "taskTags", // Store the related tag info in `taskTags`
+        },
+      },
+      {
+        $unwind: "$taskTags", // Unwind taskTags to handle each tag individually
+      },
+      {
+        $match: {
+          "taskTags._id": tagId, // Filter by the tag ID you want to search for
+        },
+      },
+      {
+        $group: {
+          _id: "$taskTags._id", // Group by the tag ID
+          tagName: { $first: "$taskTags.name" }, // Keep the tag name
+          tagColor: { $first: "$taskTags.colorCode" }, // Keep the tag color
+          tasks: {
+            $push: {
+              documents: "$tasks.documents", // Only keep documents from the tasks
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 1, // Include tag ID
+          tagName: 1, // Include tag name
+          tagColor: 1, // Include tag color
+          tasks: 1, // Include only tasks with documents
+        },
+      },
+    ]
+  );
+  
+    results = await projectModel.populate(results, {
+      path: "tasks.documents", // Correct path for the nested populate
+      model: "document",
+      select: "document", // Ensure you're using the correct field
+    });
+    if (results.length == 0) {
+      results = []   
+    }else{
+      results = results[0]
+      results = results.tasks[0].documents.map((doc) => doc.document)
+    }
+    res.json({
+    message: "Done",
+    results,
+  });
+});
 const getTagsByProject = catchAsync(async (req, res, next) => {
   const projectId = new mongoose.Types.ObjectId(req.params.id);
 
@@ -799,4 +870,5 @@ export {
   getAllMembersProject,
   updateProject2,
   getTagsByProject,
+  getFilesForDownload,
 };
