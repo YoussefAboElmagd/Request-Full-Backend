@@ -53,11 +53,11 @@ const projectSchema = mongoose.Schema(
       default: false,
       required: true,
     },
-    // approvalOfSchemes: {
-    //   type: Boolean,
-    //   default: false,
-    //   required: true,
-    // },
+    approvalOfSchemes: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
     notes: [
       {
         content: { type: String },
