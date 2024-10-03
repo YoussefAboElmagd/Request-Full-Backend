@@ -64,7 +64,7 @@ const taskSchema = mongoose.Schema(
       default: false,
       required: true,
     },
-    approvalOfGeneralDocuments: {
+    requestForDocumentSubmittalApproval : {
       type: Boolean,
       default: false,
       required: true,
@@ -79,21 +79,21 @@ const taskSchema = mongoose.Schema(
       default: false,
       required: true,
     },
-    approvalOfSchemes: {
+    tableOfQuantities: {
       type: Boolean,
       default: false,
       required: true,
     },
-    requestForReceiptOfWorks: {
+    requestForInspectionForm: {
       type: Boolean,
       default: false,
       required: true,
     },
-    materialInspectionForm: {
-      type: Boolean,
-      default: false,
-      required: true,
-    },
+    // approvalOfSchemes: {
+    //   type: Boolean,
+    //   default: false,
+    //   required: true,
+    // },
     notes: [
       {
         content: { type: String },
