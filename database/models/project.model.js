@@ -28,7 +28,7 @@ const projectSchema = mongoose.Schema(
       default: false,
       required: true,
     },
-    approvalOfGeneralDocuments: {
+    requestForDocumentSubmittalApproval : {
       type: Boolean,
       default: false,
       required: true,
@@ -43,21 +43,21 @@ const projectSchema = mongoose.Schema(
       default: false,
       required: true,
     },
-    approvalOfSchemes: {
+    tableOfQuantities: {
       type: Boolean,
       default: false,
       required: true,
     },
-    requestForReceiptOfWorks: {
+    requestForInspectionForm: {
       type: Boolean,
       default: false,
       required: true,
     },
-    materialInspectionForm: {
-      type: Boolean,
-      default: false,
-      required: true,
-    },
+    // approvalOfSchemes: {
+    //   type: Boolean,
+    //   default: false,
+    //   required: true,
+    // },
     notes: [
       {
         content: { type: String },
@@ -73,11 +73,6 @@ const projectSchema = mongoose.Schema(
       type: Date,
       required: true,
     },
-    // documents: {
-    //   type: [mongoose.Schema.Types.ObjectId],
-    //   ref: "document",
-    //   // required: true,
-    // },
     mainConsultant: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
