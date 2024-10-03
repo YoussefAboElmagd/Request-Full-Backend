@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { taskModel } from "./tasks.model.js";
 
 const projectSchema = mongoose.Schema(
   {
@@ -211,4 +212,10 @@ projectSchema.pre('findOneAndUpdate', async function (next) {
 //   this.populate('members','owner','consultant','mainConsultant','contractor','tasks');
 // })
 
+projectSchema.pre(/^delete/, { document: false, query: true }, async function () {
+  const doc = await this.model.findOne(this.getFilter());
+  if (doc) {
+    await taskModel.deleteMany({ project: doc._id });
+  }
+});
 export const projectModel = mongoose.model("project", projectSchema);

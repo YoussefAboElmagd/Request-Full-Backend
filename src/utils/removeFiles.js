@@ -1,12 +1,28 @@
 import fsExtra from "fs-extra";
+import mongoose from "mongoose";
 import path from "path";
+import { documentsModel } from "../../database/models/documents.model.js";
 
-export function removeFiles(folderName, fieldName) {
+export async function removeFiles(folderName, fieldName) {
   if (!fieldName || !Array.isArray(fieldName)) {
     console.error("fieldName is either undefined or not an array");
     return;
   }
-  const photoPaths =
+  function isObjectId(ids) {
+    return ids.every(id => mongoose.Types.ObjectId.isValid(id));
+  }
+  if (isObjectId(fieldName)) {
+    let results = await documentsModel
+    .find({ _id: { $in: fieldName } })
+    .select('document'); 
+  let documentUrls = results.map(result => `${result.document}`);
+    fieldName = documentUrls
+  console.log(documentUrls, 'This is a valid ObjectId.');
+  } else {
+  fieldName = fieldName
+  }
+
+    const photoPaths =
     fieldName &&
     fieldName.map((url) =>
       url.replace(`http://62.72.32.44:8000/${folderName}/`, "")

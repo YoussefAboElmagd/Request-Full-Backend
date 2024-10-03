@@ -253,7 +253,7 @@ const updateTask2 = catchAsync(async (req, res, next) => {
 const deleteTask = catchAsync(async (req, res, next) => {
   let { id } = req.params;
 
-  let deletedTask = await taskModel.findByIdAndDelete({ _id: id });
+  let deletedTask = await taskModel.deleteOne({ _id: id });
 
   if (!deletedTask) {
     return res.status(404).json({ message: "Couldn't delete!  not found!" });

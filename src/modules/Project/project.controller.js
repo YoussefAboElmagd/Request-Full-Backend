@@ -844,7 +844,7 @@ const updateProject2 = catchAsync(async (req, res, next) => {
 const deleteProject = catchAsync(async (req, res, next) => {
   const { id } = req.params;
 
-  const deletedProject = await projectModel.findByIdAndDelete(id);
+  const deletedProject = await projectModel.deleteOne({ _id: id })
   if (!deletedProject) {
     return res.status(404).json({ message: "Project not found!" });
   }

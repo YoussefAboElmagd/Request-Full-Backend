@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
 import { documentsModel } from "./documents.model.js";
+import { projectModel } from "./project.model.js";
+import { removeFiles } from "../../src/utils/removeFiles.js";
+import AppError from "../../src/utils/appError.js";
 
 const taskSchema = mongoose.Schema(
   {
@@ -150,6 +153,17 @@ taskSchema.pre('findOneAndUpdate', function (next) {
   next();
 });
 
+taskSchema.pre(/^delete/, { document: false, query: true }, async function () {
+  const doc = await this.model.findOne(this.getFilter());
+  if (doc) {
+    await projectModel.findOneAndUpdate({ _id: doc.project }, { $pull: { tasks: doc._id } }, { new: true });
+
+    if (doc.documents && doc.documents.length > 0) {
+      removeFiles("documents", doc.documents);
+      await documentsModel.deleteMany({ _id: { $in: doc.documents } });
+    }
+  }
+});
 
 taskSchema.pre(/^find/, function () {
   this.populate('tags');
