@@ -410,8 +410,7 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
 
 
 const getAllProjectsFilesByAdmin = catchAsync(async (req, res, next) => {
-  let results = await projectModel.aggregate(
-    [
+  let results = await projectModel.aggregate([
       {
         $lookup: {
           from: "tasks", // Join with the tasks collection
@@ -458,9 +457,7 @@ const getAllProjectsFilesByAdmin = catchAsync(async (req, res, next) => {
       {
         $sort: { projectName: 1 }, // Sort the projects by name
       },
-    ]
-    
-    );
+    ]);
     
   res.json({
     message: "Done",

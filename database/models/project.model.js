@@ -13,7 +13,7 @@ const projectSchema = mongoose.Schema(
     status: {
       type: String,
       enum: ["working", "completed","delayed","waiting"],
-      default: "working",
+      default: "waiting",
       required: true,
     },
     projectPriority: {

@@ -56,9 +56,40 @@ const taskSchema = mongoose.Schema(
       default: "medium",
       required: true,
     },
-    isConfirmed: {
+    isAproved: {
       type: Boolean,
       default: false,
+      required: true,
+    },
+    approvalOfGeneralDocuments: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+    requestForApprovalOfMaterials: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+    workRequest: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+    approvalOfSchemes: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+    requestForReceiptOfWorks: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+    materialInspectionForm: {
+      type: Boolean,
+      default: false,
+      required: true,
     },
     notes: [
       {
