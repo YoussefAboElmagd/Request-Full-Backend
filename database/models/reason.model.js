@@ -5,7 +5,12 @@ const reasonschema = new mongoose.Schema({
   {type:String,
   unique:true,
   required:true,
-}
+},
+isSelected: {
+  type: Boolean,
+  default: false,
+  required: true,
+},
 },{
   timestamps:true
 })

@@ -7,6 +7,11 @@ const disciplineSchema = mongoose.Schema(
       unique: [true, "Name must be unique."],
       required: true,
     },
+    isSelected: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
   },
   { timestamps: true }
 );
