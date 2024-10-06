@@ -19,7 +19,7 @@ const io = new Server(httpServer, {
 const app = express();
 
 const corsOptions = {
-  origin: "*", 
+  origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE"], // Specify allowed methods
   credentials: true, // Allow credentials to be sent with requests
 };

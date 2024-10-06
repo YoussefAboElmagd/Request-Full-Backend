@@ -24,6 +24,9 @@ const messageSchema = mongoose.Schema(
     docs: {
       type: [String],
     },
+    voiceNotes: {
+      type: [String],
+    },
     sender: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",

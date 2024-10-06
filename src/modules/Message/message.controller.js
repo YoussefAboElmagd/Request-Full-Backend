@@ -23,8 +23,12 @@ const createmessage = catchAsync(async (req, res, next) => {
   let sender = req.body.sender;
   let senderName = req.body.senderName;
   let docs = [];
+  let voiceNotes = [];
   if (req.body.docs) {
     docs = req.body.docs;
+  }
+  if (req.body.voiceNotes) {
+    voiceNotes = req.body.voiceNotes;
   }
   req.body.model = "66ba00faf820163904164a43";
 
@@ -32,12 +36,13 @@ const createmessage = catchAsync(async (req, res, next) => {
   const savedmessage = await newmessage.save();
 
   sio.emit(
-    `message_${req.body.taskId}`,
+    `message_${sender}`,
     { createdAt },
     { content },
     { sender },
     { senderName },
-    { docs }
+    { docs },
+    { voiceNotes }
   );
 
   res.status(201).json({
