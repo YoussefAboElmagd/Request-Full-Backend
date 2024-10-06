@@ -55,7 +55,7 @@ const updateCollection = catchAsync(async (req, res, next) => {
 });
 
 const getAllUsersByAdmin = catchAsync(async (req, res, next) => {
-  let ApiFeat = new ApiFeature(userModel.find(), req.query).sort().search();
+  let ApiFeat = new ApiFeature(userModel.find().limit(5).sort({ $natural: -1 }), req.query).search();
 
   let results = await ApiFeat.mongooseQuery;
   if (!results) {
@@ -172,7 +172,7 @@ const updateUser = catchAsync(async (req, res, next) => {
     country,
     postalCode,
     verified,
-    isSuperUser,
+    userType,
     companyName,
     vocation,
     offersAndPackages,
@@ -197,7 +197,7 @@ const updateUser = catchAsync(async (req, res, next) => {
       country,
       postalCode,
       verified,
-      isSuperUser,
+      userType,
       companyName,
       vocation,
       offersAndPackages,

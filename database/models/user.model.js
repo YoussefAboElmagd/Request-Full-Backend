@@ -121,10 +121,6 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    isSuperUser: {
-      type: Boolean,
-      default: false,
-    },
     offersAndPackages: {
       type: Boolean,
       default: false,
@@ -136,6 +132,12 @@ const userSchema = mongoose.Schema(
     renewalSubscription: {
       type: Boolean,
       default: false,
+    },
+    userType: {
+      type: String,
+      enum: ["user", "admin", "superUser"],
+      default: "user",
+      required: true,
     },
     // projects: {
     //   type: [mongoose.Schema.Types.ObjectId],

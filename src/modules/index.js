@@ -20,6 +20,7 @@ import actionRouter from "./actionCode/action.routes.js";
 import reasonroute from "./reason/reason.routes.js";
 import vocationRoute from "./vocation/vocation.routes.js";
 import groupChatRouter from "./group Chat/groupChat.routes.js";
+import dashboardRouter from "./Dashboard/dashboard.routes.js";
 
 export function init(app) {
   app.use("/api/v1/users", usersRouter);
@@ -44,6 +45,7 @@ export function init(app) {
   app.use("/api/v1/reason", reasonroute);
   app.use("/api/v1/vocation", vocationRoute);
   app.use("/api/v1/group", groupChatRouter);
+  app.use("/api/v1/dashboard", dashboardRouter);
 
   app.use("/", (req, res, next) => {
     res.send("Page Not Found");

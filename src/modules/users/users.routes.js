@@ -8,6 +8,7 @@ import {
   fileSizeLimitErrorHandler,
   uploadMixFile,
 } from "../../utils/middleWare/fileUploads.js";
+import { protectRoutes , allowTo } from "../auth/auth.controller.js";
 
 usersRouter.get("/", usersController.getAllUsersByAdmin);
 usersRouter.get("/owners/", usersController.getAllowners);

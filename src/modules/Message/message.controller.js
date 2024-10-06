@@ -39,7 +39,7 @@ const createmessage = catchAsync(async (req, res, next) => {
 
   if(req.body.group !== null){
     sio.emit(
-      `message_${sender}_${receiver}_${project}_${req.body.group}`,
+      `message_${sender}_${project}_${req.body.group}`,
       { createdAt },
       { content },
       { sender },

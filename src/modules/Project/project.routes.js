@@ -1,6 +1,6 @@
 import express from "express";
 import * as projectController from "./project.controller.js";
-import { protectRoutes } from "../auth/auth.controller.js";
+import { protectRoutes , allowTo } from "../auth/auth.controller.js";
 
 const projectRouter = express.Router();
 

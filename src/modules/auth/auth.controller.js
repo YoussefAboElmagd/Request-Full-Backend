@@ -26,7 +26,7 @@ export const signUp = catchAsync(async (req, res, next) => {
   }
 
   req.body.model = "66ba00b0e39d9694110fd3df";
-  req.body.isSuperUser = true;
+  req.body.userType = "superUser";
   req.body.dateOfBirth = new Date ("1950/01/02");
   // req.body.profilePic = "http://62.72.32.44:8000/profilePic/profile.png";
   req.body.verificationCode = generateUniqueId({
@@ -195,7 +195,7 @@ const authorizationHeader = req.headers.authorization;
 
 export const allowTo = (...roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
+    if (!roles.includes(req.user.userType)) {
       return next(
         res.status(403).json({ message: "you don't have permission" })
       );

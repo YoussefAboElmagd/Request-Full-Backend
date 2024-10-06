@@ -70,6 +70,7 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
     ApiFeat = new ApiFeature(
       projectModel
         .find()
+        .sort({ $natural: -1 })
         .populate("contractor")
         .populate("consultant")
         .populate("mainConsultant")
@@ -79,12 +80,11 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
         .populate("owner"),
       req.query
     )
-      .sort()
       .search();
   } else {
     ApiFeat = new ApiFeature(
       projectModel
-        .find({ status: req.query.status })
+        .find({ status: req.query.status }).sort({ $natural: -1 })
         .populate("contractor")
         .populate("consultant")
         .populate("mainConsultant")
@@ -93,7 +93,6 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
         .populate("owner"),
       req.query
     )
-      .sort()
       .search();
   }
   let results = await ApiFeat.mongooseQuery;

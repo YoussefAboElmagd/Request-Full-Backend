@@ -19,15 +19,12 @@ const createTask = catchAsync(async (req, res, next) => {
       message: " Task has been created successfully!",
       addedTask,
     });
-
 });
 
 const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
-  let ApiFeat = new ApiFeature(taskModel.find().populate("project"), req.query)
-
+  let ApiFeat = new ApiFeature(taskModel.find().populate("project").sort({ $natural: -1 }), req.query)
     .sort()
     .search();
-
   let results = await ApiFeat.mongooseQuery;
   results = JSON.stringify(results);
   results = JSON.parse(results);
