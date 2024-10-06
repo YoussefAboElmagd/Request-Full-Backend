@@ -21,6 +21,8 @@ const createmessage = catchAsync(async (req, res, next) => {
   req.body.date = createdAt;
   let content = req.body.content;
   let sender = req.body.sender;
+  let receiver = req.body.receiver;
+  let project = req.body.project;
   let senderName = req.body.senderName;
   let docs = [];
   let voiceNotes = [];
@@ -35,15 +37,31 @@ const createmessage = catchAsync(async (req, res, next) => {
   const newmessage = new messageModel(req.body);
   const savedmessage = await newmessage.save();
 
-  sio.emit(
-    `message_${sender}`,
-    { createdAt },
-    { content },
-    { sender },
-    { senderName },
-    { docs },
-    { voiceNotes }
-  );
+  if(req.body.group !== null){
+    sio.emit(
+      `message_${sender}_${receiver}_${project}_${req.body.group}`,
+      { createdAt },
+      { content },
+      { sender },
+      { senderName },
+      { receiver },
+      { project },
+      { docs },
+      { voiceNotes }
+    );
+  }else{
+    sio.emit(
+      `message_${sender}_${receiver}_${project}`,
+      { createdAt },
+      { content },
+      { sender },
+      { senderName },
+      { receiver },
+      { project },
+      { docs },
+      { voiceNotes }
+    );
+  }
 
   res.status(201).json({
     message: "message created successfully!",

@@ -7,6 +7,11 @@ const messageSchema = mongoose.Schema(
       ref: "project",
       required: true,
     },
+    receiver: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
+    },
     content: {
       type: String,
       default: " ",
@@ -31,6 +36,11 @@ const messageSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       required: true,
+    },
+    group: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "groupChat",
+      default: null,
     },
     senderName: {
       type: String,
