@@ -118,6 +118,11 @@ const projectSchema = mongoose.Schema(
       default: 0,
       required: true,
     },
+    progress: {
+      type: Number,
+      default: 0,
+      required: true,
+    },
     members: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "user",

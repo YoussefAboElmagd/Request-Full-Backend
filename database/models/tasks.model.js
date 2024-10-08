@@ -59,6 +59,11 @@ const taskSchema = mongoose.Schema(
       default: "medium",
       required: true,
     },
+    progress: {
+      type: Number,
+      default: 0,
+      required: true,
+    },
     isAproved: {
       type: Boolean,
       default: false,
