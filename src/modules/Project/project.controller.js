@@ -597,60 +597,60 @@ const getFilesByTags = catchAsync(async (req, res, next) => {
   });
 });
 const getFilesForDownload = catchAsync(async (req, res, next) => {
-  const tagId = new mongoose.Types.ObjectId(req.params.id);
-
-  let results = await projectModel.aggregate(
-    [
-      {
-        $lookup: {
-          from: "tasks", // Assuming the tasks collection is named "tasks"
-          localField: "_id", // Project _id
-          foreignField: "project", // The field in Task model that references the project
-          as: "tasks", // The field to store the related tasks
-        },
+  const tagId = new mongoose.Types.ObjectId(req.params.tagId); 
+  // const projectId = new mongoose.Types.ObjectId(req.params.id); 
+  
+  let results = await projectModel.aggregate([
+    {
+      $lookup: {
+        from: "tasks",
+        localField: "_id",
+        foreignField: "project",
+        as: "tasks",
       },
-      {
-        $unwind: "$tasks", // Unwind tasks to access each task individually
+    },
+    {
+      $unwind: "$tasks",
+    },
+    {
+      $lookup: {
+        from: "tags",
+        localField: "tasks.tags",
+        foreignField: "_id",
+        as: "taskTags",
       },
-      {
-        $lookup: {
-          from: "tags", // Assuming the tags collection is named "tags"
-          localField: "tasks.tags", // The field in Task model that references the tag
-          foreignField: "_id", // The field in Tag model
-          as: "taskTags", // Store the related tag info in `taskTags`
-        },
+    },
+    {
+      $unwind: "$taskTags",
+    },
+    {
+      $match: {
+        "taskTags._id": tagId,
+        // "_id": projectId,
       },
-      {
-        $unwind: "$taskTags", // Unwind taskTags to handle each tag individually
-      },
-      {
-        $match: {
-          "taskTags._id": tagId, // Filter by the tag ID you want to search for
-        },
-      },
-      {
-        $group: {
-          _id: "$taskTags._id", // Group by the tag ID
-          tagName: { $first: "$taskTags.name" }, // Keep the tag name
-          tagColor: { $first: "$taskTags.colorCode" }, // Keep the tag color
-          tasks: {
-            $push: {
-              documents: "$tasks.documents", // Only keep documents from the tasks
-            },
+    },
+    {
+      $group: {
+        _id: "$taskTags._id",
+        tagName: { $first: "$taskTags.name" },
+        tagColor: { $first: "$taskTags.colorCode" },
+        tasks: {
+          $push: {
+            documents: "$tasks.documents",
           },
         },
       },
-      {
-        $project: {
-          _id: 1, // Include tag ID
-          tagName: 1, // Include tag name
-          tagColor: 1, // Include tag color
-          tasks: 1, // Include only tasks with documents
-        },
+    },
+    {
+      $project: {
+        _id: 1,
+        tagName: 1,
+        tagColor: 1,
+        tasks: 1,
       },
-    ]
-  );
-  
+    },
+  ]);
+
     results = await projectModel.populate(results, {
       path: "tasks.documents", // Correct path for the nested populate
       model: "document",
@@ -659,8 +659,14 @@ const getFilesForDownload = catchAsync(async (req, res, next) => {
     if (results.length == 0) {
       results = []   
     }else{
+      let allDocuments = [];
       results = results[0]
-      results = results.tasks[0].documents.map((doc) => doc.document)
+      results.tasks = results.tasks.map((task) => task.documents)
+      .reduce((acc, val) => acc.concat(val), []);
+      results.tasks = results.tasks.map((task) => {
+        allDocuments.push(task.document)
+      })
+      results.tasks = allDocuments
     }
     res.json({
     message: "Done",
