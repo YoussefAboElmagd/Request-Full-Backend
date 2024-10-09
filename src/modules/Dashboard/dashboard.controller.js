@@ -141,44 +141,89 @@ const getActiveProjects= catchAsync(async (req, res, next) => {
   });
 });
 
-// const getProjectPerformance = catchAsync(async (req, res, next) => {
-//   const totalUsers = await userModel.countDocuments();
+const getProjectPerformance = catchAsync(async (req, res, next) => {
+  let totalProjects = await projectModel.countDocuments(); // Get the total number of projects
 
-//   let results = await userModel.aggregate([
-//     {
-//       $group: {
-//         _id: "$status",
-//         count: { $sum: 1 }  
-//       }
-//     },
-//     {
-//       $project: {
-//         _id: 1,
-//         count: 1,
-//         percentage: {
-//           $multiply: [{ $divide: ["$count", totalUsers] }, 100]
-//         }
-//       }
-//     },
-//     {
-//       $sort: { count: -1 } 
-//     },
-//   ]);
-//   // results= await userModel.populate(results, {
-//   //   path: "_id",
-//   //   model: "userType",
-//   //   select: "name", 
-//   // });
-//   if(!results){
-//     return res.status(404).json({
-//       message: "No Dashboard was found!",
-//     })
-//   }
-//   res.json({
-//     message: "Done",
-//     results,
-//   });
-// });
+  let results = await projectModel.aggregate([
+    {
+      $addFields: {
+        statusCategory: {
+          $cond: {
+            if: { $in: ["$status", ["delayed", "waiting"]] }, // Combine "delayed" and "waiting" into "behind"
+            then: "behind",
+            else: "$status"
+          }
+        }
+      }
+    },
+    {
+      $group: {
+        _id: "$statusCategory", 
+        count: { $sum: 1 }      
+      }
+    },
+    {
+      $facet: {
+        results: [
+          {
+            $project: {
+              _id: 1,
+              count: 1,
+              percentage: {
+                $multiply: [{ $divide: ["$count", totalProjects] }, 100]
+              }
+            }
+          }
+        ],
+        allStatuses: [
+          {
+            $project: {
+              _id: {
+                $literal: ["working", "completed", "behind"]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      $project: {
+        results: {
+          $concatArrays: [
+            "$results",
+            {
+              $map: {
+                input: {
+                  $setDifference: [{ $arrayElemAt: ["$allStatuses._id", 0] }, "$results._id"]
+                },
+                as: "missingStatus",
+                in: { _id: "$$missingStatus", count: 0, percentage: 0 }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      $unwind: "$results"
+    },
+    {
+      $replaceRoot: { newRoot: "$results" }
+    },
+    {
+      $sort: { count: -1 } // Sort by count, descending
+    }
+  ]);
+  if(!results){
+    return res.status(404).json({
+      message: "No Dashboard was found!",
+    })
+  }
+  res.json({
+    message: "Done",
+    results,
+  });
+});
 
 
-export {  getAllDashboard, updateDashboard,getTopCountries ,getUserRatioPieChart ,getActiveProjects };
+export {  getAllDashboard, updateDashboard,getTopCountries ,getUserRatioPieChart ,getActiveProjects,getProjectPerformance };

@@ -30,6 +30,12 @@ const createDocs = catchAsync(async (req, res, next) => {
     { new: true }
   )
 })
+let tag = await taskModel.findById(task).select("tags");
+await documentsModel.findByIdAndUpdate(
+  savedDocs[0]._id,
+  { $set: { tag: tag.tags } },
+  { new: true }
+)
   
   res.status(201).json({
     message: "Docs created successfully!",
@@ -71,13 +77,12 @@ const updateDocs = catchAsync(async (req, res, next) => {
 
 const deleteDocs = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  const deleteDocs = await documentsModel.findByIdAndDelete(id);
+  const deleteDocs = await documentsModel.deleteOne({ _id: id });
   if (!deleteDocs) {
     return res.status(404).json({ message: "Docs not found!" });
   }
   res.status(200).json({
     message: "Docs Deleted successfully!",
-    deleteDocs,
   });
 });
 export {

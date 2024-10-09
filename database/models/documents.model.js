@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import { taskModel } from "./tasks.model.js";
+import { removeFiles } from "../../src/utils/removeFiles.js";
 
 const documentsSchema = mongoose.Schema(
   {
@@ -40,7 +42,15 @@ const documentsSchema = mongoose.Schema(
   { timestamps: true }
 );
 documentsSchema.pre(/^find/, function () {
-  this.populate("uploadedBy", "project");
+  this.populate("uploadedBy", "task");
 });
-
+documentsSchema.pre(/^delete/, { document: false, query: true }, async function () {
+  const doc = await this.model.findOne(this.getFilter());
+  if (doc) {
+    await taskModel.findOneAndUpdate({ _id: doc.task }, { $pull: { documents: doc._id } }, { new: true });
+    if (doc.document) {
+      removeFiles("documents", doc.document);
+    }
+  }
+});
 export const documentsModel = mongoose.model("document", documentsSchema);

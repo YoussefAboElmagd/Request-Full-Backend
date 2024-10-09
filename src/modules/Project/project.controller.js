@@ -214,6 +214,9 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
       if (filterType == "name") {
         return item.name.toLowerCase().includes(filterValue.toLowerCase());
       }
+      if (filterType == "status") {
+        return item.status.toLowerCase().includes(filterValue.toLowerCase());
+      }
       if (filterType == "description") {
         return item.description
           .toLowerCase()
