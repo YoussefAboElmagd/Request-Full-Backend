@@ -168,7 +168,7 @@ const getTaskById = catchAsync(async (req, res, next) => {
 });
 
 const getAllAssigness = catchAsync(async (req, res, next) => {
-  let results = await taskModel.findById(req.params.id).populate("assignees").select("assignees");
+  let results = await taskModel.findById(req.params.id).select("assignees").populate("assignees");
     if (!results) {
       return res.status(404).json({ message: "Task not found!" });
     }
