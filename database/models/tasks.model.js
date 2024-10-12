@@ -3,6 +3,7 @@ import { documentsModel } from "./documents.model.js";
 import { projectModel } from "./project.model.js";
 import { removeFiles } from "../../src/utils/removeFiles.js";
 import AppError from "../../src/utils/appError.js";
+import { type } from "express/lib/response.js";
 
 const taskSchema = mongoose.Schema(
   {
@@ -111,6 +112,10 @@ const taskSchema = mongoose.Schema(
       ref: "model",
       immutable: true,
       required: true,
+    },
+    parentTask: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref:"tasks"
     },
   },
   { timestamps: true }
