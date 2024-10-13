@@ -27,6 +27,21 @@ const getAllUserType = catchAsync(async (req, res, next) => {
     results,
   });
 });
+const getMainUserType = catchAsync(async (req, res, next) => {
+  let ApiFeat = new ApiFeature(userTypeModel.find().limit(3), req.query).search();
+  let results = await ApiFeat.mongooseQuery;
+  results = JSON.stringify(results);
+  results = JSON.parse(results);
+  if (!ApiFeat || !results) {
+    return res.status(404).json({
+      message: "No UserType was found!",
+    });
+  }
+  res.json({
+    message: "Done",
+    results,
+  });
+});
 
 const updateUserType = catchAsync(async (req, res, next) => {
   const { id } = req.params;
@@ -53,4 +68,4 @@ const deleteUserType = catchAsync(async (req, res, next) => {
   });
 });
 
-export { createUserType, getAllUserType, updateUserType, deleteUserType };
+export { createUserType, getAllUserType,getMainUserType, updateUserType, deleteUserType };

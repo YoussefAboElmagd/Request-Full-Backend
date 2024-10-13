@@ -6,17 +6,18 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 const createTable = catchAsync(async (req, res, next) => {
   // req.body.model = "66ba010fecc8dae4bda821c9";
 
-  const newTable = new tableModel(req.body);
-  if(req.body.price <= 0 || req.body.requiredQuantity <= 0){
-    return res.status(400).json({message:"price and quantity should be greater than 0"})
-  }else{
-    req.body.total = req.body.price * req.body.requiredQuantity
+  const tasks = req.body; 
+
+  if (!Array.isArray(tasks)) {
+      return res.status(400).send({ message: 'Expected an array of tasks.' });
   }
-  const savedTable = await newTable.save();
+
+      const savedTasks = await tableModel.insertMany(tasks);
+      res.status(201).send({ message: 'Tasks saved successfully', tasks: savedTasks });
 
   res.status(201).json({
     message: "Table created successfully!",
-    savedTable,
+    savedTasks ,
   });
 });
 

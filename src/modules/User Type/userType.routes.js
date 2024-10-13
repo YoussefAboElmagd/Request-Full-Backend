@@ -5,6 +5,7 @@ const userTypeRouter = express.Router();
 
 userTypeRouter.post("/", userTypeController.createUserType);
 userTypeRouter.get("/", userTypeController.getAllUserType);
+userTypeRouter.get("/main/", userTypeController.getMainUserType);
 userTypeRouter.put("/:id", userTypeController.updateUserType);
 userTypeRouter.delete("/:id", userTypeController.deleteUserType);
 
