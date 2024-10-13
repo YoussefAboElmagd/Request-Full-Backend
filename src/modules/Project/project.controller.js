@@ -13,13 +13,13 @@ const createProject = catchAsync(async (req, res, next) => {
   }
   let newProject = new projectModel(req.body);
   let addedProject = await newProject;
-  // addedProject.members.push(addedProject.createdBy);
+  addedProject.members.push(addedProject.createdBy);
   // addedProject.members.push(addedProject.contractor);
   // addedProject.members.push(addedProject.owner);
   // addedProject.members.push(addedProject.consultant);
-  // addedProject.members = addedProject.members.filter(
-  //   (item, index) => addedProject.members.indexOf(item) === index
-  // );
+  addedProject.members = addedProject.members.filter(
+    (item, index) => addedProject.members.indexOf(item) === index
+  );
 
   await addedProject.save();
   res.status(201).json({
@@ -193,6 +193,8 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
       message: "No Project was found!",
     });
   }
+  console.log(results);
+  
   results.forEach((project) => {
     project.taskCount = project.tasks.length;
     project.tasks.forEach((task) => {

@@ -51,6 +51,11 @@ const tableSchema = mongoose.Schema(
           ref: "unit",
           // required: true, 
         },
+        project: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "project",
+          required: true, 
+        },
         tag: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "tag",
