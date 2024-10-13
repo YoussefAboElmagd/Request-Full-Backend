@@ -43,6 +43,13 @@ const getAllTableById = catchAsync(async (req, res, next) => {
   !results && next(new AppError(`not found `, 404));
   results && res.json({ message: "Done", results });
 });
+const getAllTableByProject = catchAsync(async (req, res, next) => {
+  let { id } = req.params;
+
+  let results = await tableModel.find({project:id});
+  !results && next(new AppError(`not found `, 404));
+  results && res.json({ message: "Done", results });
+});
 const updateTable = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   let {task ,quantity,description,sDate,eDate,price,total,units,tag,priority,invoicedQuantity,requiredQuantity,approvedQuantity,executedQuantity,assignees} = req.body;
@@ -96,4 +103,5 @@ export {
   deleteTable,
   getAllTableById,
   updateTablePull,
+  getAllTableByProject,
 };

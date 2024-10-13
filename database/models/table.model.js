@@ -73,6 +73,12 @@ const tableSchema = mongoose.Schema(
           default: [],
           // required: true,
         },
+        patentTask: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "table",
+          default: null,
+          // required: true,
+        },
   },
   { timestamps: true }
 );

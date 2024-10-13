@@ -193,7 +193,6 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
       message: "No Project was found!",
     });
   }
-  console.log(results);
   
   results.forEach((project) => {
     project.taskCount = project.tasks.length;
