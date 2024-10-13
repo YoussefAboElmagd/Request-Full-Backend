@@ -86,7 +86,7 @@ const projectSchema = mongoose.Schema(
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
-      required: true,
+      // required: true,
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
