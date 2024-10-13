@@ -13,13 +13,13 @@ const createProject = catchAsync(async (req, res, next) => {
   }
   let newProject = new projectModel(req.body);
   let addedProject = await newProject;
-  addedProject.members.push(addedProject.createdBy);
-  addedProject.members.push(addedProject.contractor);
-  addedProject.members.push(addedProject.owner);
-  addedProject.members.push(addedProject.consultant);
-  addedProject.members = addedProject.members.filter(
-    (item, index) => addedProject.members.indexOf(item) === index
-  );
+  // addedProject.members.push(addedProject.createdBy);
+  // addedProject.members.push(addedProject.contractor);
+  // addedProject.members.push(addedProject.owner);
+  // addedProject.members.push(addedProject.consultant);
+  // addedProject.members = addedProject.members.filter(
+  //   (item, index) => addedProject.members.indexOf(item) === index
+  // );
 
   await addedProject.save();
   res.status(201).json({
