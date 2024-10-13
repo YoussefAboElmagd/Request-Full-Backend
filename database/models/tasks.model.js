@@ -3,7 +3,6 @@ import { documentsModel } from "./documents.model.js";
 import { projectModel } from "./project.model.js";
 import { removeFiles } from "../../src/utils/removeFiles.js";
 import AppError from "../../src/utils/appError.js";
-import { type } from "express/lib/response.js";
 
 const taskSchema = mongoose.Schema(
   {
@@ -51,7 +50,7 @@ const taskSchema = mongoose.Schema(
     taskStatus: {
       type: String,
       enum: ["working", "completed","delayed","waiting"],
-      default: "working",
+      default: "waiting",
       required: true,
     },
     taskPriority: {
@@ -59,6 +58,12 @@ const taskSchema = mongoose.Schema(
       enum: ["medium", "high","low"],
       default: "medium",
       required: true,
+    },
+    type: {
+      type: String,
+      enum: ["parent", "sub","milestone","recurring","oneTime"],
+      default: "parent",
+      // required: true,
     },
     progress: {
       type: Number,
@@ -70,36 +75,36 @@ const taskSchema = mongoose.Schema(
       default: false,
       required: true,
     },
-    requestForDocumentSubmittalApproval : {
-      type: Boolean,
-      default: false,
-      required: true,
-    },
-    requestForApprovalOfMaterials: {
-      type: Boolean,
-      default: false,
-      required: true,
-    },
-    workRequest: {
-      type: Boolean,
-      default: false,
-      required: true,
-    },
-    tableOfQuantities: {
-      type: Boolean,
-      default: false,
-      required: true,
-    },
-    requestForInspectionForm: {
-      type: Boolean,
-      default: false,
-      required: true,
-    },
-    approvalOfSchemes: {
-      type: Boolean,
-      default: false,
-      required: true,
-    },
+    // requestForDocumentSubmittalApproval : {
+    //   type: Boolean,
+    //   default: false,
+    //   required: true,
+    // },
+    // requestForApprovalOfMaterials: {
+    //   type: Boolean,
+    //   default: false,
+    //   required: true,
+    // },
+    // workRequest: {
+    //   type: Boolean,
+    //   default: false,
+    //   required: true,
+    // },
+    // tableOfQuantities: {
+    //   type: Boolean,
+    //   default: false,
+    //   required: true,
+    // },
+    // requestForInspectionForm: {
+    //   type: Boolean,
+    //   default: false,
+    //   required: true,
+    // },
+    // approvalOfSchemes: {
+    //   type: Boolean,
+    //   default: false,
+    //   required: true,
+    // },
     notes: [
       {
         content: { type: String },
@@ -112,11 +117,6 @@ const taskSchema = mongoose.Schema(
       ref: "model",
       immutable: true,
       required: true,
-    },
-    parentTask: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref:"tasks",
-      default : null
     },
   },
   { timestamps: true }

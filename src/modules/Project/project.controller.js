@@ -17,7 +17,6 @@ const createProject = catchAsync(async (req, res, next) => {
   addedProject.members.push(addedProject.contractor);
   addedProject.members.push(addedProject.owner);
   addedProject.members.push(addedProject.consultant);
-  addedProject.members.push(addedProject.mainConsultant);
   addedProject.members = addedProject.members.filter(
     (item, index) => addedProject.members.indexOf(item) === index
   );
@@ -36,7 +35,6 @@ const getProjectById = catchAsync(async (req, res, next) => {
     .findById(id)
     .populate("contractor")
     .populate("consultant")
-    .populate("mainConsultant")
     .populate("members")
     .populate("tags")
     .populate({
@@ -73,7 +71,6 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
         .sort({ $natural: -1 })
         .populate("contractor")
         .populate("consultant")
-        .populate("mainConsultant")
         .populate("createdBy")
         // .populate("team")
         .populate("members")
@@ -87,7 +84,6 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
         .find({ status: req.query.status }).sort({ $natural: -1 })
         .populate("contractor")
         .populate("consultant")
-        .populate("mainConsultant")
         .populate("createdBy")
         .populate("members")
         .populate("owner"),
@@ -266,7 +262,6 @@ const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
         .find({ members: { $in: req.params.id } })
         .populate("contractor")
         .populate("consultant")
-        .populate("mainConsultant")
         .populate("members")
         .populate("owner"),
       req.query
@@ -284,7 +279,6 @@ const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
         })
         .populate("contractor")
         .populate("consultant")
-        .populate("mainConsultant")
         .populate("members")
         .populate("owner"),
       req.query
@@ -764,7 +758,6 @@ const updateProject = catchAsync(async (req, res, next) => {
     members,
     contractor,
     consultant,
-    mainConsultant,
     owner,
     team,
     budget,
@@ -796,7 +789,6 @@ const updateProject = catchAsync(async (req, res, next) => {
         notes
       },
       owner,
-      mainConsultant,
       team,
       budget,
     },

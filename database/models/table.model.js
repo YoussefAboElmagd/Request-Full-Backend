@@ -2,11 +2,6 @@ import mongoose from "mongoose";
 
 const tableSchema = mongoose.Schema(
   {
-    // task: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: "task",
-    //   required: true, 
-    // },
     task: {
       type: String,
       required: true, 
@@ -27,10 +22,6 @@ const tableSchema = mongoose.Schema(
       type: Number,
       required: true,
     },
-    quantity: {
-      type: Number,
-      required: true,
-    },
     total: {
       type: Number,
       default: 0,
@@ -48,7 +39,7 @@ const tableSchema = mongoose.Schema(
       type: Number,
       required: true,
     },
-    filteredQuantity: {
+    invoicedQuantity: {
       type: Number,
       required: true,
     },

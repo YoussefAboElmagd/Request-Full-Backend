@@ -7,10 +7,10 @@ const createTable = catchAsync(async (req, res, next) => {
   // req.body.model = "66ba010fecc8dae4bda821c9";
 
   const newTable = new tableModel(req.body);
-  if(req.body.price <= 0 || req.body.quantity <= 0){
+  if(req.body.price <= 0 || req.body.requiredQuantity <= 0){
     return res.status(400).json({message:"price and quantity should be greater than 0"})
   }else{
-    req.body.total = req.body.price * req.body.quantity
+    req.body.total = req.body.price * req.body.requiredQuantity
   }
   const savedTable = await newTable.save();
 
@@ -44,10 +44,10 @@ const getAllTableById = catchAsync(async (req, res, next) => {
 });
 const updateTable = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  let {task ,quantity,description,sDate,eDate,price,total,units,tag,priority,filteredQuantity,requiredQuantity,approvedQuantity,executedQuantity,assignees} = req.body;
+  let {task ,quantity,description,sDate,eDate,price,total,units,tag,priority,invoicedQuantity,requiredQuantity,approvedQuantity,executedQuantity,assignees} = req.body;
   const updatedTable = await tableModel.findByIdAndUpdate(id,
      {
-      task,quantity,description,sDate,eDate,price,total,units,tag,priority,filteredQuantity,requiredQuantity,approvedQuantity,executedQuantity, $push:{assignees}
+      task,quantity,description,sDate,eDate,price,total,units,tag,priority,invoicedQuantity,requiredQuantity,approvedQuantity,executedQuantity, $push:{assignees}
      }, {
     new: true,
   });

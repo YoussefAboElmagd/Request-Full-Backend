@@ -73,20 +73,15 @@ const projectSchema = mongoose.Schema(
       type: Date,
       required: true,
     },
-    mainConsultant: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "user",
-      required: true,
-    },
     consultant: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "user",
-      required: true,
+      // required: true,
     },
     contractor: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "user",
-      required: true,
+      // required: true,
     },
     owner: {
       type: mongoose.Schema.Types.ObjectId,
@@ -209,7 +204,7 @@ projectSchema.pre('findOneAndUpdate', async function (next) {
 // });
 
 // projectSchema.pre(/^find/, function () {
-//   this.populate('members','owner','consultant','mainConsultant','contractor','tasks');
+//   this.populate('members','owner','consultant','contractor','tasks');
 // })
 
 projectSchema.pre(/^delete/, { document: false, query: true }, async function () {

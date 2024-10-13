@@ -20,6 +20,24 @@ export async function sendEmail(email,code) {
 
   console.log("Message sent: %s", info.messageId);
 }
+// export async function sendInvite(email,code) {
+//   const transporter = nodemailer.createTransport({
+//     service: "gmail",
+//     auth: {
+//       user: "abdelrahmanmohammed851@gmail.com",
+//       pass: "ykejlphmzcmmwlgw",
+//     },
+//   });
+
+//   const info = await transporter.sendMail({
+//     from: `Admin " <abdelrahmanmohammed851@gmail.com>`, // sender address
+//     to: `${email}`, // list of receivers
+//     subject: "Email Verification", // Subject line
+//     text: `Email Verification Code: ${code}`, // plain text body
+//   });
+
+//   console.log("Message sent: %s", info.messageId);
+// }
 
 export async function contactUs(name,email,message) {
   const transporter = nodemailer.createTransport({
