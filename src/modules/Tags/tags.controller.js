@@ -7,8 +7,8 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 const createTags = catchAsync(async (req, res, next) => {
   req.body.model = "66e5570f78313d16a73caa9a";
   req.body.createdBy = req.params.id;
-  const newComp = new tagsModel(req.body);
-  const savedData = await newComp.save();
+  const newData = new tagsModel(req.body);
+  const savedData = await newData.save();
 
   res.status(201).json({
     message: "Tags created successfully!",

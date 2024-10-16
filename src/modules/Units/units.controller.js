@@ -3,8 +3,8 @@ import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const createUnits = catchAsync(async (req, res, next) => {
-  const newComp = new unitsModel(req.body);
-  const savedData = await newComp.save();
+  const newData = new unitsModel(req.body);
+  const savedData = await newData.save();
 
   res.status(201).json({
     message: "Units created successfully!",

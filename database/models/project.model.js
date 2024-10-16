@@ -118,11 +118,9 @@ const projectSchema = mongoose.Schema(
       default: 0,
       required: true,
     },
-    members: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref: "user",
-      default: [],
-    },
+    members: 
+      [{ type: mongoose.Schema.Types.ObjectId, ref: "user",default: [],}]
+    ,
     tags: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "tag",
