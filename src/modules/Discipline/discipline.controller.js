@@ -3,13 +3,12 @@ import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const createDiscipline = catchAsync(async (req, res, next) => {
-
   const newComp = new disciplineModel(req.body);
-  const savedComp = await newComp.save();
+  const savedData = await newComp.save();
 
   res.status(201).json({
     message: "Discipline created successfully!",
-    savedComp,
+    savedData,
   });
 });
 
@@ -31,9 +30,13 @@ const getAllDiscipline = catchAsync(async (req, res, next) => {
 
 const updateDiscipline = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  const updatedDiscipline = await disciplineModel.findByIdAndUpdate(id, req.body, {
-    new: true,
-  });
+  const updatedDiscipline = await disciplineModel.findByIdAndUpdate(
+    id,
+    req.body,
+    {
+      new: true,
+    }
+  );
   if (!updatedDiscipline) {
     return res.status(404).json({ message: "Discipline not found!" });
   }
@@ -54,4 +57,9 @@ const deleteDiscipline = catchAsync(async (req, res, next) => {
   });
 });
 
-export { createDiscipline, getAllDiscipline, updateDiscipline, deleteDiscipline };
+export {
+  createDiscipline,
+  getAllDiscipline,
+  updateDiscipline,
+  deleteDiscipline,
+};

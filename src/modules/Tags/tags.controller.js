@@ -6,13 +6,13 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const createTags = catchAsync(async (req, res, next) => {
   req.body.model = "66e5570f78313d16a73caa9a";
-  req.body.createdBy = req.params.id
+  req.body.createdBy = req.params.id;
   const newComp = new tagsModel(req.body);
-  const savedComp = await newComp.save();
+  const savedData = await newComp.save();
 
   res.status(201).json({
     message: "Tags created successfully!",
-    savedComp,
+    savedData,
   });
 });
 
@@ -33,14 +33,14 @@ const getAllTagsByAdmin = catchAsync(async (req, res, next) => {
 });
 const getAllTagsByUser = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let userResults = await userModel.findById(id)
-  if(userResults){
+  let userResults = await userModel.findById(id);
+  if (userResults) {
     let results = await tagsModel.find({ createdBy: id });
     !results && next(new AppError(`not found `, 404));
     results && res.json({ message: "Done", results });
-  }else{
-    res.json({message:" User Id Not Found"})
-}
+  } else {
+    res.json({ message: " User Id Not Found" });
+  }
 });
 
 const updateTags = catchAsync(async (req, res, next) => {

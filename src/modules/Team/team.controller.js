@@ -74,7 +74,7 @@ const getTeamById = catchAsync(async (req, res, next) => {
 
 const updateTeam = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  let { teamName, jobTitle, rights, name, email, password } = req.body;
+  let {  jobTitle, rights, name, email, password } = req.body;
   let existUser = await userModel.findOne({ email: email });
   if (existUser) {
     return res.status(404).json({ message: "Email already exist!" });
@@ -91,7 +91,7 @@ const updateTeam = catchAsync(async (req, res, next) => {
     );
     const updateeTeam = await teamModel.findByIdAndUpdate(
       id,
-      { $push: { members: savedUser._id }, teamName },
+      { $push: { members: savedUser._id },  },
       { new: true }
     );
     if (!updateeTeam) {

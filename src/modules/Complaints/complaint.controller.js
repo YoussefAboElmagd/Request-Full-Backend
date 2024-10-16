@@ -6,11 +6,11 @@ const createComplaint = catchAsync(async (req, res, next) => {
   req.body.model = "66ba00c7c54b444982177b57";
 
   const newComp = new complaintModel(req.body);
-  const savedComp = await newComp.save();
+  const savedData = await newComp.save();
 
   res.status(201).json({
     message: "Complaint created successfully!",
-    savedComp,
+    savedData,
   });
 });
 

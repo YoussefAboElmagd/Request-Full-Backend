@@ -28,7 +28,7 @@ const taskSchema = mongoose.Schema(
     tags: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "tag",
-      required: true,
+      // required: true,
     },
     project: {
       type: mongoose.Schema.Types.ObjectId,
@@ -103,8 +103,7 @@ const taskSchema = mongoose.Schema(
     type: {
       type: String,
       enum: ["parent", "sub","milestone","recurring","oneTime"],
-      default: "parent",
-      // required: true,
+      required: true,
     },
     progress: {
       type: Number,
@@ -133,13 +132,43 @@ const taskSchema = mongoose.Schema(
   { timestamps: true }
 );
 
-taskSchema.pre('save', function (next) {
+taskSchema.pre('save', async function (next) {
   if (this.dueDate && this.dueDate < new Date()) {
     this.taskStatus = "delayed";
   } 
   next();
 });
-
+// taskSchema.pre("save", async function (next) {
+//   if (this.patentTask) {
+//       const getAllSUbTasks = await mongoose.model("task").find({parentTask:this.patentTask});
+//       const parentTask = await mongoose.model("task").find({_id:this.patentTask});
+//       console.log(getAllSUbTasks,"ppp");
+//       let totalInvoicedQuantity =this.invoicedQuantity;
+//       let totalExecutedQuantity = this.executedQuantity;
+//       let totalApprovedQuantity = this.approvedQuantity;
+//       let totalRequiredQuantity = this.requiredQuantity;
+//       getAllSUbTasks.forEach(async (subTask) => {
+//         totalInvoicedQuantity += subTask.invoicedQuantity ;
+//         totalExecutedQuantity += subTask.executedQuantity ;
+//         totalApprovedQuantity += subTask.approvedQuantity ;
+//         totalRequiredQuantity += subTask.requiredQuantity ;
+//       })
+//       if(parentTask.requiredQuantity < totalRequiredQuantity){
+//         next(new AppError("Required quantity can't be greater than total required quantity", 400));
+//       }
+//       if(parentTask.invoicedQuantity < totalInvoicedQuantity){
+//         next(new AppError("Invoiced quantity can't be greater than total Invoiced quantity", 400));
+//       }
+//       if(parentTask.executedQuantity < totalExecutedQuantity){
+//         next(new AppError("Executed quantity can't be greater than total Executed quantity", 400));
+//       }
+//       if(parentTask.approvedQuantity < totalApprovedQuantity){
+//         next(new AppError("Approved quantity can't be greater than total Approved quantity", 400));
+//       }
+//   }
+//     next();
+  
+// });
 taskSchema.post(/^find/, function (documents, next) {
   if (!Array.isArray(documents)) {
     documents = [documents]; // Convert to array if it's a single document
@@ -186,6 +215,43 @@ taskSchema.pre(/^delete/, { document: false, query: true }, async function () {
     }
   }
 });
+taskSchema.pre("findOneAndUpdate", async function (next) {
+  const update = this.getUpdate();
+  const TaskId = this.getQuery()._id;
+  
+  // Find the current Task document before the update
+  const currentTask = await mongoose.model("task").findById(TaskId);
+  
+  if (currentTask && currentTask.patentTask) {
+    const parentTask = await mongoose.model("task").findById(currentTask.patentTask);
+    
+    if (parentTask) {
+      // Subtract current quantities from the parent task before the update
+      parentTask.invoicedQuantity -= currentTask.invoicedQuantity || 0;
+      parentTask.executedQuantity -= currentTask.executedQuantity || 0;
+      parentTask.approvedQuantity -= currentTask.approvedQuantity || 0;
+      await parentTask.save();
+    }
+  }
+
+  next();
+});
+
+// taskSchema.post("findOneAndUpdate", async function (doc) {
+//   const updatedTask = await mongoose.model("task").findById(doc._id);
+  
+//   if (updatedTask && updatedTask.patentTask) {
+//     const parentTask = await mongoose.model("task").findById(updatedTask.patentTask);
+
+//     if (parentTask) {
+//       // Add the updated quantities back to the parent task
+//       parentTask.invoicedQuantity += updatedTask.invoicedQuantity || 0;
+//       parentTask.executedQuantity += updatedTask.executedQuantity || 0;
+//       parentTask.approvedQuantity += updatedTask.approvedQuantity || 0;
+//       await parentTask.save();
+//     }
+//   }
+// });
 
 taskSchema.pre(/^find/, function () {
   this.populate('tags');

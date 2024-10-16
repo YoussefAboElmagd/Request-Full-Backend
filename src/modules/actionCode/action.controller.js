@@ -3,13 +3,12 @@ import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const createAction = catchAsync(async (req, res, next) => {
-
   const newComp = new actionCodeModel(req.body);
-  const savedComp = await newComp.save();
+  const savedData = await newComp.save();
 
   res.status(201).json({
     message: "Action created successfully!",
-    savedComp,
+    savedData,
   });
 });
 

@@ -3,13 +3,12 @@ import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const createUnits = catchAsync(async (req, res, next) => {
-
   const newComp = new unitsModel(req.body);
-  const savedComp = await newComp.save();
+  const savedData = await newComp.save();
 
   res.status(201).json({
     message: "Units created successfully!",
-    savedComp,
+    savedData,
   });
 });
 
@@ -54,4 +53,4 @@ const deleteUnits = catchAsync(async (req, res, next) => {
   });
 });
 
-export {createUnits, getAllUnits, updateUnits, deleteUnits };
+export { createUnits, getAllUnits, updateUnits, deleteUnits };

@@ -8,23 +8,33 @@ import { taskModel } from "../../../database/models/tasks.model.js";
 
 const createProject = catchAsync(async (req, res, next) => {
   req.body.model = "66ba015a73f994dd94dbc1e9";
+  
+  // Check if budget is valid
   if (req.body.budget < 0) {
     return res.status(404).json({ message: "Budget must be greater than 0" });
   }
+
   let newProject = new projectModel(req.body);
-  let addedProject = await newProject;
-  addedProject.members.push(addedProject.createdBy);
-  // addedProject.members.push(addedProject.contractor);
-  // addedProject.members.push(addedProject.owner);
-  // addedProject.members.push(addedProject.consultant);
-  addedProject.members = addedProject.members.filter(
-    (item, index) => addedProject.members.indexOf(item) === index
+  
+  newProject.members.push(newProject.createdBy);
+  // newProject.members.push(newProject.contractor);
+  // newProject.members.push(newProject.owner);
+  // newProject.members.push(newProject.consultant);
+
+  newProject.members = newProject.members.filter(
+    (item, index) => newProject.members.indexOf(item) === index
   );
 
-  await addedProject.save();
+  await newProject.save();
+  let populatedProject = await projectModel
+    .findById(newProject._id)
+    .populate({
+      path: 'members',
+      select: '_id name email', // Add any other fields you want to include
+    });
   res.status(201).json({
     message: " Project has been created successfully!",
-    addedProject,
+    addedProject: populatedProject,
   });
 });
 

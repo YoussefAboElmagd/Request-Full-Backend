@@ -6,11 +6,11 @@ const createNews = catchAsync(async (req, res, next) => {
   req.body.model = "66ba010fecc8dae4bda821c9";
 
   const newComp = new newsModel(req.body);
-  const savedComp = await newComp.save();
+  const savedData = await newComp.save();
 
   res.status(201).json({
     message: "News created successfully!",
-    savedComp,
+    savedData,
   });
 });
 

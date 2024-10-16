@@ -4,20 +4,25 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import { projectModel } from "../../../database/models/project.model.js";
 
 const createTask = catchAsync(async (req, res, next) => {
-  req.body.assignees = req.body.createdBy;
-  req.body.model = "66ba018d87b5d43dcd881f7e";
-    let newTask = new taskModel(req.body);
-    let addedTask = await newTask.save();
-    let addTaskToProject = await projectModel.findByIdAndUpdate(
-      addedTask.project,
-      {
-        $push: { tasks: addedTask._id },
-      },
-      { new: true }
-    )
+  let tasks = Array.isArray(req.body) ? req.body : [req.body];
+
+  tasks = tasks.map(task => ({
+    ...task,
+    assignees: task.createdBy,
+    model: "66ba018d87b5d43dcd881f7e",
+  }));
+
+  let addedTasks = await taskModel.insertMany(tasks);
+
+  let taskIds = addedTasks.map(task => task._id);
+    await projectModel.findByIdAndUpdate(
+    addedTasks[0].project, // Assumes all tasks belong to the same project
+    { $push: { tasks: { $each: taskIds } } }, // Push all task IDs at once
+    { new: true }
+  );
     res.status(201).json({
       message: " Task has been created successfully!",
-      addedTask,
+      addedTasks,
     });
 });
 
