@@ -3,8 +3,8 @@ import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const createGroupChat = catchAsync(async (req, res, next) => {
-  const newComp = new groupChatModel(req.body);
-  const savedData = await newComp;
+  const newData = new groupChatModel(req.body);
+  const savedData = await newData;
   savedData.users.push(savedData.createdBy);
   savedData.users = savedData.users.filter(
     (item, index) => savedData.users.indexOf(item) === index

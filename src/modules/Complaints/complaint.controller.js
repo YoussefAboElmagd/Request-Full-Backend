@@ -5,8 +5,8 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 const createComplaint = catchAsync(async (req, res, next) => {
   req.body.model = "66ba00c7c54b444982177b57";
 
-  const newComp = new complaintModel(req.body);
-  const savedData = await newComp.save();
+  const newData = new complaintModel(req.body);
+  const savedData = await newData.save();
 
   res.status(201).json({
     message: "Complaint created successfully!",

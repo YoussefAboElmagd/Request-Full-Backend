@@ -3,8 +3,8 @@ import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const createDiscipline = catchAsync(async (req, res, next) => {
-  const newComp = new disciplineModel(req.body);
-  const savedData = await newComp.save();
+  const newData = new disciplineModel(req.body);
+  const savedData = await newData.save();
 
   res.status(201).json({
     message: "Discipline created successfully!",
