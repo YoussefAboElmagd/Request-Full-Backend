@@ -98,7 +98,7 @@ const updateTeam = catchAsync(async (req, res, next) => {
       return res.status(404).json({ message: "Team not found!" });
     }
     res.status(200).json({
-      message: "Tag Updated successfully!",
+      message: "Team Updated successfully!",
       updateeTeam,
     });
   }
@@ -115,7 +115,7 @@ const updateTeamMembers = catchAsync(async (req, res, next) => {
     return res.status(404).json({ message: "Team not found!" });
   }
   res.status(200).json({
-    message: "Tag Updated successfully!",
+    message: "Team Updated successfully!",
     updateeTeam,
   });
 });

@@ -20,24 +20,32 @@ export async function sendEmail(email,code) {
 
   console.log("Message sent: %s", info.messageId);
 }
-// export async function sendInvite(email,code) {
-//   const transporter = nodemailer.createTransport({
-//     service: "gmail",
-//     auth: {
-//       user: "abdelrahmanmohammed851@gmail.com",
-//       pass: "ykejlphmzcmmwlgw",
-//     },
-//   });
+export async function sendInvite(recipients,link) {
+  try {
 
-//   const info = await transporter.sendMail({
-//     from: `Admin " <abdelrahmanmohammed851@gmail.com>`, // sender address
-//     to: `${email}`, // list of receivers
-//     subject: "Email Verification", // Subject line
-//     text: `Email Verification Code: ${code}`, // plain text body
-//   });
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: "abdelrahmanmohammed851@gmail.com",
+      pass: "ykejlphmzcmmwlgw",
+    },
+  });
 
-//   console.log("Message sent: %s", info.messageId);
-// }
+  const info = recipients.map(async (recipient) => {
+    return transporter.sendMail({
+      from: 'Admin <your-email@gmail.com>', // Sender address
+      to: recipient.emails, // Recipient email address
+      subject: 'Invitation Email',
+      text: `You have been invited to the project as ${recipient.role}. Please sign up with the link ${link}.`,
+    });
+  });
+
+  await Promise.all(info);
+    console.log('All emails sent successfully!');
+  } catch (error) {
+    console.error('Error sending emails:', error);
+  }
+}
 
 export async function contactUs(name,email,message) {
   const transporter = nodemailer.createTransport({

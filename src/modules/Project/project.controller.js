@@ -257,7 +257,7 @@ const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
     return res.status(404).json({ message: "User not found!" });
   }
   let ApiFeat = null;
-  if (req.query.status == "all") {
+  if (req.query.status == "all" ) {
     ApiFeat = new ApiFeature(
       projectModel
         .find({ members: { $in: req.params.id } })
@@ -310,13 +310,13 @@ const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
       if (filterType == "createdBy") {
         return item.createdBy.toLowerCase().includes(filterValue.toLowerCase());
       }
-      if (filterType == "members") {
-        if (item.members[0]) {
-          return item.members[0].name
-            .toLowerCase()
-            .includes(filterValue.toLowerCase());
-        }
-      }
+      // if (filterType == "members") {
+      //   if (item.members[0]) {
+      //     return item.members[0].name
+      //       .toLowerCase()
+      //       .includes(filterValue.toLowerCase());
+      //   }
+      // }
     });
   }
 

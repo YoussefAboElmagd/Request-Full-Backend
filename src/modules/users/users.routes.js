@@ -16,10 +16,11 @@ usersRouter.get("/consultant/", usersController.getAllconsultant);
 usersRouter.get("/contractor/", usersController.getAllcontractors);
 usersRouter.get("/:id", usersController.getUserById);
 usersRouter.get("/tags/:id", usersController.getUserTags);
+usersRouter.get("/email/", usersController.getUserByEmail);
 usersRouter.put("/:id", usersController.updateUser);
 usersRouter.put("/pull/:id", usersController.updateUser2);
-usersRouter.delete("/:id", usersController.deleteUser);
 usersRouter.post("/contactUs/:id", usersController.postMessage);
+usersRouter.post("/invite/", usersController.sendInviteToProject);
 
 usersRouter.put(
   "/photo/:id",
@@ -35,4 +36,5 @@ usersRouter.put(
   fileSizeLimitErrorHandler,
   usersController.updateCollection
 );
+usersRouter.delete("/:id", usersController.deleteUser);
 export default usersRouter;

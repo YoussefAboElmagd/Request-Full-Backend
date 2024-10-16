@@ -25,5 +25,4 @@ const complaintSchema = mongoose.Schema(
   { timestamps: true }
 );
 
-
 export const complaintModel = mongoose.model("complaint", complaintSchema);

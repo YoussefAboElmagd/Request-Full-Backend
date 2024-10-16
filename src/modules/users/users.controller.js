@@ -4,7 +4,7 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import AppError from "../../utils/appError.js";
 import { DateTime } from "luxon";
 import { photoUpload } from "../../utils/removeFiles.js";
-import { contactUs } from "../../email/sendEmail.js";
+import { contactUs, sendInvite } from "../../email/sendEmail.js";
 
 const updateprofilePic = catchAsync(async (req, res, next) => {
   let { id } = req.params;
@@ -31,6 +31,13 @@ const postMessage = catchAsync(async (req, res, next) => {
   res.json({ message: "Message sent to admin", user });
 });
 
+const sendInviteToProject = catchAsync(async (req, res, next) => {
+  let link = "http://62.72.32.44:4005/SignUp/ChooseRole"
+  sendInvite(req.body , link);
+  res.json({
+    message: "Invite has been sent!",
+  })
+})
 const updateCollection = catchAsync(async (req, res, next) => {
   let { id } = req.params;
 
@@ -149,6 +156,13 @@ const getUserTags = catchAsync(async (req, res, next) => {
   results = results.tags;
   results && res.json({ message: "Done", results });
 });
+const getUserByEmail = catchAsync(async (req, res, next) => {
+
+  let results = await userModel.find({email: req.body.email});
+  !results && next(new AppError(` email not found `, 404));
+  results = results.tags;
+  results && res.json({ message: "Done", results });
+});
 
 const updateUser = catchAsync(async (req, res, next) => {
   let { id } = req.params;
@@ -250,4 +264,6 @@ export {
   updateprofilePic,
   getUserTags,
   postMessage,
+  sendInviteToProject,
+  getUserByEmail
 };

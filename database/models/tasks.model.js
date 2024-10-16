@@ -47,6 +47,47 @@ const taskSchema = mongoose.Schema(
       type: [mongoose.Schema.Types.ObjectId],
       ref: "document",
     },
+    patentTask: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "task",
+      default: null,
+      // required: true,
+    },
+    total: {
+      type: Number,
+      default: 0,
+      // required: true,
+    },
+    price: {
+      type: Number,
+      default: 0,
+      // required: true,
+    },
+    executedQuantity: {
+      type: Number,
+      default: 0,
+      // required: true,
+    },
+    approvedQuantity: {
+      type: Number,
+      default: 0,
+      // required: true,
+    },
+    requiredQuantity: {
+      type: Number,
+      default: 0,
+      // required: true,
+    },
+    invoicedQuantity: {
+      type: Number,
+      default: 0,
+      // required: true,
+    },
+    unit: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "unit",
+      // required: true, 
+    },
     taskStatus: {
       type: String,
       enum: ["working", "completed","delayed","waiting"],
@@ -75,36 +116,6 @@ const taskSchema = mongoose.Schema(
       default: false,
       required: true,
     },
-    // requestForDocumentSubmittalApproval : {
-    //   type: Boolean,
-    //   default: false,
-    //   required: true,
-    // },
-    // requestForApprovalOfMaterials: {
-    //   type: Boolean,
-    //   default: false,
-    //   required: true,
-    // },
-    // workRequest: {
-    //   type: Boolean,
-    //   default: false,
-    //   required: true,
-    // },
-    // tableOfQuantities: {
-    //   type: Boolean,
-    //   default: false,
-    //   required: true,
-    // },
-    // requestForInspectionForm: {
-    //   type: Boolean,
-    //   default: false,
-    //   required: true,
-    // },
-    // approvalOfSchemes: {
-    //   type: Boolean,
-    //   default: false,
-    //   required: true,
-    // },
     notes: [
       {
         content: { type: String },
@@ -115,7 +126,7 @@ const taskSchema = mongoose.Schema(
     model: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "model",
-      immutable: true,
+      immutask: true,
       required: true,
     },
   },

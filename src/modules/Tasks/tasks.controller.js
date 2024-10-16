@@ -201,6 +201,13 @@ const updateTask = catchAsync(async (req, res, next) => {
     isAproved,
     taskPriority,
     taskStatus,
+    total,
+    invoicedQuantity,
+    executedQuantity,
+    approvedQuantity,
+    requiredQuantity,
+    unit,
+    price,
   } = req.body;
   let updatedTask = await taskModel.findByIdAndUpdate(
     id,
@@ -223,6 +230,13 @@ const updateTask = catchAsync(async (req, res, next) => {
       isAproved,
       taskPriority,
       taskStatus,
+      total,
+      invoicedQuantity,
+      executedQuantity,
+      approvedQuantity,
+      requiredQuantity,
+      unit,
+      price
     },
     {
       new: true,
