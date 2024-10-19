@@ -30,7 +30,7 @@ const createProject = catchAsync(async (req, res, next) => {
     .findById(newProject._id)
     .populate({
       path: 'members',
-      select: '_id name email', // Add any other fields you want to include
+      select: '_id name email profilePic', // Add any other fields you want to include
     });
   res.status(201).json({
     message: " Project has been created successfully!",
