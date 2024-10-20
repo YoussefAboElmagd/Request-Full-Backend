@@ -139,11 +139,11 @@ const userSchema = mongoose.Schema(
       default: "user",
       required: true,
     },
-    // projects: {
-    //   type: [mongoose.Schema.Types.ObjectId],
-    //   ref: "project",
-    //   default: [],
-    // },
+    projects: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "project",
+      default: [],
+    },
   },
   { timestamps: true }
 );

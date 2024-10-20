@@ -414,13 +414,13 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
   
   let roles = ["owner", "consultant", "contractor"];
   const groupAdmins = roles.reduce((acc, role) => {
-    acc[role] = null; // Initialize each role with null
+    acc[role] = null;
     return acc;
   }, {});
   
   members.forEach(member => {
     if (roles.includes(member.role)) {
-      groupAdmins[member.role] = member; // Update with member details if present
+      groupAdmins[member.role] = member;
     }
   });
   let groupedMembers = []

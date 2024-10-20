@@ -30,11 +30,9 @@ const getAllUserGroup = catchAsync(async (req, res, next) => {
     results,
   });
 });
-const getAllUserGroupByUser = catchAsync(async (req, res, next) => {
+const getAllUserGroupByCreatedBy = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
-    userGroupModel.find({
-      $or: [{ users: req.params.id }, { createdBy: req.params.id }],
-    }),
+    userGroupModel.find({ createdBy: req.params.id }),
     req.query
   ).search();
   let results = await ApiFeat.mongooseQuery;
@@ -117,5 +115,5 @@ export {
   updateUserGroup,
   deleteUserGroup,
   updateUserGroup2,
-  getAllUserGroupByUser,
+  getAllUserGroupByCreatedBy,
 };

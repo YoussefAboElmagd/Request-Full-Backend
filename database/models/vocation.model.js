@@ -7,6 +7,11 @@ const vocationSchema = mongoose.Schema(
       unique: [true, "Name must be unique."],
       required: true,
     },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
+    },
   },
   { timestamps: true }
 );

@@ -11,6 +11,24 @@ const addVocation = catchAsync(async (req,res) => {
     const saved = await added.save()
     res.json({message : 'Added',saved})
 })
+const getAllVocationsByCreatedBy = catchAsync(async (req, res, next) => {
+    let ApiFeat = new ApiFeature(
+      vocationModel.find({ createdBy: req.params.id }),
+      req.query
+    ).search();
+    let results = await ApiFeat.mongooseQuery;
+    results = JSON.stringify(results);
+    results = JSON.parse(results);
+    if (!ApiFeat || !results) {
+      return res.status(404).json({
+        message: "No UserGroup was found!",
+      });
+    }
+    res.json({
+      message: "Done",
+      results,
+    });
+  });
 const updateVocation = catchAsync(async (req,res) => {
     let {id} = req.params;
     let {name} = req.body;
@@ -41,19 +59,4 @@ const deleteVocation = catchAsync(async (req,res) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-export {getAllVocations,updateVocation,addVocation,deleteVocation};
+export {getAllVocations,updateVocation,addVocation,deleteVocation,getAllVocationsByCreatedBy};

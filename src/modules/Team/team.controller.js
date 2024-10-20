@@ -1,3 +1,4 @@
+import { projectModel } from "../../../database/models/project.model.js";
 import { teamModel } from "../../../database/models/team.model.js";
 import { userModel } from "../../../database/models/user.model.js";
 import { userTypeModel } from "../../../database/models/userType.model.js";
@@ -74,26 +75,25 @@ const getTeamById = catchAsync(async (req, res, next) => {
 
 const updateTeam = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  let {  jobTitle, rights, name, email, password } = req.body;
+  let {  vocation ,projects, name, email, password } = req.body;
   let existUser = await userModel.findOne({ email: email });
   if (existUser) {
     return res.status(404).json({ message: "Email already exist!" });
   } else {
     password = bcrypt.hashSync(password, Number(process.env.SALTED_VALUE));
-    let newUser = new userModel({ name, email, password });
+    let newUser = new userModel({ name, email, password ,vocation ,projects});
     const savedUser = await newUser.save();
-    let accesrights = new userTypeModel({ jobTitle, rights });
-    const savedRights = await accesrights.save();
-    await userModel.findByIdAndUpdate(
-      savedUser._id,
-      { role: savedRights._id },
-      { new: true }
-    );
     const updateeTeam = await teamModel.findByIdAndUpdate(
       id,
       { $push: { members: savedUser._id },  },
       { new: true }
     );
+    let addprojects = Array.isArray(projects) ? projects : [projects];
+    addprojects.forEach(async(project) => {
+      await projectModel.findByIdAndUpdate(project, {
+        $push: { members: savedUser._id }
+      },{ new: true });
+    })
     if (!updateeTeam) {
       return res.status(404).json({ message: "Team not found!" });
     }
