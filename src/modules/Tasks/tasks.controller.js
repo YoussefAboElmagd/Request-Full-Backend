@@ -2,29 +2,66 @@ import { taskModel } from "../../../database/models/tasks.model.js";
 import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import { projectModel } from "../../../database/models/project.model.js";
+import AppError from "../../utils/appError.js";
+import mongoose from "mongoose";
 
 const createTask = catchAsync(async (req, res, next) => {
   let tasks = Array.isArray(req.body) ? req.body : [req.body];
-
   tasks = tasks.map(task => ({
     ...task,
     assignees: task.createdBy,
     model: "66ba018d87b5d43dcd881f7e",
   }));
 
-  let addedTasks = await taskModel.insertMany(tasks);
+  for (const task of tasks) {
+    
+    if (task.parentTask) {
+      const getAllSubTasks = await mongoose.model("task").find({ parentTask: task.parentTask });
+      const parentTask = await mongoose.model("task").findById(task.parentTask);
+      if (!parentTask) {
+        return next(new AppError("Parent task not found", 404));
+      }
 
+      let totalInvoicedQuantity = task.invoicedQuantity || 0;
+      let totalExecutedQuantity = task.executedQuantity || 0;
+      let totalApprovedQuantity = task.approvedQuantity || 0;
+      let totalRequiredQuantity = task.requiredQuantity || 0;
+
+      getAllSubTasks.forEach(subTask => {
+        totalInvoicedQuantity += subTask.invoicedQuantity || 0;
+        totalExecutedQuantity += subTask.executedQuantity || 0;
+        totalApprovedQuantity += subTask.approvedQuantity || 0;
+        totalRequiredQuantity += subTask.requiredQuantity || 0;
+      });
+      
+      if (parentTask.requiredQuantity < totalRequiredQuantity) {
+        return next(new AppError("Required quantity can't be greater than total required quantity", 400));
+      }
+      if (parentTask.invoicedQuantity < totalInvoicedQuantity) {
+        return next(new AppError("Invoiced quantity can't be greater than total invoiced quantity", 400));
+      }
+      if (parentTask.executedQuantity < totalExecutedQuantity) {
+        return next(new AppError("Executed quantity can't be greater than total executed quantity", 400));
+      }
+      if (parentTask.approvedQuantity < totalApprovedQuantity) {
+        return next(new AppError("Approved quantity can't be greater than total approved quantity", 400));
+      }
+    }
+  }
+
+  let addedTasks = await taskModel.insertMany(tasks);
   let taskIds = addedTasks.map(task => task._id);
-    await projectModel.findByIdAndUpdate(
-    addedTasks[0].project, // Assumes all tasks belong to the same project
-    { $push: { tasks: { $each: taskIds } } }, // Push all task IDs at once
+  await projectModel.findByIdAndUpdate(
+    addedTasks[0].project,  
+    { $push: { tasks: { $each: taskIds } } }, 
     { new: true }
   );
-    res.status(201).json({
-      message: " Task has been created successfully!",
-      addedTasks,
-    });
+  res.status(201).json({
+    message: "Task(s) have been created successfully!",
+    addedTasks,
+  });
 });
+
 
 const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(taskModel.find().populate("project").sort({ $natural: -1 }), req.query)

@@ -74,12 +74,12 @@ const projectSchema = mongoose.Schema(
       required: true,
     },
     consultant: {
-      type: [mongoose.Schema.Types.ObjectId],
+      type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       // required: true,
     },
     contractor: {
-      type: [mongoose.Schema.Types.ObjectId],
+      type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       // required: true,
     },
@@ -167,6 +167,7 @@ projectSchema.pre('findOneAndUpdate', async function (next) {
   if (update.dueDate && new Date(update.dueDate) < new Date() && update.status !== "completed") {
     this.setUpdate({ ...update, status: "delayed" });
   }
+
 
   // If team is being updated
   // if (update.team) {

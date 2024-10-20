@@ -359,7 +359,7 @@ const getAllDocsProject = catchAsync(async (req, res, next) => {
           title: 1,
           documents: 1,
           tags: 1,
-        }, // Only return specific fields from the tasks
+        }, 
       },
     },
   ]);
@@ -386,11 +386,7 @@ const getAllDocsProject = catchAsync(async (req, res, next) => {
 
 const getAllMembersProject = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
-    projectModel.findById(req.params.id).populate({
-      path: "members",
-      model: "user",
-      select: "_id name profilePic", // Select only _id and profilePic for assignees
-    }),
+    projectModel.findById(req.params.id).populate("members"),
     req.query
   )
     .sort()
@@ -405,16 +401,39 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
   }
   let members = [];
   if (results.members) {
-    members = results.members;
+    members = results.members.map(member => ({
+      _id: member._id,
+      name: member.name,
+      profilePic: member.profilePic,
+      role: member.role.jobTitle, 
+      vocation: member.vocation,
+      email: member.email,
+      phone: member.phone,
+    }));
   }
+  
+  let roles = ["owner","consultant","contractor"];
+  const groupAdmins = members.reduce((acc, member) => {
+    if (roles.includes(member.role)) {
+      acc[member.role] = member;
+    }
+    return acc;
+  }, {});
+  let groupedMembers = []
+  groupedMembers = members.reduce((acc, member) => {
+    if (!roles.includes(member.role)) {      
+      groupedMembers.push(member);
+    }
+    return groupedMembers;
+  }, []);
 
   res.json({
     message: "Done",
     count: members.length,
-    members,
+    admins: groupAdmins,
+    members: groupedMembers,
   });
 });
-
 
 const getAllProjectsFilesByAdmin = catchAsync(async (req, res, next) => {
   let results = await projectModel.aggregate([
@@ -794,18 +813,32 @@ const updateProject = catchAsync(async (req, res, next) => {
         documents,
         tasks,
         members,
-        contractor,
-        consultant,
         tags,
         notes
       },
+      contractor,
+      consultant,
       owner,
       team,
       budget,
     },
     { new: true }
   );
+  const membersToUpdate = { consultant, contractor, owner };
 
+  for (const [role, member] of Object.entries(membersToUpdate)) {
+      if (member) {
+          await projectModel.findByIdAndUpdate(
+              id,
+              {
+                  $push: {
+                      members: member
+                  }
+              }
+          );
+      }
+  }
+  
   if (!updatedProject) {
     return res.status(404).json({ message: "Project not found!" });
   }
