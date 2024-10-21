@@ -35,7 +35,7 @@ export const signUp = catchAsync(async (req, res, next) => {
   });
   req.body.password = bcrypt.hashSync(
     req.body.password,
-    Number(process.env.SALTED_VALUE)
+    Number(process.env.SALT_ROUNDS)
   );
   let results = new userModel(req.body);
   let token = jwt.sign(

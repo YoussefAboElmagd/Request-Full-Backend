@@ -144,6 +144,11 @@ const userSchema = mongoose.Schema(
       ref: "project",
       default: [],
     },
+    userGroups: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "userGroup",
+      default: [],
+    },
   },
   { timestamps: true }
 );
@@ -178,5 +183,7 @@ userSchema.pre(/^delete/, { document: false, query: true }, async function () {
 userSchema.pre(/^find/, function () {
   this.populate("role");
   this.populate("vocation");
+  this.populate("projects");
+  this.populate("userGroups");
 });
 export const userModel = mongoose.model("user", userSchema);

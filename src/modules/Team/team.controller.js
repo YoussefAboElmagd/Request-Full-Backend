@@ -1,7 +1,7 @@
 import { projectModel } from "../../../database/models/project.model.js";
 import { teamModel } from "../../../database/models/team.model.js";
 import { userModel } from "../../../database/models/user.model.js";
-import { userGroupModel } from "../../../database/models/userGroups.js";
+import { userGroupModel } from "../../../database/models/userGroups.model.js";
 import { userTypeModel } from "../../../database/models/userType.model.js";
 import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
@@ -73,34 +73,121 @@ const getTeamById = catchAsync(async (req, res, next) => {
     results,
   });
 });
+const delegteTeamAccess = catchAsync(async (req, res, next) => {
+  try {
+    const team = await teamModel
+      .findById(req.params.id)
+      .populate({
+        path: "members",
+        select: "name email phone vocation projects role profilePic userGroups",
+        populate: [
+          {
+            path: "projects",
+            select: "name",
+          },
+          {
+            path: "userGroups",
+            select: "name",
+          }
+        ]
+      })
+      .exec();
+
+    const groupedMembers = team.members.reduce((acc, member) => {
+      member.projects.forEach((project) => {
+        if (!acc[project._id]) {
+          acc[project._id] = {
+            projectName: project.name,
+            projectId: project._id,
+            members: [],
+          };
+        }
+
+        const userGroupNames = member.userGroups.map(group => group.name).join(', ') || 'None';
+console.log(member,"mmmmm");
+
+        acc[project._id].members.push({
+          name: member.name,
+          email: member.email,
+          phone: member.phone,
+          vocation: member.vocation,
+          access: userGroupNames, 
+          profilePic: member.profilePic,
+        });
+      });
+      return acc;
+    }, {});
+
+    const results = Object.values(groupedMembers);
+
+    res.json({
+      message: "Success",
+      results,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching team members",
+      error: error.message,
+    });
+  }
+});
+
+const DeleteUserFromProject = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  let { projects } = req.body;
+
+  projects = Array.isArray(projects) ? projects : [projects];
+
+  projects.forEach((project) => {
+    project.tasks.forEach((task) => {
+      task.assignees = task.assignees.filter((member) => member.toString() !== id);
+    })
+   });
+  const updateeTeam = await userModel.findByIdAndUpdate(
+    id,
+    { $pull: { projects , members: req.params.id } },
+    { new: true }
+  );
+  if (!updateeTeam) {
+    return res.status(404).json({ message: "Team not found!" });
+  }
+  res.status(200).json({
+    message: "Team Updated successfully!",
+    updateeTeam,
+  });
+});
 
 const updateTeam = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  let {  vocation ,projects, name, email, password ,access } = req.body;
+  let { vocation, projects, name, email, password, access } = req.body;
   let existUser = await userModel.findOne({ email: email });
   if (existUser) {
     return res.status(404).json({ message: "Email already exist!" });
   } else {
-    password = bcrypt.hashSync(password, Number(process.env.SALTED_VALUE));
-    let newUser = new userModel({ name, email, password ,vocation ,projects});
+    password = bcrypt.hashSync(password, Number(process.env.SALT_ROUNDS));
+    let newUser = new userModel({ name, email, password, vocation, projects });
     const savedUser = await newUser.save();
     const updateeTeam = await teamModel.findByIdAndUpdate(
       id,
-      { $push: { members: savedUser._id },  },
+      { $push: { members: savedUser._id } },
       { new: true }
     );
     const updateUserGroup = await userGroupModel.findByIdAndUpdate(
       access,
-      { $push: { members: savedUser._id },  },
+      { $push: { users: savedUser._id } },
       { new: true }
     );
 
     let addprojects = Array.isArray(projects) ? projects : [projects];
-    addprojects.forEach(async(project) => {
-      await projectModel.findByIdAndUpdate(project, {
-        $push: { members: savedUser._id }
-      },{ new: true });
-    })
+    addprojects.forEach(async (project) => {
+      await projectModel.findByIdAndUpdate(
+        project,
+        {
+          $push: { members: savedUser._id },
+        },
+        { new: true }
+      );
+    });
     if (!updateeTeam) {
       return res.status(404).json({ message: "Team not found!" });
     }
@@ -160,4 +247,6 @@ export {
   getAllTeamByUser,
   getTeamById,
   updateTeamMembers,
+  delegteTeamAccess,
+  DeleteUserFromProject,
 };

@@ -1,4 +1,4 @@
-import { userGroupModel } from "../../../database/models/userGroups.js";
+import { userGroupModel } from "../../../database/models/userGroups.model.js";
 import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
@@ -52,7 +52,7 @@ const getAllUserGroupByCreatedBy = catchAsync(async (req, res, next) => {
 
 const updateUserGroup = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  let { users, tags, rights ,name } = req.body;
+  let { users, tags, rights, name } = req.body;
   const updatedUserGroup = await userGroupModel.findByIdAndUpdate(
     id,
     {
@@ -61,7 +61,7 @@ const updateUserGroup = catchAsync(async (req, res, next) => {
         tags,
         rights,
       },
-      name
+      name,
     },
     {
       new: true,
