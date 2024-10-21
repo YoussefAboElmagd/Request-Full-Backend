@@ -101,7 +101,7 @@ const userSchema = mongoose.Schema(
     role: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "userType",
-      required: true,
+      // required: true,
     },
     vocation: {
       type: mongoose.Schema.Types.ObjectId,

@@ -88,8 +88,8 @@ const delegteTeamAccess = catchAsync(async (req, res, next) => {
           {
             path: "userGroups",
             select: "name",
-          }
-        ]
+          },
+        ],
       })
       .exec();
 
@@ -103,15 +103,16 @@ const delegteTeamAccess = catchAsync(async (req, res, next) => {
           };
         }
 
-        const userGroupNames = member.userGroups.map(group => group.name).join(', ') || 'None';
-console.log(member,"mmmmm");
+        const userGroupNames =
+          member.userGroups.map((group) => group.name).join(", ") || "None";
+        console.log(member, "mmmmm");
 
         acc[project._id].members.push({
           name: member.name,
           email: member.email,
           phone: member.phone,
           vocation: member.vocation,
-          access: userGroupNames, 
+          access: userGroupNames,
           profilePic: member.profilePic,
         });
       });
@@ -140,12 +141,14 @@ const DeleteUserFromProject = catchAsync(async (req, res, next) => {
 
   projects.forEach((project) => {
     project.tasks.forEach((task) => {
-      task.assignees = task.assignees.filter((member) => member.toString() !== id);
-    })
-   });
+      task.assignees = task.assignees.filter(
+        (member) => member.toString() !== id
+      );
+    });
+  });
   const updateeTeam = await userModel.findByIdAndUpdate(
     id,
-    { $pull: { projects , members: req.params.id } },
+    { $pull: { projects, members: req.params.id } },
     { new: true }
   );
   if (!updateeTeam) {
@@ -165,7 +168,15 @@ const updateTeam = catchAsync(async (req, res, next) => {
     return res.status(404).json({ message: "Email already exist!" });
   } else {
     password = bcrypt.hashSync(password, Number(process.env.SALT_ROUNDS));
-    let newUser = new userModel({ name, email, password, vocation, projects });
+    let model = "66ba00b0e39d9694110fd3df";
+    let newUser = new userModel({
+      name,
+      email,
+      password,
+      vocation,
+      projects,
+      model,
+    });
     const savedUser = await newUser.save();
     const updateeTeam = await teamModel.findByIdAndUpdate(
       id,
