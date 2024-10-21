@@ -9,6 +9,7 @@ const createUserGroup = catchAsync(async (req, res, next) => {
   savedData.users = savedData.users.filter(
     (item, index) => savedData.users.indexOf(item) === index
   );
+  await savedData.save();
   res.status(201).json({
     message: "UserGroup created successfully!",
     savedData,
