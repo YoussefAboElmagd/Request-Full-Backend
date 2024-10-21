@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 
 const userGroupSchema = mongoose.Schema(
   {
+    name:{
+      type: String,
+      required: true,
+    },
     users:{
       type: [mongoose.Schema.Types.ObjectId],
       ref: "user",

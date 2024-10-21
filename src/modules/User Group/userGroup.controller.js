@@ -52,7 +52,7 @@ const getAllUserGroupByCreatedBy = catchAsync(async (req, res, next) => {
 
 const updateUserGroup = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  let { users, tags, rights } = req.body;
+  let { users, tags, rights ,name } = req.body;
   const updatedUserGroup = await userGroupModel.findByIdAndUpdate(
     id,
     {
@@ -61,6 +61,7 @@ const updateUserGroup = catchAsync(async (req, res, next) => {
         tags,
         rights,
       },
+      name
     },
     {
       new: true,
