@@ -2,7 +2,6 @@ import { projectModel } from "../../../database/models/project.model.js";
 import { teamModel } from "../../../database/models/team.model.js";
 import { userModel } from "../../../database/models/user.model.js";
 import { userGroupModel } from "../../../database/models/userGroups.model.js";
-import { userTypeModel } from "../../../database/models/userType.model.js";
 import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import bcrypt from "bcrypt";
@@ -162,7 +161,7 @@ const DeleteUserFromProject = catchAsync(async (req, res, next) => {
 
 const updateTeam = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  let { vocation, projects, name, email, password, access } = req.body;
+  let { vocation, projects, name, email, password, access,phone } = req.body;
   let existUser = await userModel.findOne({ email: email });
   if (existUser) {
     return res.status(404).json({ message: "Email already exist!" });
@@ -176,6 +175,7 @@ const updateTeam = catchAsync(async (req, res, next) => {
       vocation,
       projects,
       model,
+      phone,
     });
     const savedUser = await newUser.save();
     const updateeTeam = await teamModel.findByIdAndUpdate(
