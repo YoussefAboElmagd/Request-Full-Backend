@@ -1,6 +1,7 @@
 import { projectModel } from "../../../database/models/project.model.js";
 import { teamModel } from "../../../database/models/team.model.js";
 import { userModel } from "../../../database/models/user.model.js";
+import { userGroupModel } from "../../../database/models/userGroups.js";
 import { userTypeModel } from "../../../database/models/userType.model.js";
 import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
@@ -75,7 +76,7 @@ const getTeamById = catchAsync(async (req, res, next) => {
 
 const updateTeam = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  let {  vocation ,projects, name, email, password } = req.body;
+  let {  vocation ,projects, name, email, password ,access } = req.body;
   let existUser = await userModel.findOne({ email: email });
   if (existUser) {
     return res.status(404).json({ message: "Email already exist!" });
@@ -88,6 +89,12 @@ const updateTeam = catchAsync(async (req, res, next) => {
       { $push: { members: savedUser._id },  },
       { new: true }
     );
+    const updateUserGroup = await userGroupModel.findByIdAndUpdate(
+      access,
+      { $push: { members: savedUser._id },  },
+      { new: true }
+    );
+
     let addprojects = Array.isArray(projects) ? projects : [projects];
     addprojects.forEach(async(project) => {
       await projectModel.findByIdAndUpdate(project, {
