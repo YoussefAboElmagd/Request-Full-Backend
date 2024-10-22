@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { projectModel } from "../../../database/models/project.model.js";
 import { teamModel } from "../../../database/models/team.model.js";
 import { userModel } from "../../../database/models/user.model.js";
