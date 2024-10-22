@@ -17,11 +17,13 @@ usersRouter.get("/contractor/", usersController.getAllcontractors);
 usersRouter.get("/:id", usersController.getUserById);
 usersRouter.get("/tags/:id", usersController.getUserTags);
 usersRouter.get("/email/", usersController.getUserByEmail);
-usersRouter.put("/:id", usersController.updateUser);
-usersRouter.put("/pull/:id", usersController.updateUser2);
+usersRouter.get("/sub/:id", usersController.getSubscriptionPeriod);
+
 usersRouter.post("/contactUs/:id", usersController.postMessage);
 usersRouter.post("/invite/", usersController.sendInviteToProject);
 
+usersRouter.put("/:id", usersController.updateUser);
+usersRouter.put("/pull/:id", usersController.updateUser2);
 usersRouter.put(
   "/photo/:id",
   uploadMixFile("profilePic", [{ name: "profilePic" }]),

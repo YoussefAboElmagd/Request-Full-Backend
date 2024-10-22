@@ -106,6 +106,7 @@ const delegteTeamAccess = catchAsync(async (req, res, next) => {
           member.userGroups.map((group) => group.name).join(", ") || "None";
 
         acc[project._id].members.push({
+          _id: member._id,
           name: member.name,
           email: member.email,
           phone: member.phone,

@@ -5,6 +5,7 @@ import AppError from "../../utils/appError.js";
 import { DateTime } from "luxon";
 import { photoUpload } from "../../utils/removeFiles.js";
 import { contactUs, sendInvite } from "../../email/sendEmail.js";
+import cron from "node-cron";
 
 const updateprofilePic = catchAsync(async (req, res, next) => {
   let { id } = req.params;
@@ -225,6 +226,47 @@ const updateUser = catchAsync(async (req, res, next) => {
   !results && res.status(404).json({ message: "couldn't update! not found!" });
   results && res.json({ message: "updatedd", results });
 });
+
+const getSubscriptionPeriod = catchAsync(async (req, res, next) => {
+  let { id } = req.params;
+
+  let result = await userModel.findById(id);
+  !result && next(new AppError(`Not Found `, 404));
+  let today = new Date();
+  const timeDiff = result.trialEndDate - today;
+  let remainingDays = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+  const results = {
+    subscriptionType: result.subscriptionType,
+    isTrialActive: result.isTrialActive,
+    trialStartDate: result.trialStartDate,
+    trialEndDate: result.trialEndDate,
+    remainingDays: remainingDays,
+};
+results && res.json({ message: "Done", results });
+today.setMinutes(today.getMinutes() + 1);
+
+  const cronExpression = `${today.getMinutes()} ${today.getHours()} * * *`;
+  
+  const task = cron.schedule(cronExpression, async () => {
+    try {
+      console.log(remainingDays,"remaining Days");
+      if(remainingDays <= 0){
+      let user =  await userModel.findByIdAndUpdate(id, {
+          isTrialActive: false,
+          isOnFreeTrial: false,
+          trialEndDate: new Date(),
+          subscriptionType: "normal",
+        },{new: true});
+        console.log(user,"user");
+      }
+      
+      task.stop();
+    } catch (error) {
+      console.error("Error during cron job execution:", error);
+    }
+  });
+});
+
 const updateUser2 = catchAsync(async (req, res, next) => {
   let { id } = req.params;
   let { projects, tags ,userGroups } = req.body;
@@ -267,5 +309,6 @@ export {
   getUserTags,
   postMessage,
   sendInviteToProject,
-  getUserByEmail
+  getUserByEmail,
+  getSubscriptionPeriod
 };
