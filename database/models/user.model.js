@@ -97,6 +97,7 @@ const userSchema = mongoose.Schema(
     team: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "team",
+      default: null,
     },
     role: {
       type: mongoose.Schema.Types.ObjectId,
@@ -168,7 +169,16 @@ userSchema.pre("findOneAndUpdate", function () {
     );
   }
 });
-
+userSchema.pre("findOneAndUpdate",async function () {
+  
+  if(this._update.name){
+    await messageModel.updateMany(
+      { sender: this._update._id },
+      { $set: { senderName: this._update.name } },
+      { new: true }
+    )
+  }
+});
 userSchema.pre(/^delete/, { document: false, query: true }, async function () {
   const doc = await this.model.findOne(this.getFilter());
   if (doc) {

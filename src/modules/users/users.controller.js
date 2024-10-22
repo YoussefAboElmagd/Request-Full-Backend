@@ -192,11 +192,12 @@ const updateUser = catchAsync(async (req, res, next) => {
     offersAndPackages,
     notifications,
     renewalSubscription,
+    userGroups,
   } = req.body;
   let results = await userModel.findByIdAndUpdate(
     id,
     {
-      $push: { projects, tags },
+      $push: { projects, tags ,userGroups},
       name,
       phone,
       password,
@@ -217,6 +218,7 @@ const updateUser = catchAsync(async (req, res, next) => {
       offersAndPackages,
       notifications,
       renewalSubscription,
+      
     },
     { new: true }
   );
@@ -225,11 +227,11 @@ const updateUser = catchAsync(async (req, res, next) => {
 });
 const updateUser2 = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let { projects, tags } = req.body;
+  let { projects, tags ,userGroups } = req.body;
   let results = await userModel.findByIdAndUpdate(
     id,
     {
-      $pull: { projects, tags },
+      $pull: { projects, tags ,userGroups },
     },
     { new: true }
   );

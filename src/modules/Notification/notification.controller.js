@@ -4,9 +4,13 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const getAllNotification = catchAsync(async (req, res, next) => {
   let { id } = req.params;
+  const DaysAgo = new Date();
+  DaysAgo.setDate(DaysAgo.getDate() - Number(req.query.days));
   let results = await notificationModel.find({
     receiver: id,
+    createdAt: { $gte: DaysAgo } 
   }).sort({ $natural: -1 });
+
   res.json({ message: "Done", results });
 });
 

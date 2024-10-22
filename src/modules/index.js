@@ -49,7 +49,7 @@ export function init(app) {
   app.use("/api/v1/vocation", vocationRoute);
   app.use("/api/v1/group", groupChatRouter);
   app.use("/api/v1/dashboard", dashboardRouter);
-  app.use("/api/v1/user-group", userGroupRouter);
+  app.use("/api/v1/userGroup", userGroupRouter);
   app.use("/api/v1/plan", planRouter);
   app.use("/api/v1/payment", paymentRouter);
 
