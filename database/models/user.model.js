@@ -102,6 +102,7 @@ const userSchema = mongoose.Schema(
     role: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "userType",
+      default: null,
       // required: true,
     },
     vocation: {

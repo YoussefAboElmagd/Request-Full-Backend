@@ -401,11 +401,13 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
   }
   let members = [];
   if (results.members) {
+    console.log(results.members.map(member => member.role));
+    
     members = results.members.map(member => ({
       _id: member._id,
       name: member.name,
       profilePic: member.profilePic,
-      role: member.role.jobTitle, 
+      role: member.role ? member.role.jobTitle : "None", 
       vocation: member.vocation,
       email: member.email,
       phone: member.phone,

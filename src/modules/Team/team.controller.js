@@ -134,28 +134,36 @@ const delegteTeamAccess = catchAsync(async (req, res, next) => {
 
 const DeleteUserFromProject = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  let { projects } = req.body;
+  let { project } = req.body;
 
-  projects = Array.isArray(projects) ? projects : [projects];
+let check = await projectModel.findById(project);
+if (!check) {
+  return res.status(404).json({ message: "Project not found!" });
+}
+let updateProject = await projectModel.findByIdAndUpdate(
+  project,
+  { $pull: { members: id } },
+  { new: true }
+);
 
-  projects.forEach((project) => {
-    project.tasks.forEach((task) => {
-      task.assignees = task.assignees.filter(
-        (member) => member.toString() !== id
-      );
-    });
+let UpdateTasks = await projectModel.findById(project).select("tasks");
+if (UpdateTasks) {
+  UpdateTasks.tasks.forEach(async (task) => {
+    await taskModel.findByIdAndUpdate(task, { $pull: { assignees: id } },
+      { new: true });
   });
-  const updateeTeam = await userModel.findByIdAndUpdate(
+}  
+  const updateeUser = await userModel.findByIdAndUpdate(
     id,
-    { $pull: { projects, members: req.params.id } },
+    { $pull: { projects: project._id} },
     { new: true }
   );
-  if (!updateeTeam) {
-    return res.status(404).json({ message: "Team not found!" });
+  if (!updateeUser) {
+    return res.status(404).json({ message: "User not found!" });
   }
   res.status(200).json({
-    message: "Team Updated successfully!",
-    updateeTeam,
+    message: "User Updated successfully!",
+    updateeUser,
   });
 });
 
