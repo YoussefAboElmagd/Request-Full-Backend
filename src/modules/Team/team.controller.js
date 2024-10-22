@@ -136,7 +136,7 @@ const delegteTeamAccess = catchAsync(async (req, res, next) => {
 const DeleteUserFromProject = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   let { project } = req.body;
-  project = mongoose.Schema.Types.ObjectId(project);
+  project =   new mongoose.Types.ObjectId(project);
 let check = await projectModel.findById(project);
 if (!check) {
   return res.status(404).json({ message: "Project not found!" });
