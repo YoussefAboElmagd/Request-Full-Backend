@@ -155,7 +155,7 @@ if (UpdateTasks) {
 }  
   const updateeUser = await userModel.findByIdAndUpdate(
     id,
-    { $pull: { projects: project._id} },
+    { $pull: { projects: project} },
     { new: true }
   );
   if (!updateeUser) {
@@ -207,6 +207,8 @@ const updateTeam = catchAsync(async (req, res, next) => {
         { new: true }
       );
     });
+    console.log(addprojects, "updateeTeam");
+    
     if (!updateeTeam) {
       return res.status(404).json({ message: "Team not found!" });
     }
