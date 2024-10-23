@@ -372,70 +372,82 @@ if (!check) {
 
 
 const weeklyActivity = catchAsync(async (req, res, next) => {
-//   let id =new mongoose.Types.ObjectId(req.params.id)
-// let check = await userModel.findById(id);
-// if (!check) { 
-//   return res.status(404).json({ message: "User not found!" });
-// }
-const weeklyActivity = await taskModel.aggregate([
-  {
-    $match: {
-      createdAt: { $gte: new Date(new Date().setDate(new Date().getDate() - 7)) }
-    }
-  },
-  {
-    $group: {
-      _id: {
-        dayOfWeek: { $dayOfWeek: "$createdAt" }, // Group by day of the week
-        taskStatus: "$taskStatus" 
-      },
-      count: { $sum: 1 } 
-    }
-  },
-  {
-    $group: {
-      _id: "$_id.dayOfWeek",
-      statuses: {
-        $push: {
-          taskStatus: "$_id.taskStatus",
-          count: "$count"
+
+  const weeklyActivity = await taskModel.aggregate([
+    {
+      $match: {
+        // Get tasks created within the last 7 days
+        createdAt: { $gte: new Date(new Date().setDate(new Date().getDate() - 7)) }
+      }
+    },
+    {
+      $group: {
+        _id: {
+          dayOfWeek: { $dayOfWeek: "$createdAt" }, // Group by day of the week (1 = Sunday, 7 = Saturday)
+          taskStatus: "$taskStatus" // Group by task status (delayed, working, completed)
+        },
+        count: { $sum: 1 } // Count the number of tasks
+      }
+    },
+    {
+      $group: {
+        _id: "$_id.dayOfWeek",
+        statuses: {
+          $push: {
+            taskStatus: "$_id.taskStatus",
+            count: "$count"
+          }
         }
       }
+    },
+    {
+      $sort: { _id: 1 } 
     }
-  },
-  {
-    $sort: { _id: 1 } 
-  }
-]);
+  ]);
 
-let results = weeklyActivity.map(item => {
-  const data = {
-    day: item._id, // Day of the week (1 = Sunday, 2 = Monday, etc.)
-    delayed: 0,
-    working: 0,
-    completed: 0
-  };
-  
-  item.statuses.forEach(status => {
-    if (status.taskStatus === 'delayed') data.delayed = status.count;
-    if (status.taskStatus === 'working') data.working = status.count;
-    if (status.taskStatus === 'completed') data.completed = status.count;
+  const daysOfWeek = [
+    { dayOfWeek: 1, name: "Sunday" },
+    { dayOfWeek: 2, name: "Monday" },
+    { dayOfWeek: 3, name: "Tuesday" },
+    { dayOfWeek: 4, name: "Wednesday" },
+    { dayOfWeek: 5, name: "Thursday" },
+    { dayOfWeek: 6, name: "Friday" },
+    { dayOfWeek: 7, name: "Saturday" }
+  ];
+
+  let results = daysOfWeek.map(day => {
+    const activityForDay = weeklyActivity.find(activity => activity._id === day.dayOfWeek);
+
+    const data = {
+      day: day.name,   // Day of the week (Sunday, Monday, etc.)
+      delayed: 0,
+      working: 0,
+      completed: 0
+    };
+
+    if (activityForDay) {
+      activityForDay.statuses.forEach(status => {
+        if (status.taskStatus === 'delayed') data.delayed = status.count;
+        if (status.taskStatus === 'working') data.working = status.count;
+        if (status.taskStatus === 'completed') data.completed = status.count;
+      });
+    }
+
+    return data;
   });
-  
-  return data;
-});
 
-  if(!results){
+  if (!results || results.length === 0) {
     return res.status(404).json({
       message: "No Dashboard was found!",
-    })
+    });
   }
   res.json({
     message: "Done",
-    results,
+    results
   });
 });
 const weeklyActivityByUser = catchAsync(async (req, res, next) => {
+
   let id =new mongoose.Types.ObjectId(req.params.id)
 let check = await userModel.findById(id);
 if (!check) { 
@@ -449,59 +461,72 @@ const weeklyActivity = await taskModel.aggregate([
       
     }
   },
-  {
-    $group: {
-      _id: {
-        dayOfWeek: { $dayOfWeek: "$createdAt" }, // Group by day of the week
-        taskStatus: "$taskStatus" 
-      },
-      count: { $sum: 1 } 
-    }
-  },
-  {
-    $group: {
-      _id: "$_id.dayOfWeek",
-      statuses: {
-        $push: {
-          taskStatus: "$_id.taskStatus",
-          count: "$count"
+    {
+      $group: {
+        _id: {
+          dayOfWeek: { $dayOfWeek: "$createdAt" }, // Group by day of the week (1 = Sunday, 7 = Saturday)
+          taskStatus: "$taskStatus" // Group by task status (delayed, working, completed)
+        },
+        count: { $sum: 1 } // Count the number of tasks
+      }
+    },
+    {
+      $group: {
+        _id: "$_id.dayOfWeek",
+        statuses: {
+          $push: {
+            taskStatus: "$_id.taskStatus",
+            count: "$count"
+          }
         }
       }
+    },
+    {
+      $sort: { _id: 1 } 
     }
-  },
-  {
-    $sort: { _id: 1 } 
-  }
-]);
+  ]);
 
-let results = weeklyActivity.map(item => {
-  const data = {
-    day: item._id, // Day of the week (1 = Sunday, 2 = Monday, etc.)
-    delayed: 0,
-    working: 0,
-    completed: 0
-  };
-  
-  item.statuses.forEach(status => {
-    if (status.taskStatus === 'delayed') data.delayed = status.count;
-    if (status.taskStatus === 'working') data.working = status.count;
-    if (status.taskStatus === 'completed') data.completed = status.count;
+  const daysOfWeek = [
+    { dayOfWeek: 1, name: "Sunday" },
+    { dayOfWeek: 2, name: "Monday" },
+    { dayOfWeek: 3, name: "Tuesday" },
+    { dayOfWeek: 4, name: "Wednesday" },
+    { dayOfWeek: 5, name: "Thursday" },
+    { dayOfWeek: 6, name: "Friday" },
+    { dayOfWeek: 7, name: "Saturday" }
+  ];
+
+  let results = daysOfWeek.map(day => {
+    const activityForDay = weeklyActivity.find(activity => activity._id === day.dayOfWeek);
+
+    const data = {
+      day: day.name,   // Day of the week (Sunday, Monday, etc.)
+      delayed: 0,
+      working: 0,
+      completed: 0
+    };
+
+    if (activityForDay) {
+      activityForDay.statuses.forEach(status => {
+        if (status.taskStatus === 'delayed') data.delayed = status.count;
+        if (status.taskStatus === 'working') data.working = status.count;
+        if (status.taskStatus === 'completed') data.completed = status.count;
+      });
+    }
+
+    return data;
   });
-  
-  return data;
-});
 
-  if(!results){
+  if (!results || results.length === 0) {
     return res.status(404).json({
       message: "No Dashboard was found!",
-    })
+    });
   }
   res.json({
     message: "Done",
-    results,
+    results
   });
 });
-
 
 export {  getAllDashboard, updateDashboard,getTopCountries ,getUserRatioPieChart ,getActiveProjects,getProjectPerformance ,getActiveProjectsByUser,getProjectPerformanceByUser,
   weeklyActivity ,weeklyActivityByUser
