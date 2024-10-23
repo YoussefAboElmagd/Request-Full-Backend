@@ -86,29 +86,31 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
         .populate("members")
         .populate("owner"),
       req.query
-    )
-      .search();
+    ).search();
   } else {
     ApiFeat = new ApiFeature(
       projectModel
-        .find({ status: req.query.status }).sort({ $natural: -1 })
+        .find({ status: req.query.status })
+        .sort({ $natural: -1 })
         .populate("contractor")
         .populate("consultant")
         .populate("createdBy")
         .populate("members")
         .populate("owner"),
       req.query
-    )
-      .search();
+    ).search();
   }
+
   let results = await ApiFeat.mongooseQuery;
   results = JSON.stringify(results);
   results = JSON.parse(results);
+
   if (!ApiFeat || !results) {
     return res.status(404).json({
       message: "No Project was found!",
     });
   }
+
   let { filterType, filterValue } = req.query;
   if (filterType && filterValue) {
     results = results.filter(function (item) {
@@ -123,21 +125,20 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
           .toLowerCase()
           .includes(filterValue.toLowerCase());
       }
-      // if (filterType == "date") {
-      //   return item.dueDate.includes(filterValue);
-      // }
       if (filterType == "createdBy") {
         return item.createdBy.name
           .toLowerCase()
           .includes(filterValue.toLowerCase());
       }
-      // if (filterType == "members") {
-      //   if (item.members) {
-      //    return item.members.filter(item => item.name.toLowerCase().includes(filterValue.toLowerCase()));
-      //   }
-      // }
     });
   }
+
+  results = results.map((project) => {
+    return {
+      ...project,
+      documentsCount: project.documents ? project.documents.length : 0,
+      notesCount: project.notes ? project.notes.length : 0,};
+  });
 
   res.json({
     message: "Done",
@@ -145,6 +146,7 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
     results,
   });
 });
+
 const getAllProjectByUser = catchAsync(async (req, res, next) => {
   let ApiFeat = null;
 
