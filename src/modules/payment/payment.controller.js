@@ -14,6 +14,14 @@ const getPaymentByID = catchAsync(async (req, res) => {
     res.json({ message: "Id Not Found" });
   }
 });
+const getAllPayment = catchAsync(async (req, res) => {
+  let results = await paymentModel.find();
+  if (results) {
+    res.json({ message: "Done", results });
+  } else {
+    res.json({ message: "NO Payment yet" });
+  }
+});
 const updatePayment = catchAsync(async (req, res) => {
   let { id } = req.params;
   let update = await paymentModel.findByIdAndUpdate(id, req.body, {
@@ -27,4 +35,4 @@ const deletePayment = catchAsync(async (req, res) => {
   res.json({ message: "deleted" });
 });
 
-export { createPayment, getPaymentByID, updatePayment, deletePayment };
+export { createPayment, getPaymentByID, updatePayment, deletePayment ,getAllPayment};
