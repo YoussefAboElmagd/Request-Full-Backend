@@ -222,8 +222,7 @@ const getAllAssigness = catchAsync(async (req, res, next) => {
 
 })
 const getAllSubTasksByParentTask = catchAsync(async (req, res, next) => {
-  let results = await taskModel.find({$and:[{parentTask: req.params.id},{project: req.params.projectId},
-    {$or:[{createdBy:req.params.id},{assignees: req.params.id}]}]}).select("title _id");
+  let results = await taskModel.find({parentTask: req.params.id});
     if (!results) {
       return res.status(404).json({ message: "Task not found!" });
     }
@@ -236,7 +235,8 @@ const getAllSubTasksByParentTask = catchAsync(async (req, res, next) => {
 })
 
 const getAllParentTasks = catchAsync(async (req, res, next) => {
-  let results = await taskModel.find({parentTask: null}).select("title _id");
+  let results = await taskModel.find({$and:[{parentTask: req.params.id},{project: req.params.projectId},
+    {$or:[{createdBy:req.params.id},{assignees: req.params.id}]}]}).select("title _id");
 
     if (!results) {
       return res.status(404).json({ message: "Task not found!" });
