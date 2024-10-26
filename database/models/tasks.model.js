@@ -115,6 +115,9 @@ const taskSchema = mongoose.Schema(
       default: false,
       required: true,
     },
+    recurrenceInterval: { type: Number ,default:1 },
+    recurrenceUnit: { type: String, enum: ['days', 'weeks', 'months'], default: 'days' },
+    recurrenceEndDate: { type: Date },
     notes: [
       {
         content: { type: String },

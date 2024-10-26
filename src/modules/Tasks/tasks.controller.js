@@ -4,6 +4,8 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import { projectModel } from "../../../database/models/project.model.js";
 import AppError from "../../utils/appError.js";
 import mongoose from "mongoose";
+import cron from 'node-cron';
+import moment from 'moment';
 
 const createTask = catchAsync(async (req, res, next) => {
   let tasks = Array.isArray(req.body) ? req.body : [req.body];
@@ -221,6 +223,38 @@ const getAllAssigness = catchAsync(async (req, res, next) => {
     });
 
 })
+const scheduleRecurringTasks  = catchAsync(async (req, res, next) => {
+  let check = await projectModel.findById(req.params.projectId);
+  let check2 = await taskModel.findById(req.params.id);
+  if (!check || check2) {
+    return res.status(404).json({ message: "Project not found!" });
+  }
+
+  cron.schedule('0 0 * * *', async () => { 
+    try {
+      const tasks = await taskModel.find({$and:[{type: "recurring"}, {project: req.params.projectId},{$or:[{createdBy:req.params.id},{assignees: req.params.id}]}]});
+      
+      tasks.forEach(async task => {
+        const now = new Date();
+        const nextOccurrence = moment(task.createdAt)
+          .add(task.recurrenceInterval, task.recurrenceUnit)
+          .toDate();
+
+        if (nextOccurrence <= now && (!task.recurrenceEndDate || now < task.recurrenceEndDate)) {
+          const newTask = new taskModel({
+            ...task.toObject(),
+            createdAt: now,
+            type: "recurring", // new instance is not recurring
+          });
+          await newTask.save();
+        }
+      });
+    } catch (error) {
+      console.error('Error creating recurring tasks:', error);
+    }
+  });
+
+})
 const getAllSubTasksByParentTask = catchAsync(async (req, res, next) => {
   let results = await taskModel.find({parentTask: req.params.id}).populate({
     path: 'assignees',
@@ -366,4 +400,5 @@ export {
   getAllAssigness,
   getAllSubTasksByParentTask,
   getAllParentTasks,
+  scheduleRecurringTasks,
 };
