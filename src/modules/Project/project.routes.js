@@ -13,7 +13,7 @@ projectRouter.get("/user/analytics/:id", projectController.getAllAnalyticsByUser
 projectRouter.get("/user/status/:id",projectController.getAllProjectByStatusByUser);
 projectRouter.get("/admin/files/",projectController.getAllProjectsFilesByAdmin);
 projectRouter.get("/user/files/:id",projectController.getAllProjectsFilesByUser);
-projectRouter.get("/files/:id",projectController.getFilesByTags);
+projectRouter.get("/files/:id/:projectId",projectController.getFilesByTags);
 projectRouter.get("/download/:tagId",projectController.getFilesForDownload);
 projectRouter.get("/tags/:id",projectController.getTagsByProject);
 projectRouter.post("/", projectController.createProject);

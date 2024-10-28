@@ -514,26 +514,26 @@ const getAllProjectsFilesByUser = catchAsync(async (req, res, next) => {
         },
       },
       {
-        $unwind: "$tasks", // Unwind tasks to access each task individually
+        $unwind: "$tasks", 
       },
       {
         $lookup: {
-          from: "tags", // Join with the tags collection
-          localField: "tasks.tags", // The field in Task model that references the tag
-          foreignField: "_id", // Field in Tag model
-          as: "taskTags", // Store the related tag info in `taskTags`
+          from: "tags", 
+          localField: "tasks.tags", 
+          foreignField: "_id", 
+          as: "taskTags", 
         },
       },
       {
-        $unwind: "$taskTags", // Unwind taskTags to handle each tag individually
+        $unwind: "$taskTags", 
       },
       {
         $group: {
-          _id: "$_id", // Group by project ID
-          projectName: { $first: "$name" }, // Keep the project name
+          _id: "$_id", 
+          projectName: { $first: "$name" }, 
           tags: {
             $addToSet: {
-              _id: "$taskTags._id", // Tag ID
+              _id: "$taskTags._id", 
               name: "$taskTags.name", // Tag name
               colorCode: "$taskTags.colorCode", // Tag color code
               createdBy: "$taskTags.createdBy", // Who created the tag
@@ -560,60 +560,62 @@ const getAllProjectsFilesByUser = catchAsync(async (req, res, next) => {
 });
 const getFilesByTags = catchAsync(async (req, res, next) => {
   const tagId = new mongoose.Types.ObjectId(req.params.id);
+  const projectId = new mongoose.Types.ObjectId(req.params.projectId);
 
-  let results = await projectModel.aggregate(
-    [
-      {
-        $lookup: {
-          from: "tasks", // Assuming the tasks collection is named "tasks"
-          localField: "_id", // Project _id
-          foreignField: "project", // The field in Task model that references the project
-          as: "tasks", // The field to store the related tasks
-        },
+  let results = await projectModel.aggregate([
+    {
+      $lookup: {
+        from: "tasks", // Assuming the tasks collection is named "tasks"
+        localField: "_id", // Project _id
+        foreignField: "project", // The field in Task model that references the project
+        as: "tasks", // The field to store the related tasks
       },
-      {
-        $unwind: "$tasks", // Unwind tasks to access each task individually
+    },
+    {
+      $match: { _id: projectId }, // Filter by the specified projectId
+    },
+    {
+      $unwind: "$tasks", // Unwind tasks to access each task individually
+    },
+    {
+      $lookup: {
+        from: "tags", // Assuming the tags collection is named "tags"
+        localField: "tasks.tags", // The field in Task model that references the tag
+        foreignField: "_id", // The field in Tag model
+        as: "taskTags", // Store the related tag info in `taskTags`
       },
-      {
-        $lookup: {
-          from: "tags", // Assuming the tags collection is named "tags"
-          localField: "tasks.tags", // The field in Task model that references the tag
-          foreignField: "_id", // The field in Tag model
-          as: "taskTags", // Store the related tag info in `taskTags`
-        },
+    },
+    {
+      $unwind: "$taskTags", // Unwind taskTags to handle each tag individually
+    },
+    {
+      $match: {
+        "taskTags._id": tagId, // Filter by the specified tagId
       },
-      {
-        $unwind: "$taskTags", // Unwind taskTags to handle each tag individually
-      },
-      {
-        $match: {
-          "taskTags._id": tagId, // Filter by the tag ID you want to search for
-        },
-      },
-      {
-        $group: {
-          _id: "$taskTags._id", // Group by the tag ID
-          tagName: { $first: "$taskTags.name" }, // Keep the tag name
-          tagColor: { $first: "$taskTags.colorCode" }, // Keep the tag name
-          tasks: {
-            $push: {
-              _id: "$tasks._id", // Task ID
-              title: "$tasks.title", // Task title
-              documents: "$tasks.documents", // Task documents
-            },
+    },
+    {
+      $group: {
+        _id: "$taskTags._id", // Group by the tag ID
+        tagName: { $first: "$taskTags.name" }, // Keep the tag name
+        tagColor: { $first: "$taskTags.colorCode" }, // Keep the tag color
+        tasks: {
+          $push: {
+            _id: "$tasks._id", // Task ID
+            title: "$tasks.title", // Task title
+            documents: "$tasks.documents", // Task documents
           },
         },
       },
-      {
-        $project: {
-          _id: 1, // Include tag ID
-          tagName: 1, // Include tag name
-          tagColor: 1, // Include tag name
-          tasks: 1, // Include tasks with task name and documents
-        },
+    },
+    {
+      $project: {
+        _id: 1, // Include tag ID
+        tagName: 1, // Include tag name
+        tagColor: 1, // Include tag color
+        tasks: 1, // Include tasks with task name and documents
       },
-    ]
-    );
+    },
+  ]);
 
     results = await projectModel.populate(results, {
       path: "tasks.documents", // Correct path for the nested populate
