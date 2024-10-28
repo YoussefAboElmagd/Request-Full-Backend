@@ -271,7 +271,7 @@ const getAllSubTasksByParentTask = catchAsync(async (req, res, next) => {
 })
 
 const getAllParentTasks = catchAsync(async (req, res, next) => {
-  let results = await taskModel.find({$and:[{parentTask: null},{project:req.params.projectId}]}).select("title _id");
+  let results = await taskModel.find({$and:[{parentTask: null},{project:req.params.projectId},{$or:[{createdBy:req.params.id},{assignees: req.params.id}]}]}).select("title _id");
 
     if (!results) {
       return res.status(404).json({ message: "Task not found!" });
