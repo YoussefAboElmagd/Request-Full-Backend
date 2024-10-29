@@ -123,6 +123,10 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    twoWayAuthentication: {
+      type: Boolean,
+      default: false,
+    },
     offersAndPackages: {
       type: Boolean,
       default: false,

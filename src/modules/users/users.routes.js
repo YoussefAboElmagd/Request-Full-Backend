@@ -14,7 +14,7 @@ usersRouter.get("/", usersController.getAllUsersByAdmin);
 usersRouter.get("/owners/", usersController.getAllowners);
 usersRouter.get("/consultant/", usersController.getAllconsultant);
 usersRouter.get("/contractor/", usersController.getAllcontractors);
-usersRouter.get("/:id", usersController.getUserById);
+usersRouter.get("/:id",protectRoutes, usersController.getUserById);
 usersRouter.get("/tags/:id", usersController.getUserTags);
 usersRouter.get("/email/", usersController.getUserByEmail);
 usersRouter.get("/sub/:id", usersController.getSubscriptionPeriod);

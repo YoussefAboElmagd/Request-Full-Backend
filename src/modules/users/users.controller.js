@@ -147,7 +147,8 @@ const getUserById = catchAsync(async (req, res, next) => {
 
   let results = await userModel.findById(id);
   !results && next(new AppError(`not found `, 404));
-  results && res.json({ message: "Done", results });
+  let lastSignIn = req.lastSignIn
+  results && res.json({ message: "Done", results,lastSignIn });
 });
 const getUserTags = catchAsync(async (req, res, next) => {
   let { id } = req.params;
@@ -191,6 +192,7 @@ const updateUser = catchAsync(async (req, res, next) => {
     companyName,
     vocation,
     offersAndPackages,
+    twoWayAuthentication,
     notifications,
     renewalSubscription,
     userGroups,
@@ -219,7 +221,7 @@ const updateUser = catchAsync(async (req, res, next) => {
       offersAndPackages,
       notifications,
       renewalSubscription,
-      
+      twoWayAuthentication,
     },
     { new: true }
   );
