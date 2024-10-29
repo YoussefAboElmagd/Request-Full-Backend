@@ -139,8 +139,8 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    tag:{
-      type: mongoose.Schema.Types.ObjectId,
+    tags:{
+      type: [mongoose.Schema.Types.ObjectId],
       ref: "tag",
       default: null,
       // required: true,

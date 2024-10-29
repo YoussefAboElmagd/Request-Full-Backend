@@ -5,6 +5,7 @@ import ApiFeature from "../../utils/apiFeature.js";
 import AppError from "../../utils/appError.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import { taskModel } from "../../../database/models/tasks.model.js";
+import bcrypt from "bcrypt";
 
 const createProject = catchAsync(async (req, res, next) => {
   req.body.model = "66ba015a73f994dd94dbc1e9";
@@ -899,6 +900,48 @@ const updateProject2 = catchAsync(async (req, res, next) => {
   });
 });
 
+const addMemberForProject = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  let { vocation, projects, name, email, password, access,tags,phone ,role } = req.body;
+  let existUser = await userModel.findOne({ email: email });
+  let existPhone = await userModel.findOne({ phone });
+  if (existUser || existPhone) {
+    return res.status(404).json({ message: "Email or Phone already exist!" });
+  } else {
+    password = bcrypt.hashSync(password, Number(process.env.SALT_ROUNDS));
+    let model = "66ba00b0e39d9694110fd3df";
+    let newUser = new userModel({
+      name,
+      email,
+      password,
+      vocation,
+      projects,
+      model,
+      phone,
+      role,
+      tags,
+      access,
+    });
+    let savedUser = await newUser.save();
+
+    let addprojects = await projectModel.findByIdAndUpdate(
+        id,
+        {
+          $push: { members: savedUser._id },
+        },
+        { new: true }
+      );
+    
+    if (!savedUser) {
+      return res.status(404).json({ message: "project not found!" });
+    }
+    res.status(200).json({
+      message: "project Updated successfully!",
+      savedUser,
+    });
+  }
+});
+
 const deleteProject = catchAsync(async (req, res, next) => {
   const { id } = req.params;
 
@@ -926,4 +969,5 @@ export {
   updateProject2,
   getTagsByProject,
   getFilesForDownload,
+  addMemberForProject,
 };

@@ -189,10 +189,11 @@ if (UpdateTasks) {
 
 const updateTeam = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  let { vocation, projects, name, email, password, access,tag,phone ,role } = req.body;
+  let { vocation, projects, name, email, password, access,tags,phone ,role } = req.body;
   let existUser = await userModel.findOne({ email: email });
-  if (existUser) {
-    return res.status(404).json({ message: "Email already exist!" });
+  let existPhone = await userModel.findOne({ phone });
+  if (existUser || existPhone) {
+    return res.status(404).json({ message: "Email or Phone already exist!" });
   } else {
     password = bcrypt.hashSync(password, Number(process.env.SALT_ROUNDS));
     let model = "66ba00b0e39d9694110fd3df";
@@ -205,7 +206,7 @@ const updateTeam = catchAsync(async (req, res, next) => {
       model,
       phone,
       role,
-      tag,
+      tags,
       access,
     });
     const savedUser = await newUser.save();
@@ -230,7 +231,7 @@ const updateTeam = catchAsync(async (req, res, next) => {
         { new: true }
       );
     });
-    
+
     if (!updateeTeam) {
       return res.status(404).json({ message: "Team not found!" });
     }

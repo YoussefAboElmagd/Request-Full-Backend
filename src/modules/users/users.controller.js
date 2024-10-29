@@ -196,6 +196,7 @@ const updateUser = catchAsync(async (req, res, next) => {
     notifications,
     renewalSubscription,
     userGroups,
+    access,
   } = req.body;
   let results = await userModel.findByIdAndUpdate(
     id,
@@ -222,6 +223,7 @@ const updateUser = catchAsync(async (req, res, next) => {
       notifications,
       renewalSubscription,
       twoWayAuthentication,
+      access,
     },
     { new: true }
   );

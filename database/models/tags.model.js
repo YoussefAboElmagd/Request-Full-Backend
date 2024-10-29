@@ -16,6 +16,10 @@ const tagsSchema = mongoose.Schema(
       ref: "user",
       required: true,
     },
+    isSelected: {
+      type: Boolean,
+      default: false,
+    },
     model: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "model",
