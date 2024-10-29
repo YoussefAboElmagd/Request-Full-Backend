@@ -23,7 +23,7 @@ const taskSchema = mongoose.Schema(
       type: [mongoose.Schema.Types.ObjectId],
       ref: "user",
       default: [],
-      // required: true,
+      required: true,
     },
     tags: {
       type: mongoose.Schema.Types.ObjectId,
