@@ -6,6 +6,7 @@ const teamRouter = express.Router();
 teamRouter.post("/", teamController.createTeam);
 teamRouter.get("/", teamController.getAllTeamByAdmin);
 teamRouter.get("/user/:id", teamController.getAllTeamByUser);
+teamRouter.get("/count/:id", teamController.getTeamCount);
 teamRouter.get("/delegate/:id", teamController.delegteTeamAccess);
 teamRouter.get("/:id", teamController.getTeamById);
 teamRouter.put("/:id", teamController.updateTeam);

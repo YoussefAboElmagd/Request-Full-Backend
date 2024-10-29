@@ -327,8 +327,8 @@ const getAllSubTasksByParentTask = catchAsync(async (req, res, next) => {
 });
 
 const getAllParentTasks = catchAsync(async (req, res, next) => {
-  let userId = mongoose.Types.ObjectId(req.params.id);
-  let projectId = mongoose.Types.ObjectId(req.params.projectId);
+  let userId = new mongoose.Types.ObjectId(req.params.id);
+  let projectId = new mongoose.Types.ObjectId(req.params.projectId);
   let results = await taskModel
     .find({
       $and: [

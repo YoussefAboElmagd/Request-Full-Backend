@@ -73,6 +73,25 @@ const getTeamById = catchAsync(async (req, res, next) => {
     results,
   });
 });
+const getTeamCount = catchAsync(async (req, res, next) => {
+  let ApiFeat = new ApiFeature(
+    teamModel.find({ createdBy: req.params.id }).select("members"),
+    req.query
+  ).search();
+  let results = await ApiFeat.mongooseQuery;
+  results = JSON.stringify(results);
+  results = JSON.parse(results);
+  if (!ApiFeat || !results) {
+    return res.status(404).json({
+      message: "No Team was found!",
+    });
+  }
+  results = results.length;
+  res.json({
+    message: "Done",
+    results,
+  });
+});
 const delegteTeamAccess = catchAsync(async (req, res, next) => {
   try {
     const team = await teamModel
@@ -170,7 +189,7 @@ if (UpdateTasks) {
 
 const updateTeam = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  let { vocation, projects, name, email, password, access,phone } = req.body;
+  let { vocation, projects, name, email, password, access,phone ,role } = req.body;
   let existUser = await userModel.findOne({ email: email });
   if (existUser) {
     return res.status(404).json({ message: "Email already exist!" });
@@ -185,6 +204,7 @@ const updateTeam = catchAsync(async (req, res, next) => {
       projects,
       model,
       phone,
+      role,
     });
     const savedUser = await newUser.save();
     const updateeTeam = await teamModel.findByIdAndUpdate(
@@ -271,4 +291,5 @@ export {
   updateTeamMembers,
   delegteTeamAccess,
   DeleteUserFromProject,
+  getTeamCount,
 };
