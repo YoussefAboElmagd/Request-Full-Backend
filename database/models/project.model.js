@@ -126,6 +126,10 @@ const projectSchema = mongoose.Schema(
       ref: "tag",
       default: [],
     },
+    isSelected: {
+      type: Boolean,
+      default: false,
+    },
     model: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "model",
