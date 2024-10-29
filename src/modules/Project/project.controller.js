@@ -13,7 +13,11 @@ const createProject = catchAsync(async (req, res, next) => {
   if (req.body.budget < 0) {
     return res.status(404).json({ message: "Budget must be greater than 0" });
   }
-
+  if(req.body.sDate && req.body.dueDate){
+    if(new Date(req.body.sDate) > new Date(req.body.dueDate)){
+      return res.status(404).json({ message: "Start date must be less than due date" });
+    }
+  }
   let newProject = new projectModel(req.body);
   
   newProject.members.push(newProject.createdBy);
@@ -30,7 +34,7 @@ const createProject = catchAsync(async (req, res, next) => {
     .findById(newProject._id)
     .populate({
       path: 'members',
-      select: '_id name email profilePic', // Add any other fields you want to include
+      select: '_id name email profilePic',
     });
   res.status(201).json({
     message: " Project has been created successfully!",

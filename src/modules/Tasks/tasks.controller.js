@@ -15,6 +15,11 @@ const createTask = catchAsync(async (req, res, next) => {
   }));
 
   for (const task of tasks) {
+    if(task.sDate && task.dueDate){
+      if(new Date(task.sDate) > new Date(task.dueDate)){
+        return res.status(404).json({ message: "Start date must be less than due date" });
+      }
+    }
     if (task.parentTask) {
       const getAllSubTasks = await mongoose
         .model("task")

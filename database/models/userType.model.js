@@ -4,7 +4,7 @@ const userTypeSchema = mongoose.Schema(
   {
     jobTitle: {
       type: String,
-      required: true,
+      // required: true,
     },
 
     rights: [
