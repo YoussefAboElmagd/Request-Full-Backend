@@ -337,8 +337,9 @@ const getAllParentTasks = catchAsync(async (req, res, next) => {
   let results = await taskModel
     .find({
       $and: [
-        { parentTask: null },
         { project: projectId },
+        { parentTask: null },
+        { type: "parent" },
         { $or: [{ createdBy: userId }, { assignees: userId }] },
       ],
     })
