@@ -139,6 +139,18 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    tag:{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "tag",
+      default: null,
+      // required: true,
+    },
+    access:{
+      create: { type: Boolean, default: false, },
+      read: { type: Boolean, default: false, },
+      edit: { type: Boolean, default: false, },
+      delete: { type: Boolean, default: false, },
+    },
     userType: {
       type: String,
       enum: ["user", "admin", "superUser"],

@@ -189,7 +189,7 @@ if (UpdateTasks) {
 
 const updateTeam = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  let { vocation, projects, name, email, password, access,phone ,role } = req.body;
+  let { vocation, projects, name, email, password, access,tag,phone ,role } = req.body;
   let existUser = await userModel.findOne({ email: email });
   if (existUser) {
     return res.status(404).json({ message: "Email already exist!" });
@@ -205,6 +205,8 @@ const updateTeam = catchAsync(async (req, res, next) => {
       model,
       phone,
       role,
+      tag,
+      access,
     });
     const savedUser = await newUser.save();
     const updateeTeam = await teamModel.findByIdAndUpdate(
@@ -212,11 +214,11 @@ const updateTeam = catchAsync(async (req, res, next) => {
       { $push: { members: savedUser._id } },
       { new: true }
     );
-    const updateUserGroup = await userGroupModel.findByIdAndUpdate(
-      access,
-      { $push: { users: savedUser._id } },
-      { new: true }
-    );
+    // const updateUserGroup = await userGroupModel.findByIdAndUpdate(
+    //   access,
+    //   { $push: { users: savedUser._id } },
+    //   { new: true }
+    // );
 
     let addprojects = Array.isArray(projects) ? projects : [projects];
     addprojects.forEach(async (project) => {
@@ -228,7 +230,6 @@ const updateTeam = catchAsync(async (req, res, next) => {
         { new: true }
       );
     });
-    console.log(addprojects, "updateeTeam");
     
     if (!updateeTeam) {
       return res.status(404).json({ message: "Team not found!" });
