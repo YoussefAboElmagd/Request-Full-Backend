@@ -164,7 +164,7 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
       projectModel
         .find({ members: { $in: req.params.id } })
         .sort({ $natural: -1 })
-        .select("tasks name")
+        .select("tasks name isSelected")
         .populate({
           path: "tasks",
           select:
@@ -184,12 +184,12 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
       projectModel
         .find({ members: { $in: req.params.id } })
         .sort({ $natural: -1 })
-        .select("tasks name")
+        .select("tasks name isSelected")
         .populate({
           path: "tasks",
           select:
             "title taskPriority taskStatus assignees documents startDate dueDate notes",
-          match: { assignees: { $in: req.params.id } }, // Filter tasks with the assignee matching req.params.id
+          match: { assignees: { $in: req.params.id } }, 
           populate: {
             path: "assignees",
             model: "user",
