@@ -192,6 +192,8 @@ if(!authorizationHeader){
     }
   }
   req.user = user;
+  let lastSignIn = new Date();
+  req.lastSignIn = lastSignIn;
   next();
 });
 
@@ -205,3 +207,28 @@ export const allowTo = (...roles) => {
     next();
   };
 };
+
+
+export const signUpWithGoogle = catchAsync(async (req, res, next) => {
+  let { email, name, role } = req.body;
+  let userData = await userModel.findOne({ email: req.body.email });
+  if (!userData) {
+    userData = new userModel(req.body);
+    userData.verificationCode = generateUniqueId({
+      length: 4,
+      useLetters: false,
+    });
+    sendEmail(userData.email, userData.verificationCode);
+    await userData.save();
+    let verificationCode = userData.verificationCode;
+    let id = userData._id;
+    let token = jwt.sign(
+      { name: userData.name, userId: userData._id },
+      process.env.JWT_SECRET_KEY
+    );
+    let lastSignIn = new Date();
+    return res.json({ message: "success", token, userData, lastSignIn });
+  }else{
+    return res.status(409).json({ message: "this email  already exist" });
+  }
+});
