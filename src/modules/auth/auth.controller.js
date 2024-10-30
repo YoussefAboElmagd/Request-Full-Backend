@@ -101,6 +101,7 @@ export const signIn = catchAsync(async (req, res, next) => {
         process.env.JWT_SECRET_KEY
       );
       let lastSignIn = new Date();
+      req.lastSignIn = lastSignIn;
       return res.json({ message: "success", token, userData, lastSignIn });
     }
     return res.status(401).json({ message: "worng email or password" });
@@ -192,8 +193,8 @@ if(!authorizationHeader){
     }
   }
   req.user = user;
-  let lastSignIn = new Date();
-  req.lastSignIn = lastSignIn;
+  // let lastSignIn = new Date();
+  // req.lastSignIn = lastSignIn;
   next();
 });
 

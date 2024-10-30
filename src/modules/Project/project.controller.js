@@ -426,13 +426,13 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
   }, {});
   
   members.forEach(member => {
-    if (roles.includes(member.role)) {
+    if (roles.includes(member.role) && member.userType === "superUser") {
       groupAdmins[member.role] = member;
     }
   });
   let groupedMembers = []
   groupedMembers = members.reduce((acc, member) => {
-    if (!roles.includes(member.role)) {      
+    if (!roles.includes(member.role && member.userType !== "superUser")) {      
       groupedMembers.push(member);
     }
     return groupedMembers;
