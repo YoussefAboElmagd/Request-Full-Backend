@@ -902,7 +902,7 @@ const updateProject2 = catchAsync(async (req, res, next) => {
 
 const addMemberForProject = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  let { vocation, project, name, email, password, access,tags,phone ,role } = req.body;
+  let { vocation, name, email, password, access,tags,phone ,role } = req.body;
   let existUser = await userModel.findOne({ email: email });
   let existPhone = await userModel.findOne({ phone });
   if (existUser || existPhone) {
@@ -915,7 +915,6 @@ const addMemberForProject = catchAsync(async (req, res, next) => {
       email,
       password,
       vocation,
-      project,
       model,
       phone,
       role,
