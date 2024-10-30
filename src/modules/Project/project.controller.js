@@ -416,6 +416,7 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
       vocation: member.vocation,
       email: member.email,
       phone: member.phone,
+      userType: member.userType,
     }));
   }
   
@@ -425,7 +426,7 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
     return acc;
   }, {});
   
-  members.forEach(member => {
+  members.forEach(member => { 
     if (roles.includes(member.role) && member.userType === "superUser") {
       groupAdmins[member.role] = member;
     }
@@ -886,7 +887,6 @@ const updateProject2 = catchAsync(async (req, res, next) => {
         notes
       },
       team,
-      budget,
     },
     { new: true }
   );
@@ -902,7 +902,7 @@ const updateProject2 = catchAsync(async (req, res, next) => {
 
 const addMemberForProject = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  let { vocation, projects, name, email, password, access,tags,phone ,role } = req.body;
+  let { vocation, project, name, email, password, access,tags,phone ,role } = req.body;
   let existUser = await userModel.findOne({ email: email });
   let existPhone = await userModel.findOne({ phone });
   if (existUser || existPhone) {
@@ -915,7 +915,7 @@ const addMemberForProject = catchAsync(async (req, res, next) => {
       email,
       password,
       vocation,
-      projects,
+      project,
       model,
       phone,
       role,
