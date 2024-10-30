@@ -417,6 +417,7 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
       email: member.email,
       phone: member.phone,
       userType: member.userType,
+      access: "View architectural tasks",
     }));
   }
   
@@ -906,8 +907,10 @@ const addMemberForProject = catchAsync(async (req, res, next) => {
   let existUser = await userModel.findOne({ email: email });
   let existPhone = await userModel.findOne({ phone });
   if (existUser || existPhone) {
-    return res.status(404).json({ message: "Email or Phone already exist!" });
-  } else {
+    return res.status(404).json({ message: "Email already exist!" });
+  } else if (existPhone) {
+    return res.status(404).json({ message: "Phone already exist!" });
+ } else {
     password = bcrypt.hashSync(password, Number(process.env.SALT_ROUNDS));
     let model = "66ba00b0e39d9694110fd3df";
     let newUser = new userModel({
