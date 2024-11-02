@@ -28,13 +28,13 @@ const createTask = catchAsync(async (req, res, next) => {
         return res.status(404).json({ message: "Start date must be less than due date" });
       }
       if(new Date(task.dueDate) > new Date(project.dueDate)){
-        return res.status(404).json({ message: `Due date of task must be less than  or equal to ${dueDate} (due date of project) ` });
+        return res.status(404).json({ message: `Due date of task must be less than or equal to ${dueDate} (due date of project) ` });
       }
       if(new Date(task.sDate) < new Date(project.sDate)){
-        return res.status(404).json({ message: `Start date of task must be less than  or equal to ${sDate} (Start date of project) ` });
+        return res.status(404).json({ message: `Start date of task must be less than or equal to ${sDate} (Start date of project) ` });
       }
       if(new Date(task.sDate) > new Date(project.dueDate)){
-        return res.status(404).json({ message: `Start date of task must be less than  or equal to ${dueDate} ( End date of project) ` });
+        return res.status(404).json({ message: `Start date of task must be less than or equal to ${dueDate} ( End date of project) ` });
       }
     }
     if (task.parentTask) {

@@ -5,7 +5,28 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const createRequest = catchAsync(async (req, res, next) => {
   req.body.model = "66ba010fecc8dae4bda821c9";
+  const project = await projectModel.findById(req.body.project);
 
+  if (!project) {
+    return res.status(404).json({ message: "Project not found!" });
+  }
+
+  let dueDate = new Date(project.dueDate).toISOString().split("T")[0];
+  let sDate = new Date(project.sDate).toISOString().split("T")[0];
+  if (new Date(req.body.date) > new Date(project.dueDate)) {
+    return res
+      .status(404)
+      .json({
+        message: `Due date of model must be less than or equal to ${dueDate} (due date of project) `,
+      });
+  }
+  if (new Date(req.body.date) < new Date(project.sDate)) {
+    return res
+      .status(404)
+      .json({
+        message: `Start date of model must be less than or equal to ${sDate} (Start date of project) `,
+      });
+  }
   const newData = new requsetModel(req.body);
   const savedData = await newData.save();
 
