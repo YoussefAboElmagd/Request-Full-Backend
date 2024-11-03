@@ -33,6 +33,9 @@ export const signUp = catchAsync(async (req, res, next) => {
     length: 4,
     useLetters: false,
   });
+  // if(req.body.password.length < 8){
+  //   return res.status(409).json({ message: "password must be at least 8 characters" });
+  // }
   req.body.password = bcrypt.hashSync(
     req.body.password,
     Number(process.env.SALT_ROUNDS)
@@ -42,6 +45,8 @@ export const signUp = catchAsync(async (req, res, next) => {
     { name: results.name, userId: results._id },
     process.env.JWT_SECRET_KEY
   );
+
+  
   sendEmail(results.email, results.verificationCode);
   let model = "66e5611c1771cb44cd6fc7de";
   let createdBy = results._id;

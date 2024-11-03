@@ -22,13 +22,13 @@ const userSchema = mongoose.Schema(
     phone: {
       type: String,
       required: [true, "Phone is a required field."],
-      minLength: 9,
+      minLength: [9, "phone is too short."],
       unique: [true, "Phone must be unique."],
     },
     password: {
       type: String,
       required: [true, "Phone is a required field."],
-      minLength: 8,
+      minLength: [8, "password is too short , min length 8."],
       unique: [true, "Password must be unique."],
     },
     otp: {

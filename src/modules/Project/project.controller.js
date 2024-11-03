@@ -911,11 +911,18 @@ const addMemberForProject = catchAsync(async (req, res, next) => {
   let { vocation, name, email, password, access,tags,phone ,role } = req.body;
   let existUser = await userModel.findOne({ email: email });
   let existPhone = await userModel.findOne({ phone });
+  let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+
   if (existUser || existPhone) {
     return res.status(404).json({ message: "Email already exist!" });
   } else if (existPhone) {
     return res.status(404).json({ message: "Phone already exist!" });
  } else {
+  if (req.body.email !== "" && req.body.email.match(emailFormat)) {
+    
+  if(req.body.password.length < 8){
+    return res.status(409).json({ message: "password must be at least 8 characters" });
+  }
     password = bcrypt.hashSync(password, Number(process.env.SALT_ROUNDS));
     let model = "66ba00b0e39d9694110fd3df";
     let newUser = new userModel({
@@ -946,7 +953,11 @@ const addMemberForProject = catchAsync(async (req, res, next) => {
       message: "project Updated successfully!",
       savedUser,
     });
-  }
+
+} else {
+  return res.status(409).json({ message: "this email is not valid" });
+}
+ }
 });
 
 const deleteProject = catchAsync(async (req, res, next) => {
