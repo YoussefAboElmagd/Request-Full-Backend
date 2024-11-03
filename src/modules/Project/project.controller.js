@@ -168,7 +168,7 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
         .populate({
           path: "tasks",
           select:
-            "title taskPriority taskStatus assignees documents startDate dueDate notes",
+            "title taskPriority taskStatus assignees documents sDate dueDate notes",
           populate: {
             path: "assignees",
             model: "user",
@@ -188,7 +188,7 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
         .populate({
           path: "tasks",
           select:
-            "title taskPriority taskStatus assignees documents startDate dueDate notes",
+            "title taskPriority taskStatus assignees documents sDate dueDate notes",
           match: { assignees: { $in: req.params.id } }, 
           populate: {
             path: "assignees",
@@ -919,7 +919,7 @@ const addMemberForProject = catchAsync(async (req, res, next) => {
     return res.status(404).json({ message: "Phone already exist!" });
  } else {
   if (req.body.email !== "" && req.body.email.match(emailFormat)) {
-    
+
   if(req.body.password.length < 8){
     return res.status(409).json({ message: "password must be at least 8 characters" });
   }
