@@ -35,7 +35,7 @@ const taskSchema = mongoose.Schema(
       ref: "project",
       required: true,
     },
-    startDate: {
+    sDate: {
       type: Date,
       required: true,
     },

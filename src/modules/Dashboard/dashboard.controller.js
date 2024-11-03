@@ -4,6 +4,8 @@ import { userModel } from "../../../database/models/user.model.js";
 import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import { taskModel } from "../../../database/models/tasks.model.js";
+import { tagsModel } from "../../../database/models/tags.model.js";
+import { requsetModel } from "../../../database/models/request.model.js";
 
 const getAllDashboard = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(DashboardCodeModel.find(), req.query).search();
@@ -59,6 +61,7 @@ const getUserRatioPieChart = catchAsync(async (req, res, next) => {
       $project: {
         _id: 1,
         count: 1,
+        name: 1,
         percentage: {
           $multiply: [{ $divide: ["$count", totalUsers] }, 100]
         }
@@ -68,11 +71,95 @@ const getUserRatioPieChart = catchAsync(async (req, res, next) => {
       $sort: { count: -1 } 
     },
   ]);
-  // results= await userModel.populate(results, {
-  //   path: "_id",
-  //   model: "userType",
-  //   select: "name", 
-  // });
+  results= await userModel.populate(results, {
+    path: "_id",
+    model: "userType",
+    select: "jobTitle", 
+  });
+  if(!results){
+    return res.status(404).json({
+      message: "No Dashboard was found!",
+    })
+  }
+  res.json({
+    message: "Done",
+    results,
+  });
+});
+const getTagsRatio = catchAsync(async (req, res, next) => {
+  const totalTags = await tagsModel.countDocuments();
+
+  let results = await userModel.aggregate([
+    {
+      $group: {
+        _id: "$tags",
+        count: { $sum: 1 }  
+      }
+    },
+    {
+      $project: {
+        _id: 1,
+        count: 1,
+        percentage: {
+          $multiply: [{ $divide: ["$count", totalTags] }, 100] 
+        }
+      }
+    },
+    {
+      $sort: { count: -1 } 
+    },
+  ]);
+  if(!results){
+    return res.status(404).json({
+      message: "No Dashboard was found!",
+    })
+  }
+  results= await tagsModel.populate(results, {
+    path: "_id",
+    model: "tag",
+    select: "name", 
+  });
+  res.json({
+    message: "Done",
+    results,
+  });
+});
+const getMostModels = catchAsync(async (req, res, next) => {
+  const totalProjects = await projectModel.countDocuments();
+  const totalRequestForDocumentSubmittalApproval = await projectModel.countDocuments({requestForDocumentSubmittalApproval: true});
+  const totalRequestForApprovalOfMaterials = await projectModel.countDocuments({requestForApprovalOfMaterials: true});
+  const totalWorkRequest = await projectModel.countDocuments({workRequest: true});
+  const totalTableOfQuantities = await projectModel.countDocuments({tableOfQuantities: true});
+  const totalRequestForInspectionForm = await projectModel.countDocuments({requestForInspectionForm: true});
+  const totalApprovalOfSchemes = await projectModel.countDocuments({approvalOfSchemes: true});
+
+  let results = {
+    totalRequestForDocumentSubmittalApproval:{
+      count: totalRequestForDocumentSubmittalApproval,
+      percentage: (totalRequestForDocumentSubmittalApproval/totalProjects)*100
+    },
+    totalRequestForApprovalOfMaterials: {
+      count: totalRequestForApprovalOfMaterials,
+      percentage: (totalRequestForApprovalOfMaterials/totalProjects)*100
+    },
+    totalWorkRequest: {
+      count: totalWorkRequest,
+      percentage: (totalWorkRequest/totalProjects)*100
+    },
+    totalTableOfQuantities: {
+      count: totalTableOfQuantities,
+      percentage: (totalTableOfQuantities/totalProjects)*100
+    },
+    totalRequestForInspectionForm: {
+      count: totalRequestForInspectionForm,
+      percentage: (totalRequestForInspectionForm/totalProjects)*100
+    },
+    totalApprovalOfSchemes: {
+      count: totalApprovalOfSchemes,
+      percentage: (totalApprovalOfSchemes/totalProjects)*100
+    },
+
+  }
   if(!results){
     return res.status(404).json({
       message: "No Dashboard was found!",
@@ -529,5 +616,5 @@ const weeklyActivity = await taskModel.aggregate([
 });
 
 export {  getAllDashboard, updateDashboard,getTopCountries ,getUserRatioPieChart ,getActiveProjects,getProjectPerformance ,getActiveProjectsByUser,getProjectPerformanceByUser,
-  weeklyActivity ,weeklyActivityByUser
+  weeklyActivity ,weeklyActivityByUser ,getTagsRatio ,getMostModels
  };

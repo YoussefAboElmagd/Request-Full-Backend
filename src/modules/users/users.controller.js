@@ -9,6 +9,10 @@ import cron from "node-cron";
 
 const updateprofilePic = catchAsync(async (req, res, next) => {
   let { id } = req.params;
+  let check = await userModel.findById(id);
+if (!check) { 
+  return res.status(404).json({ message: "User not found!" });
+}
   const profilePic = photoUpload(req, "profilePic", "profilePic");
 
   let updatedProfile = await userModel.findByIdAndUpdate(
@@ -41,7 +45,10 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
 })
 const updateCollection = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-
+  let check = await userModel.findById(id);
+  if (!check) { 
+    return res.status(404).json({ message: "User not found!" });
+  }
   const updates = {};
   const companyLogo = photoUpload(req, "companyLogo", "company");
   const electronicStamp = photoUpload(req, "electronicStamp", "company");
