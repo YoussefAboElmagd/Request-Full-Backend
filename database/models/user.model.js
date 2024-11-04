@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import { removeFile } from "../../src/utils/removeFiles.js";
 import { tagsModel } from "./tags.model.js";
 import { teamModel } from "./team.model.js";
+import { projectModel } from "./project.model.js";
 
 const userSchema = mongoose.Schema(
   {
@@ -201,10 +202,12 @@ userSchema.pre(/^delete/, { document: false, query: true }, async function () {
   if (doc) {
     await tagsModel.deleteMany({ createdBy: doc._id });
     await teamModel.deleteMany({ createdBy: doc._id });
-    removeFile("profilePic", doc.profilePic);
-    removeFile("company", doc.companyLogo);
-    removeFile("company", doc.electronicStamp);
-    removeFile("company", doc.signature);
+    await projectModel.deleteMany({ createdBy: doc._id });
+    await projectModel.updateMany({ $pull: { members: doc._id }});
+    doc.profilePic && removeFile("profilePic", doc.profilePic);
+    doc.companyLogo && removeFile("company", doc.companyLogo);
+    doc.electronicStamp && removeFile("company", doc.electronicStamp);
+    doc.signature && removeFile("company", doc.signature);
   }
 });
 userSchema.pre(/^find/, function () {

@@ -47,10 +47,11 @@ const getProjectById = catchAsync(async (req, res, next) => {
   let { id } = req.params;
 
   let results = await projectModel
-    .findById(id)
+    .find({_id:id})
     .populate("contractor")
     .populate("consultant")
     .populate("members")
+    .populate("tasks")
     .populate("tags")
     .populate({
       path: "team",
@@ -63,13 +64,23 @@ const getProjectById = catchAsync(async (req, res, next) => {
       },
     })
     .populate("owner");
-  !results && next(new AppError(`not found `, 404));
-  results && res.json({ message: "Done", results });
-  if (!ApiFeat || !results) {
-    return res.status(404).json({
-      message: " Project Not found!",
+  !results && next(new AppError(" Project Not found!", 404));
+  results = JSON.stringify(results);
+  results = JSON.parse(results);
+  results.forEach((project) => {
+    project.taskCount = project.tasks.length;
+    project.tasks.forEach((task) => {
+      project.documentsLength = task.documents.length || 0;
+      project.notesLength = task.notes.length || 0;
+      task.documentsLength = task.documents.length || 0;
+      task.notesLength = task.notes.length || 0;
+      delete task.notes;
+      delete task.updatedAt;
+      delete task.isDelayed;
+      delete task.documents;
     });
-  }
+  });
+  results = results[0];
   res.json({
     message: "Done",
     results,
@@ -214,8 +225,8 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
   results.forEach((project) => {
     project.taskCount = project.tasks.length;
     project.tasks.forEach((task) => {
-      task.documentsLength = task.documents.length;
-      task.notesLength = task.notes.length;
+      project.documentsLength = task.documents.length;
+      project.notesLength = task.notes.length;
       delete task.notes;
       delete task.updatedAt;
       delete task.isDelayed;
@@ -895,7 +906,9 @@ const updateProject2 = catchAsync(async (req, res, next) => {
     },
     { new: true }
   );
-
+// if(members){
+  
+// }
   if (!updatedProject) {
     return res.status(404).json({ message: "Project not found!" });
   }
