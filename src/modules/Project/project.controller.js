@@ -437,11 +437,10 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
   });
   let groupedMembers = []
   groupedMembers = members.reduce((acc, member) => {
-    if (!roles.includes(member.role)) {   
       if (member.userType != userType) {
         groupedMembers.push(member);
       }
-    }
+    
     return groupedMembers;
   }, []);
 
@@ -909,6 +908,7 @@ const updateProject2 = catchAsync(async (req, res, next) => {
 const addMemberForProject = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   let { vocation, name, email, password, access,tags,phone ,role } = req.body;
+  let projects = id
   let existUser = await userModel.findOne({ email: email });
   let existPhone = await userModel.findOne({ phone });
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
@@ -935,6 +935,7 @@ const addMemberForProject = catchAsync(async (req, res, next) => {
       role,
       tags,
       access,
+      projects,
     });
     let savedUser = await newUser.save();
 
