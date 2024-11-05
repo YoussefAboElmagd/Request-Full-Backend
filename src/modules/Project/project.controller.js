@@ -53,6 +53,7 @@ const getProjectById = catchAsync(async (req, res, next) => {
     .populate("members")
     .populate("tasks")
     .populate("tags")
+    .populate("notes")
     .populate({
       path: "team",
       select:
@@ -152,7 +153,6 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
   results = results.map((project) => {
     return {
       ...project,
-      documentsCount: project.documents ? project.documents.length : 0,
       notesCount: project.notes ? project.notes.length : 0,};
   });
 
@@ -167,9 +167,10 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
   let ApiFeat = null;
 
   if (
-    req.user.role._id == "66d33a4b4ad80e468f231f83" ||
-    req.user.role._id == "66d33e7a4ad80e468f231f8d" ||
-    req.user.role._id == "66d33ec44ad80e468f231f91"
+    // req.user.role._id == "66d33a4b4ad80e468f231f83" ||
+    // req.user.role._id == "66d33e7a4ad80e468f231f8d" ||
+    // req.user.role._id == "66d33ec44ad80e468f231f91" || 
+    true
   ) {
     ApiFeat = new ApiFeature(
       projectModel
@@ -221,12 +222,17 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
       message: "No Project was found!",
     });
   }
-  
+  let documentsLength = 0;
+  let notesLength = 0;
   results.forEach((project) => {
     project.taskCount = project.tasks.length;
     project.tasks.forEach((task) => {
-      project.documentsLength = task.documents.length;
-      project.notesLength = task.notes.length;
+      documentsLength += task.documents.length;
+      notesLength += task.notes.length;
+      task.documentsLength = task.documents.length;
+      task.notesLength = task.notes.length;
+      project.documentsLength = documentsLength;
+      project.notesLength = notesLength;
       delete task.notes;
       delete task.updatedAt;
       delete task.isDelayed;

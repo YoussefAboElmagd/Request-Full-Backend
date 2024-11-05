@@ -33,9 +33,9 @@ export const signUp = catchAsync(async (req, res, next) => {
     length: 4,
     useLetters: false,
   });
-  // if(req.body.password.length < 8){
-  //   return res.status(409).json({ message: "password must be at least 8 characters" });
-  // }
+  if(req.body.password.length < 8){
+    return res.status(409).json({ message: "password must be at least 8 characters" });
+  }
   req.body.password = bcrypt.hashSync(
     req.body.password,
     Number(process.env.SALT_ROUNDS)
