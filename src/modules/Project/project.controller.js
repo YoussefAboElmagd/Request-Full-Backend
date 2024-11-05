@@ -167,10 +167,9 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
   let ApiFeat = null;
 
   if (
-    // req.user.role._id == "66d33a4b4ad80e468f231f83" ||
-    // req.user.role._id == "66d33e7a4ad80e468f231f8d" ||
-    // req.user.role._id == "66d33ec44ad80e468f231f91" || 
-    true
+    req.user.role._id == "66d33a4b4ad80e468f231f83" ||
+    req.user.role._id == "66d33e7a4ad80e468f231f8d" ||
+    req.user.role._id == "66d33ec44ad80e468f231f91" 
   ) {
     ApiFeat = new ApiFeature(
       projectModel

@@ -7,7 +7,7 @@ const projectRouter = express.Router();
 projectRouter.get("/", projectController.getAllProjectByAdmin);
 projectRouter.get("/:id", projectController.getProjectById);
 projectRouter.get("/docs/:id", projectController.getAllDocsProject);
-projectRouter.get("/user/:id", projectController.getAllProjectByUser);
+projectRouter.get("/user/:id",protectRoutes, projectController.getAllProjectByUser);
 projectRouter.get("/members/:id", projectController.getAllMembersProject);
 projectRouter.get("/user/analytics/:id", projectController.getAllAnalyticsByUser);
 projectRouter.get("/user/status/:id",projectController.getAllProjectByStatusByUser);
