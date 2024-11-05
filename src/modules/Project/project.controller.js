@@ -53,7 +53,7 @@ const getProjectById = catchAsync(async (req, res, next) => {
     .populate("members")
     .populate("tasks")
     .populate("tags")
-    .populate("notes")
+    .populate("notes.postedBy")
     .populate({
       path: "team",
       select: "members",
@@ -264,14 +264,13 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
 const getAllAnalyticsByUser = catchAsync(async (req, res, next) => {
   res.json({
     message: "Done",
-    countProjects: await projectModel.countDocuments({
-      members: { $in: req.params.id },
+    countProjects: await projectModel.countDocuments({$or: [{members: {$in: req.params.id}}, {createdBy: req.params.id}],
     }),
     totalTasks: await taskModel.countDocuments({
       assignees: { $in: req.params.id },
     }),
     delayedTasks: await taskModel.countDocuments({
-      $and: [{ assignees: { $in: req.params.id } }, { isDelayed: true }],
+      $and: [{ assignees: { $in: req.params.id } }, { taskStatus: "delayed" }],
     }),
     inProgressTasks: await taskModel.countDocuments({
       $and: [{ assignees: { $in: req.params.id } }, { taskStatus: "working" }],
@@ -298,7 +297,8 @@ const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
         .populate("contractor")
         .populate("consultant")
         .populate("members")
-        .populate("owner"),
+        .populate("owner")
+        .populate("tasks"),
       req.query
     )
       .sort()
@@ -315,7 +315,8 @@ const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
         .populate("contractor")
         .populate("consultant")
         .populate("members")
-        .populate("owner"),
+        .populate("owner")
+        .populate("tasks"),
       req.query
     )
       .sort()
@@ -329,6 +330,23 @@ const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
       message: "No Project was found!",
     });
   }
+  let documentsLength = 0;
+  let notesLength = 0;
+  results.forEach((project) => {
+    project.taskCount = project.tasks.length;
+    project.tasks.forEach((task) => {
+      documentsLength += task.documents.length;
+      notesLength += task.notes.length;
+      task.documentsLength = task.documents.length;
+      task.notesLength = task.notes.length;
+      project.documentsLength = documentsLength;
+      project.notesLength = notesLength;
+      delete task.notes;
+      delete task.updatedAt;
+      delete task.isDelayed;
+      delete task.documents;
+    });
+  });
 
   let { filterType, filterValue } = req.query;
   if (filterType && filterValue) {
