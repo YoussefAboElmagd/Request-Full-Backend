@@ -267,6 +267,7 @@ const getTaskById = catchAsync(async (req, res, next) => {
     .findById(id)
     .populate("assignees")
     .populate("project")
+    .populate("notes.postedBy")
     .populate("createdBy");
 
   if (!results) {

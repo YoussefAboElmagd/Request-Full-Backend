@@ -334,16 +334,14 @@ const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
     });
   }
   let documentsLength = 0;
-  let notesLength = 0;
   results.forEach((project) => {
     project.taskCount = project.tasks.length;
+    project.notesLength = project.notes.length;
     project.tasks.forEach((task) => {
       documentsLength += task.documents.length;
-      notesLength += task.notes.length;
       task.documentsLength = task.documents.length;
       task.notesLength = task.notes.length;
-      project.documentsLength = documentsLength;
-      project.notesLength = notesLength;
+      project.documentsLength = documentsLength || 0;
       delete task.notes;
       delete task.updatedAt;
       delete task.isDelayed;
