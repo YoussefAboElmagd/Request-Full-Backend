@@ -62,6 +62,7 @@ const projectSchema = mongoose.Schema(
       {
         content: { type: String },
         postedBy: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
+        createdAt: { type: Date, default: Date.now },
         // required: true,
       },
     ],

@@ -53,6 +53,7 @@ const getProjectById = catchAsync(async (req, res, next) => {
     .populate("members")
     .populate("tasks")
     .populate("tags")
+    .populate("notes")
     .populate("notes.postedBy")
     .populate({
       path: "team",
@@ -67,16 +68,18 @@ const getProjectById = catchAsync(async (req, res, next) => {
   !results && next(new AppError(" Project Not found!", 404));
   results = JSON.stringify(results);
   results = JSON.parse(results);
+  let documentsLength = 0;
+  let notesLength = 0;
   results.forEach((project) => {
     project.taskCount = project.tasks.length;
+    project.notesLength = project.notes.length;
     project.tasks.forEach((task) => {
-      project.documentsLength = task.documents.length || 0;
-      project.notesLength = task.notes.length || 0;
-      task.documentsLength = task.documents.length || 0;
-      task.notesLength = task.notes.length || 0;
+      documentsLength += task.documents.length;
+      task.documentsLength = task.documents.length;
+      task.notesLength = task.notes.length;
+      project.documentsLength = documentsLength;
       delete task.notes;
       delete task.updatedAt;
-      delete task.isDelayed;
       delete task.documents;
     });
   });
@@ -267,17 +270,17 @@ const getAllAnalyticsByUser = catchAsync(async (req, res, next) => {
     countProjects: await projectModel.countDocuments({$or: [{members: {$in: req.params.id}}, {createdBy: req.params.id}],
     }),
     totalTasks: await taskModel.countDocuments({
-      assignees: { $in: req.params.id },
+      $or: [{ assignees: { $in: req.params.id } }, { createdBy: req.params.id }],
     }),
     delayedTasks: await taskModel.countDocuments({
-      $and: [{ assignees: { $in: req.params.id } }, { taskStatus: "delayed" }],
+      $and: [{ $or: [{ assignees: { $in: req.params.id } }, { createdBy: req.params.id }], }, { taskStatus: "delayed" }],
     }),
     inProgressTasks: await taskModel.countDocuments({
-      $and: [{ assignees: { $in: req.params.id } }, { taskStatus: "working" }],
+      $and: [{$or: [{ assignees: { $in: req.params.id } }, { createdBy: req.params.id }], }, { taskStatus: "working" }],
     }),
     completedTasks: await taskModel.countDocuments({
       $and: [
-        { assignees: { $in: req.params.id } },
+        { $or: [{ assignees: { $in: req.params.id } }, { createdBy: req.params.id }],},
         { taskStatus: "completed" },
       ],
     }),
