@@ -6,6 +6,7 @@ import AppError from "../../utils/appError.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import { taskModel } from "../../../database/models/tasks.model.js";
 import bcrypt from "bcrypt";
+import e from "express";
 
 const createProject = catchAsync(async (req, res, next) => {
   req.body.model = "66ba015a73f994dd94dbc1e9";
@@ -267,20 +268,44 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
 const getAllAnalyticsByUser = catchAsync(async (req, res, next) => {
   res.json({
     message: "Done",
-    countProjects: await projectModel.countDocuments({$or: [{members: {$in: req.params.id}}, {createdBy: req.params.id}],
-    }),
+    // countProjects: await projectModel.countDocuments({$or: [{members: {$in: req.params.id}}, {createdBy: req.params.id}],
+    // }),
     totalTasks: await taskModel.countDocuments({
-      $or: [{ assignees: { $in: req.params.id } }, { createdBy: req.params.id }],
+      $or: [
+        { assignees: { $in: req.params.id } },
+        { createdBy: req.params.id },
+      ],
     }),
     delayedTasks: await taskModel.countDocuments({
-      $and: [{ $or: [{ assignees: { $in: req.params.id } }, { createdBy: req.params.id }], }, { taskStatus: "delayed" }],
+      $and: [
+        {
+          $or: [
+            { assignees: { $in: req.params.id } },
+            { createdBy: req.params.id },
+          ],
+        },
+        { taskStatus: "delayed" },
+      ],
     }),
     inProgressTasks: await taskModel.countDocuments({
-      $and: [{$or: [{ assignees: { $in: req.params.id } }, { createdBy: req.params.id }], }, { taskStatus: "working" }],
+      $and: [
+        {
+          $or: [
+            { assignees: { $in: req.params.id } },
+            { createdBy: req.params.id },
+          ],
+        },
+        { taskStatus: "working" },
+      ],
     }),
     completedTasks: await taskModel.countDocuments({
       $and: [
-        { $or: [{ assignees: { $in: req.params.id } }, { createdBy: req.params.id }],},
+        {
+          $or: [
+            { assignees: { $in: req.params.id } },
+            { createdBy: req.params.id },
+          ],
+        },
         { taskStatus: "completed" },
       ],
     }),
@@ -471,9 +496,18 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
       }
     }
   });
+  let ownerTeam = [];
+  let consultantTeam = [];
+  let constractorTeam = [];
   let groupedMembers = [];
   groupedMembers = members.reduce((acc, member) => {
-    if (member.userType != userType) {
+    if (member.userType != userType && member.role == "owner") {
+      ownerTeam.push(member);
+    }else if (member.userType != userType && member.role == "consultant") {
+        consultantTeam.push(member);
+    }else if (member.userType != userType && member.role == "contractor") {
+        constractorTeam.push(member);
+    }else{
       groupedMembers.push(member);
     }
 
@@ -484,7 +518,10 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
     message: "Done",
     count: members.length,
     admins: groupAdmins,
-    members: groupedMembers,
+    ownerTeam,
+    consultantTeam,
+    constractorTeam,
+    groupedMembers,
   });
 });
 

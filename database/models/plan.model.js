@@ -18,7 +18,7 @@ const planSchema = mongoose.Schema(
     ],
     billingPeriod: {
       type: String,
-      required: true,
+      // required: true,
     },
   },
   {

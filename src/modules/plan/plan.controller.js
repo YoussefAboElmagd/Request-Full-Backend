@@ -20,7 +20,19 @@ const getPlanById = catchAsync(async (req, res) => {
 });
 const uptadePlan = catchAsync(async (req, res) => {
   let { id } = req.params;
-  let updated = await planModel.findByIdAndUpdate(id, req.body, { new: true });
+  let {name,price,features,billingPeriod}=req.body
+  let updated = await planModel.findByIdAndUpdate(id,{
+    name,price,billingPeriod,
+    $push:{features}
+  }, { new: true });
+  res.json({ message: "Updated", updated });
+});
+const uptadePlan2 = catchAsync(async (req, res) => {
+  let { id } = req.params;
+  let {features}=req.body
+  let updated = await planModel.findByIdAndUpdate(id,{
+    $pull:{features}
+  }, { new: true });
   res.json({ message: "Updated", updated });
 });
 const deletePlan = catchAsync(async (req, res) => {
@@ -29,4 +41,4 @@ const deletePlan = catchAsync(async (req, res) => {
   res.json({ message: "Deleted" });
 });
 
-export { createPlan, getAllPlans, getPlanById, uptadePlan, deletePlan };
+export { createPlan, getAllPlans, getPlanById, uptadePlan,uptadePlan2, deletePlan };

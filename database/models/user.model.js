@@ -89,12 +89,6 @@ const userSchema = mongoose.Schema(
       immutable: true,
       required: true,
     },
-    // tags: {
-    //   type: [mongoose.Schema.Types.ObjectId],
-    //   ref: "tag",
-    //   default: [],
-    //   // required: true,
-    // },
     team: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "team",
@@ -110,6 +104,12 @@ const userSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "vocation",
       default: null,
+      // required: true,
+    },
+    plan: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "plan",
+      default: "672be9c55850d2afb650e488",
       // required: true,
     },
     verified: {
@@ -215,5 +215,6 @@ userSchema.pre(/^find/, function () {
   this.populate("vocation");
   this.populate("projects");
   this.populate("userGroups");
+  this.populate("plan");
 });
 export const userModel = mongoose.model("user", userSchema);
