@@ -6,7 +6,6 @@ import AppError from "../../utils/appError.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import { taskModel } from "../../../database/models/tasks.model.js";
 import bcrypt from "bcrypt";
-import e from "express";
 
 const createProject = catchAsync(async (req, res, next) => {
   req.body.model = "66ba015a73f994dd94dbc1e9";
@@ -88,6 +87,24 @@ const getProjectById = catchAsync(async (req, res, next) => {
   res.json({
     message: "Done",
     results,
+  });
+});
+const getCounts = catchAsync(async (req, res, next) => {
+  res.json({
+    message: "Done",
+    projects: await projectModel.countDocuments({
+      $and: [
+        { members: { $in: req.params.id } },
+        { $or: [{status:"waiting"}, {isAproved:false}, ]},
+      ],
+    }),
+    home: await taskModel.countDocuments({
+      $and: [
+        { $or: [{ assignees: { $in: req.params.id } }, {createdBy: req.params.id} ] },
+        { $or: [{status:"waiting"}, {isAproved:false}, ]},
+      ],
+    }),
+
   });
 });
 ////////////////////////////////// admin \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
@@ -1049,4 +1066,5 @@ export {
   getTagsByProject,
   getFilesForDownload,
   addMemberForProject,
+  getCounts,
 };

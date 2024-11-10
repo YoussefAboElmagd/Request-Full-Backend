@@ -16,6 +16,7 @@ projectRouter.get("/user/files/:id",projectController.getAllProjectsFilesByUser)
 projectRouter.get("/files/:id/:projectId",projectController.getFilesByTags);
 projectRouter.get("/download/:tagId",projectController.getFilesForDownload);
 projectRouter.get("/tags/:id",projectController.getTagsByProject);
+projectRouter.get("/counts/:id",projectController.getCounts);
 projectRouter.post("/", projectController.createProject);
 projectRouter.put("/:id", projectController.updateProject);
 projectRouter.put("/member/:id", projectController.addMemberForProject);
