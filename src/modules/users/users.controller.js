@@ -4,7 +4,7 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import AppError from "../../utils/appError.js";
 import { DateTime } from "luxon";
 import { photoUpload } from "../../utils/removeFiles.js";
-import { contactUs, sendInvite } from "../../email/sendEmail.js";
+import { contactUs, contactUs2, sendInvite } from "../../email/sendEmail.js";
 import cron from "node-cron";
 
 const updateprofilePic = catchAsync(async (req, res, next) => {
@@ -34,6 +34,18 @@ const postMessage = catchAsync(async (req, res, next) => {
   !user && res.status(404).json({ message: "couldn't post! not found!" });
   contactUs( user.name,user.email,req.body.message);
   res.json({ message: "Message sent to admin", user });
+});
+const getInTouch = catchAsync(async (req, res, next) => {
+  let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+  if (req.body.phone === "" && req.body.phone.length < 9) {
+    return res.status(409).json({ message: "this phone is not valid" });
+  }
+  if (req.body.email !== "" && req.body.email.match(emailFormat)) {
+    contactUs2( req.body.name,req.body.email,req.body.phone,req.body.message);
+    res.json({ message: "Message sent to admin"});
+  }else{
+    return res.status(409).json({ message: "this email is not valid" });
+  }
 });
 
 const sendInviteToProject = catchAsync(async (req, res, next) => {
@@ -204,6 +216,7 @@ const updateUser = catchAsync(async (req, res, next) => {
     renewalSubscription,
     userGroups,
     access,
+    plan
   } = req.body;
   let results = await userModel.findByIdAndUpdate(
     id,
@@ -231,6 +244,7 @@ const updateUser = catchAsync(async (req, res, next) => {
       renewalSubscription,
       twoWayAuthentication,
       access,
+      plan
     },
     { new: true }
   );
@@ -319,6 +333,7 @@ export {
   updateprofilePic,
   getUserTags,
   postMessage,
+  getInTouch,
   sendInviteToProject,
   getUserByEmail,
   getSubscriptionPeriod

@@ -58,7 +58,7 @@ const updateTags = catchAsync(async (req, res, next) => {
 });
 const deleteTags = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  const deleteTags = await tagsModel.findByIdAndDelete(id);
+  const deleteTags = await tagsModel.deleteOne({ _id: id });
   if (!deleteTags) {
     return res.status(404).json({ message: "Tags not found!" });
   }

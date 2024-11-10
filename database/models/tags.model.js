@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import AppError from "../../src/utils/appError.js";
+import { userModel } from "./user.model.js";
 
 const tagsSchema = mongoose.Schema(
   {
@@ -42,5 +43,10 @@ tagsSchema.pre("save", async function (next) {
 
   next();
 });
-
+tagsSchema.pre(/^delete/, { document: false, query: true }, async function () {
+  const doc = await this.model.findOne(this.getFilter());
+  if (doc) {
+    await userModel.updateMany({ tags: doc._id }, { $pull: { tags: doc._id } });
+  }
+});
 export const tagsModel = mongoose.model("tag", tagsSchema);

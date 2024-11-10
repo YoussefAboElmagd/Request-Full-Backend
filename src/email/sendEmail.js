@@ -66,3 +66,22 @@ export async function contactUs(name,email,message) {
   console.log("Message sent: %s", messageEmail.messageId);
 
 }
+export async function contactUs2(name,email,phone,message) {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: "abdelrahmanmohammed851@gmail.com",
+      pass: "ykejlphmzcmmwlgw",
+    },
+  });
+
+  const messageEmail = await transporter.sendMail({
+    from: `Help Center" <abdelrahmanmohammed851@gmail.com>`,
+    to: "abdelrahmanmohammed8511@gmail.com", 
+    subject: "contact us", 
+    html: emailTemplate(name,email,phone,message),
+  });
+
+  console.log("Message sent: %s", messageEmail.messageId);
+
+}
