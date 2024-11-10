@@ -37,7 +37,7 @@ const postMessage = catchAsync(async (req, res, next) => {
 });
 const getInTouch = catchAsync(async (req, res, next) => {
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
-  if (req.body.phone === "" && req.body.phone.length < 9) {
+  if (req.body.phone === "" || req.body.phone.length < 9) {
     return res.status(409).json({ message: "this phone is not valid" });
   }
   if (req.body.email !== "" && req.body.email.match(emailFormat)) {
