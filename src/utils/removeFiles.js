@@ -9,23 +9,23 @@ export async function removeFiles(folderName, fieldName) {
     return;
   }
   function isObjectId(ids) {
-    return ids.every(id => mongoose.Types.ObjectId.isValid(id));
+    return ids.every((id) => mongoose.Types.ObjectId.isValid(id));
   }
   if (isObjectId(fieldName)) {
     let results = await documentsModel
-    .find({ _id: { $in: fieldName } })
-    .select('document'); 
-  let documentUrls = results.map(result => `${result.document}`);
-    fieldName = documentUrls
-  console.log(documentUrls, 'This is a valid ObjectId.');
+      .find({ _id: { $in: fieldName } })
+      .select("document");
+    let documentUrls = results.map((result) => `${result.document}`);
+    fieldName = documentUrls;
+    console.log(documentUrls, "This is a valid ObjectId.");
   } else {
-  fieldName = fieldName
+    fieldName = fieldName;
   }
 
-    const photoPaths =
+  const photoPaths =
     fieldName &&
     fieldName.map((url) =>
-      url.replace(`http://62.72.32.44:8000/${folderName}/`, "")
+      url.replace(`https://api.request-sa.com/${folderName}/`, "")
     );
   console.log(photoPaths);
 
@@ -52,7 +52,7 @@ export async function removeFiles(folderName, fieldName) {
 
 export function removeFile(folderName, fieldName) {
   const photoPath = fieldName.replace(
-    `http://62.72.32.44:8000/${folderName}/`,
+    `https://api.request-sa.com/${folderName}/`,
     ""
   );
   const fullPath = path.resolve(`uploads/${folderName}`, photoPath);
@@ -79,7 +79,7 @@ export const photoUpload = (req, fieldName, uploadDirectory) => {
     // Generate file URLs
     req.body[fieldName] = req.files[fieldName].map(
       (file) =>
-        `http://62.72.32.44:8000/${uploadDirectory}/${file.filename
+        `https://api.request-sa.com/${uploadDirectory}/${file.filename
           .split(" ")
           .join("-")}`
     );

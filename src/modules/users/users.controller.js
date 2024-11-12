@@ -50,10 +50,25 @@ const getInTouch = catchAsync(async (req, res, next) => {
 
 const sendInviteToProject = catchAsync(async (req, res, next) => {
   let link = "http://62.72.32.44:4005/SignUp/ChooseRole"
-  sendInvite(req.body , link);
-  res.json({
-    message: "Invite has been sent!",
-  })
+  let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+
+  if (req.body.email === "" || req.body.email.match(emailFormat)) {
+    return res.status(409).json({ message: "this email is not valid" });
+  }
+  isFound = await userModel.findOne({ email: req.body.email });
+  if (isFound) {
+    sendInvite(req.body.email , link);
+     return res.json({
+      message: "Invite has been sent!",
+    })
+
+  }else{
+
+    sendInvite(req.body.email , link);
+    return res.json({
+      message: "Invite has been sent!",
+    })
+  }
 })
 const updateCollection = catchAsync(async (req, res, next) => {
   let { id } = req.params;

@@ -95,7 +95,7 @@ const getCounts = catchAsync(async (req, res, next) => {
     projects: await projectModel.countDocuments({
       $and: [
         { members: { $in: req.params.id } },
-        { $or: [{status:"waiting"}, {isAproved:false}, ]},
+        {status:"waiting"},
       ],
     }),
     home: await taskModel.countDocuments({

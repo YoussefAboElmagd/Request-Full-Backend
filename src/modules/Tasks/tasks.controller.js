@@ -6,6 +6,9 @@ import AppError from "../../utils/appError.js";
 import mongoose from "mongoose";
 import cron from "node-cron";
 import moment from "moment";
+import { userModel } from "../../../database/models/user.model.js";
+import { taskLogModel } from "../../../database/models/tasksLog.model.js";
+import { removeFiles } from "../../utils/removeFiles.js";
 
 const createTask = catchAsync(async (req, res, next) => {
   let tasks = Array.isArray(req.body) ? req.body : [req.body];
@@ -13,9 +16,10 @@ const createTask = catchAsync(async (req, res, next) => {
     ...task,
     model: "66ba018d87b5d43dcd881f7e",
   }));
-
+  let user = null
   for (const task of tasks) {
     const project = await projectModel.findById(task.project);
+    user = await userModel.findById(task.createdBy);
 
     if (!project) {
       return res.status(404).json({ message: "Project not found!" });
@@ -36,6 +40,11 @@ const createTask = catchAsync(async (req, res, next) => {
       if(new Date(task.sDate) > new Date(project.dueDate)){
         return res.status(404).json({ message: `Start date of task must be less than or equal to ${dueDate} ( End date of project) ` });
       }
+    }
+    if (task.requiredQuantity === 0) {
+      task.progress = 0; // Avoid division by zero
+    } else {
+      task.progress = (task.approvedQuantity / task.requiredQuantity) * 100;
     }
     if (task.parentTask) {
       const getAllSubTasks = await mongoose
@@ -90,6 +99,24 @@ const createTask = catchAsync(async (req, res, next) => {
           )
         );
       }
+      if (task.requiredQuantity === 0) {
+        task.progress = 0; // Avoid division by zero
+      } else {
+        task.progress = (task.approvedQuantity / task.requiredQuantity) * 100;
+      }
+      let newSubTaskLog = await taskLogModel.findOneAndUpdate(
+        { taskId: task.parentTask },
+        {
+          $push: {
+            updates: [
+              {
+                changes: [`${user.name} Created a Sub Task`],
+              },
+            ],
+          },
+        },
+        { new: true }
+      );
     }
   }
 
@@ -100,6 +127,17 @@ const createTask = catchAsync(async (req, res, next) => {
     { $push: { tasks: { $each: taskIds } } },
     { new: true }
   );
+  let taskLogs = taskIds.map((taskId) => {
+    return new taskLogModel({
+      taskId: taskId, 
+      updates: [
+        {
+          changes: [`${user.name} Created a Task`],
+        },
+      ],
+    });
+  });
+    await taskLogModel.insertMany(taskLogs);
   res.status(201).json({
     message: "Task(s) have been created successfully!",
     addedTasks,
@@ -268,11 +306,12 @@ const getTaskById = catchAsync(async (req, res, next) => {
     .populate("assignees")
     .populate("project")
     .populate("notes.postedBy")
-    .populate("createdBy");
+    .populate("createdBy").lean({ virtuals: true });
 
   if (!results) {
     return res.status(404).json({ message: "Task not found!" });
   }
+console.log(results.calculatedProgress);
 
   res.json({
     message: "Done",
@@ -357,7 +396,6 @@ const getAllParentTasks = catchAsync(async (req, res, next) => {
       $and: [
         { project: projectId },
         { parentTask: null },
-        { type: "parent" },
         { $or: [{ createdBy: userId }, { assignees: userId }] },
       ],
     })
@@ -373,75 +411,79 @@ const getAllParentTasks = catchAsync(async (req, res, next) => {
   });
 });
 const updateTask = catchAsync(async (req, res, next) => {
-  let { id } = req.params;
-  let {
-    title,
-    description,
-    priority,
-    sDate,
-    endDate,
-    createdBy,
-    project,
-    documents,
-    assignees,
-    notes,
-    requestForInspectionForm,
-    tableOfQuantities,
-    approvalOfSchemes,
-    workRequest,
-    requestForApprovalOfMaterials,
-    requestForDocumentSubmittalApproval,
-    isAproved,
-    taskPriority,
-    taskStatus,
-    total,
-    invoicedQuantity,
-    executedQuantity,
-    approvedQuantity,
-    requiredQuantity,
-    unit,
-    price,
-  } = req.body;
-  let updatedTask = await taskModel.findByIdAndUpdate(
-    id,
+  const { id } = req.params;
+  const userId = req.query.id;
+  const updatedFields = req.body;
 
+  // Update the task
+  const updatedTask = await taskModel.findByIdAndUpdate(
+    id,
     {
-      $push: { documents, assignees, notes },
-      title,
-      description,
-      priority,
-      sDate,
-      endDate,
-      createdBy,
-      project,
-      requestForInspectionForm,
-      tableOfQuantities,
-      approvalOfSchemes,
-      workRequest,
-      requestForApprovalOfMaterials,
-      requestForDocumentSubmittalApproval,
-      isAproved,
-      taskPriority,
-      taskStatus,
-      total,
-      invoicedQuantity,
-      executedQuantity,
-      approvedQuantity,
-      requiredQuantity,
-      unit,
-      price,
+      $push: {
+        documents: updatedFields.documents,
+        assignees: updatedFields.assignees,
+        notes: updatedFields.notes,
+      },
+      ...updatedFields, // Spread the rest of the fields directly
     },
-    {
-      new: true,
-    }
+    { new: true }
   );
 
   if (!updatedTask) {
-    return res.status(404).json({ message: "Couldn't update!  not found!" });
+    return res.status(404).json({ message: "Couldn't update! Not found!" });
   }
+  const user = await userModel.findById(userId);
+  if (!user) {
+    return res.status(404).json({ message: "User not found!" });
+  }
+  const changes = generateChangeLogs(updatedFields, user.name);
+  await taskLogModel.findOneAndUpdate(
+    { taskId: id },
+    {
+      $push: { updates: [{ changes }] },
+    },
+    { new: true }
+  );
 
-  res.status(200).json({ message: "Task updated successfully!", updatedTask });
+  res.status(200).json({
+    message: "Task updated successfully!",
+    updatedTask,
+  });
 });
+
+const generateChangeLogs = (updatedFields, userName) => {
+  const fieldMappings = {
+    title: "Title",
+    sDate: "Start Date",
+    dueDate: "End Date",
+    requestForInspectionForm: "Request For Inspection Form Model",
+    tableOfQuantities: "Table Of Quantities",
+    description: "Description",
+    approvalOfSchemes: "Approval Of Schemes Model",
+    workRequest: "Work Request Model",
+    requestForApprovalOfMaterials: "Request For Approval Of Materials Model",
+    requestForDocumentSubmittalApproval: "Request For Document Submittal Approval Model",
+    taskStatus: "Task Status",
+    taskPriority: "Task Priority",
+    isAproved: "Approved Task",
+    total: "Task Total",
+    invoicedQuantity: "Invoiced Quantity",
+    executedQuantity: "Executed Quantity",
+    approvedQuantity: "Approved Quantity",
+    requiredQuantity: "Required Quantity",
+    unit: "Task Unit",
+    price: "Task Price",
+    progress: "Task Progress",
+    notes: "Task Notes",
+    assignees: "Task Assignees",
+    documents: "Task Documents",
+  };
+
+  return Object.entries(updatedFields)
+    .filter(([key]) => fieldMappings[key]) // Only include mapped fields
+    .map(([key]) => `${userName} updated ${fieldMappings[key]}`);
+};
+
 const updateTask2 = catchAsync(async (req, res, next) => {
   let { id } = req.params;
   let { documents, assignees, notes } = req.body;
@@ -459,12 +501,57 @@ const updateTask2 = catchAsync(async (req, res, next) => {
   if (!updatedTask) {
     return res.status(404).json({ message: "Couldn't update!  not found!" });
   }
+  let user = await userModel.findById(req.query.id);
+  let changes = [];
+  if (req.body.notes) {
+    changes.push(`${user.name} Deleted Task Note`);
+  }
+  if (req.body.assignees) {
+    changes.push(`${user.name} Deleted user from task`);
+  }
+  if (req.body.documents) {
+    changes.push(`${user.name} Deleted Task Document`);
+    if (!Array.isArray(req.body.documents)) {
+      req.body.documents = [req.body.documents];
+    }
+    removeFiles("documents", req.body.document);
+
+  }
+  let newTaskLog = await taskLogModel.findOneAndUpdate(
+    { taskId: id },
+    {
+      $push: {
+        updates: [
+          {
+            changes: changes,
+          },
+        ],
+      },
+    },
+    { new: true }
+  )
 
   res.status(200).json({ message: "Task updated successfully!", updatedTask });
 });
 const deleteTask = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-
+  let subTask = await taskModel.findById(id);
+  if (subTask.parentTask) {
+    let user = await userModel.findById(req.query.id);
+    let newTaskLog = await taskLogModel.findOneAndUpdate(
+      { taskId: subTask.parentTask },
+      {
+        $push: {
+          updates: [
+            {
+              changes: [`${user.name} deleted subtask`],
+            },
+          ],
+        },
+      },
+      { new: true }
+    );
+  }
   let deletedTask = await taskModel.deleteOne({ _id: id });
 
   if (!deletedTask) {

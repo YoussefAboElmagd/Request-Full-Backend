@@ -24,6 +24,7 @@ import dashboardRouter from "./Dashboard/dashboard.routes.js";
 import userGroupRouter from "./User Group/userGroup.routes.js";
 import planRouter from "./plan/plan.routes.js";
 import paymentRouter from "./payment/payment.routes.js";
+import taskLogRouter from "./Tasks Log/tasksLog.routes.js";
 
 export function init(app) {
   app.use("/api/v1/users", usersRouter);
@@ -52,6 +53,7 @@ export function init(app) {
   app.use("/api/v1/userGroup", userGroupRouter);
   app.use("/api/v1/plan", planRouter);
   app.use("/api/v1/payment", paymentRouter);
+  app.use("/api/v1/taskLog", taskLogRouter);
 
   app.use("/", (req, res, next) => {
     // res.send("Page Not Found");

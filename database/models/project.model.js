@@ -23,11 +23,6 @@ const projectSchema = mongoose.Schema(
       default: "medium",
       required: true,
     },
-    isAproved: {
-      type: Boolean,
-      default: false,
-      required: true,
-    },
     requestForDocumentSubmittalApproval : {
       type: Boolean,
       default: false,
@@ -141,6 +136,15 @@ const projectSchema = mongoose.Schema(
   { timestamps: true }
 );
 
+projectSchema.post('find', async function(docs) {
+  for (let project of docs) {
+    const tasks = await taskModel.find({ project: project._id });
+    const validTasks = tasks.filter(task => task.type === "toq");
+    const totalProgress = validTasks.reduce((sum, task) => sum + task.progress, 0);
+    const taskCount = validTasks.length;
+    project.progress = taskCount > 0 ? totalProgress / taskCount : 0;
+  }
+});
 
 projectSchema.post(/^find/, async function (docs, next) {
   if (!Array.isArray(docs)) {

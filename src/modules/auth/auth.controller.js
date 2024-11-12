@@ -27,14 +27,16 @@ export const signUp = catchAsync(async (req, res, next) => {
 
   req.body.model = "66ba00b0e39d9694110fd3df";
   req.body.userType = "superUser";
-  req.body.dateOfBirth = new Date ("1950/01/02");
-  // req.body.profilePic = "http://62.72.32.44:8000/profilePic/profile.png";
+  req.body.dateOfBirth = new Date("1950/01/02");
+  // req.body.profilePic = "https://api.request-sa.com/profilePic/profile.png";
   req.body.verificationCode = generateUniqueId({
     length: 4,
     useLetters: false,
   });
-  if(req.body.password.length < 8){
-    return res.status(409).json({ message: "password must be at least 8 characters" });
+  if (req.body.password.length < 8) {
+    return res
+      .status(409)
+      .json({ message: "password must be at least 8 characters" });
   }
   req.body.password = bcrypt.hashSync(
     req.body.password,
@@ -46,7 +48,6 @@ export const signUp = catchAsync(async (req, res, next) => {
     process.env.JWT_SECRET_KEY
   );
 
-  
   sendEmail(results.email, results.verificationCode);
   let model = "66e5611c1771cb44cd6fc7de";
   let createdBy = results._id;
@@ -177,12 +178,11 @@ export const forgetPassword = catchAsync(async (req, res, next) => {
 // 4- check if this token is the last one or not (change password )
 
 export const protectRoutes = catchAsync(async (req, res, next) => {
-
-const authorizationHeader = req.headers.authorization;
-if(!authorizationHeader){
-  return next(new AppError(`please login first`, 401));
-}
-  const token = authorizationHeader.split(' ')[1];
+  const authorizationHeader = req.headers.authorization;
+  if (!authorizationHeader) {
+    return next(new AppError(`please login first`, 401));
+  }
+  const token = authorizationHeader.split(" ")[1];
   if (!token) {
     return next(new AppError(`please login first`, 401));
   }
@@ -214,7 +214,6 @@ export const allowTo = (...roles) => {
   };
 };
 
-
 export const signUpWithGoogle = catchAsync(async (req, res, next) => {
   let { email, name, role } = req.body;
   let userData = await userModel.findOne({ email: req.body.email });
@@ -234,7 +233,7 @@ export const signUpWithGoogle = catchAsync(async (req, res, next) => {
     );
     let lastSignIn = new Date();
     return res.json({ message: "success", token, userData, lastSignIn });
-  }else{
+  } else {
     return res.status(409).json({ message: "this email  already exist" });
   }
 });

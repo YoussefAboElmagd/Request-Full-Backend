@@ -3,6 +3,7 @@ import { documentsModel } from "./documents.model.js";
 import { projectModel } from "./project.model.js";
 import { removeFiles } from "../../src/utils/removeFiles.js";
 import AppError from "../../src/utils/appError.js";
+import { taskLogModel } from "./tasksLog.model.js";
 
 const taskSchema = mongoose.Schema(
   {
@@ -102,7 +103,7 @@ const taskSchema = mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["parent", "sub","milestone","recurring","oneTime"],
+      enum: ["toq","milestone","recurring","oneTime"],
       required: true,
     },
     progress: {
@@ -140,6 +141,11 @@ taskSchema.pre('save', async function (next) {
   if (this.dueDate && this.dueDate < new Date()) {
     this.taskStatus = "delayed";
   } 
+  if (this.requiredQuantity === 0) {
+    this.progress = 0; // Avoid division by zero
+  } else {
+    this.progress = (this.approvedQuantity / this.requiredQuantity) * 100;
+  }
   next();
 });
 
@@ -168,6 +174,28 @@ if(doc){
 }
 }
   });
+});
+taskSchema.pre('findOneAndUpdate',async function (next) {
+  const update = this.getUpdate();
+  const taskToUpdate = await mongoose.model("task").findOne(this.getQuery());  
+  const project = await projectModel.findById(taskToUpdate.project);
+  let dueDate = new Date(project.dueDate).toISOString().split('T')[0];
+  let sDate = new Date(project.sDate).toISOString().split('T')[0];
+  if (update.dueDate || update.sDate) {
+    if(new Date(update.sDate) > new Date(update.dueDate)){
+      return res.status(404).json({ message: "Start date must be less than due date" });
+    }
+    if(new Date(update.dueDate) > new Date(project.dueDate)){
+      return res.status(404).json({ message: `Due date of task must be less than or equal to ${dueDate} (due date of project) ` });
+    }
+    if(new Date(update.sDate) < new Date(project.sDate)){
+      return res.status(404).json({ message: `Start date of task must be less than or equal to ${sDate} (Start date of project) ` });
+    }
+    if(new Date(update.sDate) > new Date(project.dueDate)){
+      return res.status(404).json({ message: `Start date of task must be less than or equal to ${dueDate} ( End date of project) ` });
+    }
+  }
+  next();
 });
 taskSchema.pre('findOneAndUpdate', function (next) {
   const update = this.getUpdate();
@@ -214,7 +242,7 @@ taskSchema.pre(/^delete/, { document: false, query: true }, async function () {
   const doc = await this.model.findOne(this.getFilter());
   if (doc) {
     await projectModel.findOneAndUpdate({ _id: doc.project }, { $pull: { tasks: doc._id } }, { new: true });
-
+    await taskLogModel.deleteMany({ taskId: doc._id });
     if (doc.documents && doc.documents.length > 0) {
       removeFiles("documents", doc.documents);
       await documentsModel.deleteMany({ _id: { $in: doc.documents } });
@@ -224,5 +252,6 @@ taskSchema.pre(/^delete/, { document: false, query: true }, async function () {
 
 taskSchema.pre(/^find/, function () {
   this.populate('tags');
+  this.populate('unit');
 })
 export const taskModel = mongoose.model("task", taskSchema);
