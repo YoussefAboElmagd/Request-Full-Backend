@@ -141,11 +141,6 @@ taskSchema.pre('save', async function (next) {
   if (this.dueDate && this.dueDate < new Date()) {
     this.taskStatus = "delayed";
   } 
-  if (this.requiredQuantity === 0) {
-    this.progress = 0; // Avoid division by zero
-  } else {
-    this.progress = (this.approvedQuantity / this.requiredQuantity) * 100;
-  }
   next();
 });
 

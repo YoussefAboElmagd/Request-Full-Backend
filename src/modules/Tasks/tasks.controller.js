@@ -41,11 +41,6 @@ const createTask = catchAsync(async (req, res, next) => {
         return res.status(404).json({ message: `Start date of task must be less than or equal to ${dueDate} ( End date of project) ` });
       }
     }
-    if (task.requiredQuantity === 0) {
-      task.progress = 0; // Avoid division by zero
-    } else {
-      task.progress = (task.approvedQuantity / task.requiredQuantity) * 100;
-    }
     if (task.parentTask) {
       const getAllSubTasks = await mongoose
         .model("task")
@@ -98,11 +93,6 @@ const createTask = catchAsync(async (req, res, next) => {
             400
           )
         );
-      }
-      if (task.requiredQuantity === 0) {
-        task.progress = 0; // Avoid division by zero
-      } else {
-        task.progress = (task.approvedQuantity / task.requiredQuantity) * 100;
       }
       let newSubTaskLog = await taskLogModel.findOneAndUpdate(
         { taskId: task.parentTask },

@@ -33,7 +33,7 @@ app.use((err, req, res, next) => {
   if (err.code === 'ENOTFOUND') {
     return res.status(500).send('Network error, please try again later.');
   }
-  res.status(500).send('Something went wrong.');
+  res.status(500).send(err.message);
 });
 init(app);
 app.use(globalError);
