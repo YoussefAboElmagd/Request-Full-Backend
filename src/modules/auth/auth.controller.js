@@ -8,21 +8,35 @@ import { sendEmail } from "../../email/sendEmail.js";
 import { teamModel } from "../../../database/models/team.model.js";
 
 export const signUp = catchAsync(async (req, res, next) => {
+  let err_phone = "This Phone  already exist"
+  let err_phone2 = "This Phone  is not valid"
+  let err_email = "This Email  already exist"
+  let err_email2 = "This Email  is not valid"
+  let err_pass = "Password must be at least 8 characters"
+  let text = `Email Verification Code: ` 
+  if(req.query.lang == "ar"){
+    err_phone = "هذا الهاتف موجود بالفعل"
+    err_phone2 = "هذا الهاتف غير صحيح"
+    err_email = "هذا البريد الالكتروني موجود بالفعل"
+    err_email2 = "هذا البريد الالكتروني غير صحيح"
+    err_pass = "كلمة المرور يجب ان تكون 8 حروف على الاقل"
+    text = ` : رمز التحقق من البريد الالكتروني: `
+  }
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
   if (req.body.phone === "" || req.body.phone.length < 10) {
-    return res.status(409).json({ message: "this phone is not valid" });
+    return res.status(409).json({ message: err_phone2 });
   }
   if (req.body.email !== "" && req.body.email.match(emailFormat)) {
     let existUser = await userModel.findOne({ phone: req.body.phone });
     let existUser2 = await userModel.findOne({ email: req.body.email });
     if (existUser) {
-      return res.status(409).json({ message: "this phone  already exist" });
+      return res.status(409).json({ message: err_phone });
     }
     if (existUser2) {
-      return res.status(409).json({ message: "this email  already exist" });
+      return res.status(409).json({ message: err_email });
     }
   } else {
-    return res.status(409).json({ message: "this  email is not valid" });
+    return res.status(409).json({ message: err_email2 });
   }
 
   req.body.model = "66ba00b0e39d9694110fd3df";
@@ -36,7 +50,7 @@ export const signUp = catchAsync(async (req, res, next) => {
   if (req.body.password.length < 8) {
     return res
       .status(409)
-      .json({ message: "password must be at least 8 characters" });
+      .json({ message: err_pass });
   }
   req.body.password = bcrypt.hashSync(
     req.body.password,
@@ -47,8 +61,9 @@ export const signUp = catchAsync(async (req, res, next) => {
     { name: results.name, userId: results._id },
     process.env.JWT_SECRET_KEY
   );
+  text = text + `${results.verificationCode}` 
 
-  sendEmail(results.email, results.verificationCode);
+  sendEmail(results.email, text);
   let model = "66e5611c1771cb44cd6fc7de";
   let createdBy = results._id;
   const newTeam = new teamModel({ createdBy, model });
@@ -88,19 +103,29 @@ export const signUp = catchAsync(async (req, res, next) => {
 // });
 
 export const signIn = catchAsync(async (req, res, next) => {
+
+  let err_email2 = "this email  is not valid"
+  let err_pass = "worng email or password"
+  let text = `Email Verification Code: ` 
+  if(req.query.lang == "ar"){
+    err_email2 = "هذا البريد الالكتروني غير صحيح"
+    err_pass = "البريد الالكتروني او كلمة المرور غير صحيحة"
+    text = ` : رمز التحقق من البريد الالكتروني: `
+  }
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
   if (req.body.email !== "" && req.body.email.match(emailFormat)) {
     let { email, password } = req.body;
     let userData = await userModel.findOne({ email });
     if (!userData)
-      return res.status(401).json({ message: "worng email or password" });
+      return res.status(401).json({ message: err_pass });
     const match = bcrypt.compareSync(password, userData.password);
     if (match && userData) {
       userData.verificationCode = generateUniqueId({
         length: 4,
         useLetters: false,
       });
-      sendEmail(userData.email, userData.verificationCode);
+      text = text + `${userData.verificationCode}` 
+      sendEmail(userData.email, text);
       await userData.save();
       let token = jwt.sign(
         { name: userData.name, userId: userData._id },
@@ -110,24 +135,37 @@ export const signIn = catchAsync(async (req, res, next) => {
       req.lastSignIn = lastSignIn;
       return res.json({ message: "success", token, userData, lastSignIn });
     }
-    return res.status(401).json({ message: "worng email or password" });
+    return res.status(401).json({ message: err_pass });
   } else {
-    return res.status(409).json({ message: "this email is not valid" });
+    return res.status(409).json({ message: err_email2 });
   }
 });
 
 export const resend = catchAsync(async (req, res, next) => {
+  let err_email = "worng email"
+  let err_email2 = "this email  is not valid"
+  let err_pass = "worng email or password"
+  let text = `Email Verification Code: ` 
+
+  if(req.query.lang == "ar"){
+    err_email = "البريد الالكتروني غير صحيح"
+    err_email2 = "هذا البريد الالكتروني غير صحيح"
+    err_pass = "البريد الالكتروني او كلمة المرور غير صحيحة"
+    text = ` : رمز التحقق من البريد الالكتروني: `
+  }
   if (req.body.email !== "") {
     let { email } = req.body;
     let userData = await userModel.findOne({ email });
     if (!userData)
-      return res.status(401).json({ message: "worng email or password" });
+      return res.status(401).json({ message: err_pass });
     if (userData) {
       userData.verificationCode = generateUniqueId({
         length: 4,
         useLetters: false,
       });
-      sendEmail(userData.email, userData.verificationCode);
+      text = text + `${userData.verificationCode}` 
+
+      sendEmail(userData.email, text);
       await userData.save();
       let token = jwt.sign(
         { name: userData.name, userId: userData._id },
@@ -141,22 +179,31 @@ export const resend = catchAsync(async (req, res, next) => {
         token,
       });
     }
-    return res.status(401).json({ message: "worng email " });
+    return res.status(401).json({ message: err_email });
   } else {
-    return res.status(409).json({ message: "this email is not valid" });
+    return res.status(409).json({ message: err_email2 });
   }
 });
 export const forgetPassword = catchAsync(async (req, res, next) => {
+  let err_email2 = "this email  is not valid"
+  let err_email = "Email Not Found"
+  let text = `Email Verification Code: `
+  if(req.query.lang == "ar"){
+    err_email = "البريد الالكتروني غير موجود"
+    err_email2 = "هذا البريد الالكتروني غير صحيح"
+    text = ` : رمز التحقق من البريد الالكتروني: `
+  }
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
   if (req.body.email !== "" && req.body.email.match(emailFormat)) {
     let { email } = req.body;
     let userData = await userModel.findOne({ email });
-    if (!userData) return res.status(404).json({ message: "Email Not Found" });
+    if (!userData) return res.status(404).json({ message: err_email });
     userData.verificationCode = generateUniqueId({
       length: 4,
       useLetters: false,
     });
-    sendEmail(userData.email, userData.verificationCode);
+    text = text + `${userData.verificationCode}` 
+    sendEmail(userData.email, text);
     await userData.save();
     let verificationCode = userData.verificationCode;
     let id = userData._id;
@@ -168,7 +215,7 @@ export const forgetPassword = catchAsync(async (req, res, next) => {
       UserEmail,
     });
   } else {
-    return res.status(409).json({ message: "this email is not valid" });
+    return res.status(409).json({ message: err_email2 });
   }
 });
 
@@ -178,23 +225,31 @@ export const forgetPassword = catchAsync(async (req, res, next) => {
 // 4- check if this token is the last one or not (change password )
 
 export const protectRoutes = catchAsync(async (req, res, next) => {
+  let err_1 = "please login first"
+  let err_2 = "user Invalid"
+  let err_3 = "token Invalid"
+  if(req.query.lang == "ar"){
+    err_1 = "الرجاء تسجيل الدخول اولا"
+    err_2 = "المستخدم غير مصرح به"
+    err_3 = "التوكن غير صحيح"
+  }
   const authorizationHeader = req.headers.authorization;
   if (!authorizationHeader) {
-    return next(new AppError(`please login first`, 401));
+    return next(new AppError(`${err_1}`, 401));
   }
   const token = authorizationHeader.split(" ")[1];
   if (!token) {
-    return next(new AppError(`please login first`, 401));
+    return next(new AppError(`${err_1}`, 401));
   }
   let decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
   let user = await userModel.findById(decoded.userId);
   if (!user) {
-    return next(new AppError(`user Invalid`, 401));
+    return next(new AppError(`${err_2}`, 401));
   }
   if (user.changePasswordAt) {
     let changePasswordTime = parseInt(user.changePasswordAt.getTime() / 1000);
     if (changePasswordTime > decoded.iat) {
-      return next(new AppError(`token Invalid`, 401));
+      return next(new AppError(`${err_3}`, 401));
     }
   }
   req.user = user;
@@ -215,6 +270,7 @@ export const allowTo = (...roles) => {
 };
 
 export const signUpWithGoogle = catchAsync(async (req, res, next) => {
+  let text = `Email Verification Code: `
   let { email, name, role } = req.body;
   let userData = await userModel.findOne({ email: req.body.email });
   if (!userData) {
@@ -223,7 +279,9 @@ export const signUpWithGoogle = catchAsync(async (req, res, next) => {
       length: 4,
       useLetters: false,
     });
-    sendEmail(userData.email, userData.verificationCode);
+    text = text + `${userData.verificationCode}` 
+
+    sendEmail(userData.email, text);
     await userData.save();
     let verificationCode = userData.verificationCode;
     let id = userData._id;

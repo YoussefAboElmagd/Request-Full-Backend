@@ -4,7 +4,8 @@ const taskLogSchema = mongoose.Schema(
   {
     updates: [
       {
-        changes: { type: [String] , },
+        changes_en: { type: [String] , },
+        changes_ar: { type: [String] , },
         date: {type: Date,default: Date.now,required: true,},
       },
     ],

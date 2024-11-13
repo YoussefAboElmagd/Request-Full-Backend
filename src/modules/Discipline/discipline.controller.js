@@ -14,12 +14,16 @@ const createDiscipline = catchAsync(async (req, res, next) => {
 
 const getAllDiscipline = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(disciplineModel.find(), req.query).search();
+  let err_1 = "No Data was found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يوجد بيانات"
+  }
   let results = await ApiFeat.mongooseQuery;
   results = JSON.stringify(results);
   results = JSON.parse(results);
   if (!ApiFeat || !results) {
     return res.status(404).json({
-      message: "No Discipline was found!",
+      message: err_1,
     });
   }
   res.json({
@@ -30,6 +34,10 @@ const getAllDiscipline = catchAsync(async (req, res, next) => {
 
 const updateDiscipline = catchAsync(async (req, res, next) => {
   const { id } = req.params;
+  let err_1 = "No Data was found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يوجد بيانات"
+  }
   const updatedDiscipline = await disciplineModel.findByIdAndUpdate(
     id,
     req.body,
@@ -38,7 +46,7 @@ const updateDiscipline = catchAsync(async (req, res, next) => {
     }
   );
   if (!updatedDiscipline) {
-    return res.status(404).json({ message: "Discipline not found!" });
+    return res.status(404).json({ message: err_1 });
   }
   res.status(200).json({
     message: "Discipline updated successfully!",
@@ -47,9 +55,13 @@ const updateDiscipline = catchAsync(async (req, res, next) => {
 });
 const deleteDiscipline = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  const deleteDiscipline = await disciplineModel.findByIdAndDelete(id);
+  let err_1 = "No Data was found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يوجد بيانات"
+  }
+  const deleteDiscipline = await disciplineModel.deleteDiscipline({_id:id});
   if (!deleteDiscipline) {
-    return res.status(404).json({ message: "Discipline not found!" });
+    return res.status(404).json({ message: err_1 });
   }
   res.status(200).json({
     message: "Discipline Deleted successfully!",

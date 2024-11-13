@@ -7,22 +7,11 @@ import { taskModel } from "../../../database/models/tasks.model.js";
 import { tagsModel } from "../../../database/models/tags.model.js";
 import { requsetModel } from "../../../database/models/request.model.js";
 
-const getAllDashboard = catchAsync(async (req, res, next) => {
-  let ApiFeat = new ApiFeature(DashboardCodeModel.find(), req.query).search();
-  let results = await ApiFeat.mongooseQuery;
-  results = JSON.stringify(results);
-  results = JSON.parse(results);
-  if (!ApiFeat || !results) {
-    return res.status(404).json({
-      message: "No Dashboard was found!",
-    });
-  }
-  res.json({
-    message: "Done",
-    results,
-  });
-});
 const getTopCountries = catchAsync(async (req, res, next) => {
+  let err_1 = "No Data was found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يوجد بيانات"
+  }
   let results = await userModel.aggregate([
     {
       $group: {
@@ -39,7 +28,7 @@ const getTopCountries = catchAsync(async (req, res, next) => {
   ]);
   if(!results){
     return res.status(404).json({
-      message: "No Dashboard was found!",
+      message: err_1,
     })
   }
   res.json({
@@ -49,7 +38,10 @@ const getTopCountries = catchAsync(async (req, res, next) => {
 });
 const getUserRatioPieChart = catchAsync(async (req, res, next) => {
   const totalUsers = await userModel.countDocuments();
-
+  let err_1 = "No Data was found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يوجد بيانات"
+  }
   let results = await userModel.aggregate([
     {
       $group: {
@@ -78,7 +70,7 @@ const getUserRatioPieChart = catchAsync(async (req, res, next) => {
   });
   if(!results){
     return res.status(404).json({
-      message: "No Dashboard was found!",
+      message: err_1,
     })
   }
   res.json({
@@ -88,7 +80,10 @@ const getUserRatioPieChart = catchAsync(async (req, res, next) => {
 });
 const getTagsRatio = catchAsync(async (req, res, next) => {
   const totalTags = await tagsModel.countDocuments();
-
+  let err_1 = "No Data was found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يوجد بيانات"
+  }
   let results = await userModel.aggregate([
     {
       $group: {
@@ -111,7 +106,7 @@ const getTagsRatio = catchAsync(async (req, res, next) => {
   ]);
   if(!results){
     return res.status(404).json({
-      message: "No Dashboard was found!",
+      message: err_1,
     })
   }
   results= await tagsModel.populate(results, {
@@ -125,6 +120,10 @@ const getTagsRatio = catchAsync(async (req, res, next) => {
   });
 });
 const getMostModels = catchAsync(async (req, res, next) => {
+  let err_1 = "No Data was found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يوجد بيانات"
+  }
   const totalProjects = await projectModel.countDocuments();
   const totalRequestForDocumentSubmittalApproval = await projectModel.countDocuments({requestForDocumentSubmittalApproval: true});
   const totalRequestForApprovalOfMaterials = await projectModel.countDocuments({requestForApprovalOfMaterials: true});
@@ -162,7 +161,7 @@ const getMostModels = catchAsync(async (req, res, next) => {
   }
   if(!results){
     return res.status(404).json({
-      message: "No Dashboard was found!",
+      message: err_1,
     })
   }
   res.json({
@@ -173,11 +172,15 @@ const getMostModels = catchAsync(async (req, res, next) => {
 
 const updateDashboard = catchAsync(async (req, res, next) => {
   const { id } = req.params;
+  let err_1 = "No Data was found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يوجد بيانات"
+  }
   const updatedDashboard = await DashboardCodeModel.findByIdAndUpdate(id, req.body, {
     new: true,
   });
   if (!updatedDashboard) {
-    return res.status(404).json({ message: "Dashboard not found!" });
+    return res.status(404).json({ message: err_1});
   }
   res.status(200).json({
     message: "Dashboard updated successfully!",
@@ -185,6 +188,10 @@ const updateDashboard = catchAsync(async (req, res, next) => {
   });
 });
 const getActiveProjects= catchAsync(async (req, res, next) => {
+  let err_1 = "No Project was found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يوجد مشاريع"
+  }
   let ApiFeat = new ApiFeature(
     projectModel.aggregate([
       {
@@ -220,7 +227,7 @@ const getActiveProjects= catchAsync(async (req, res, next) => {
 
   if (!ApiFeat || !results) {
     return res.status(404).json({
-      message: "No Project was found!",
+      message: err_1,
     });
   }
 
@@ -231,10 +238,15 @@ const getActiveProjects= catchAsync(async (req, res, next) => {
 });
 const getActiveProjectsByUser= catchAsync(async (req, res, next) => {
   let id =new mongoose.Types.ObjectId(req.params.id)
-  
+  let err_1 = "No Project was found!"
+  let err_2 = "User not found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يوجد مشاريع"
+    err_2 = "المستخدم غير موجود"
+  }
 let check = await userModel.findById(id);
 if (!check) { 
-  return res.status(404).json({ message: "User not found!" });
+  return res.status(404).json({ message: err_2 });
 }
   let ApiFeat = new ApiFeature(
     projectModel.aggregate([
@@ -272,7 +284,7 @@ if (!check) {
 
   if (!ApiFeat || !results) {
     return res.status(404).json({
-      message: "No Project was found!",
+      message: err_1,
     });
   }
 
@@ -284,7 +296,10 @@ if (!check) {
 
 const getProjectPerformance = catchAsync(async (req, res, next) => {
   let totalProjects = await projectModel.countDocuments(); // Get the total number of projects
-
+  let err_1 = "No Data was found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يوجد بيانات"
+  }
   let results = await projectModel.aggregate([
     {
       $addFields: {
@@ -357,7 +372,7 @@ const getProjectPerformance = catchAsync(async (req, res, next) => {
   ]);
   if(!results){
     return res.status(404).json({
-      message: "No Dashboard was found!",
+      message: err_1,
     })
   }
   res.json({
@@ -368,9 +383,15 @@ const getProjectPerformance = catchAsync(async (req, res, next) => {
 const getProjectPerformanceByUser = catchAsync(async (req, res, next) => {
   let totalProjects = await projectModel.countDocuments(); // Get the total number of projects
   let id =new mongoose.Types.ObjectId(req.params.id)
+  let err_1 = "No Project was found!"
+  let err_2 = "User not found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يوجد مشاريع"
+    err_2 = "المستخدم غير موجود"
+  }
 let check = await userModel.findById(id);
 if (!check) { 
-  return res.status(404).json({ message: "User not found!" });
+  return res.status(404).json({ message: err_2 });
 }
   let results = await projectModel.aggregate([
     {
@@ -448,7 +469,7 @@ if (!check) {
   ]);
   if(!results){
     return res.status(404).json({
-      message: "No Dashboard was found!",
+      message: err_1,
     })
   }
   res.json({
@@ -459,7 +480,10 @@ if (!check) {
 
 
 const weeklyActivity = catchAsync(async (req, res, next) => {
-
+  let err_1 = "No Data was found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يوجد بيانات"
+  }
   const weeklyActivity = await taskModel.aggregate([
     {
       $match: {
@@ -523,9 +547,9 @@ const weeklyActivity = catchAsync(async (req, res, next) => {
     return data;
   });
 
-  if (!results || results.length === 0) {
+  if (!results) {
     return res.status(404).json({
-      message: "No Dashboard was found!",
+      message: err_1,
     });
   }
   res.json({
@@ -534,11 +558,16 @@ const weeklyActivity = catchAsync(async (req, res, next) => {
   });
 });
 const weeklyActivityByUser = catchAsync(async (req, res, next) => {
-
+  let err_1 = "No Project was found!"
+  let err_2 = "User not found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يوجد مشاريع"
+    err_2 = "المستخدم غير موجود"
+  }
   let id =new mongoose.Types.ObjectId(req.params.id)
 let check = await userModel.findById(id);
 if (!check) { 
-  return res.status(404).json({ message: "User not found!" });
+  return res.status(404).json({ message: err_2 });
 }
 const weeklyActivity = await taskModel.aggregate([
   {
@@ -604,9 +633,9 @@ const weeklyActivity = await taskModel.aggregate([
     return data;
   });
 
-  if (!results || results.length === 0) {
+  if (!results) {
     return res.status(404).json({
-      message: "No Dashboard was found!",
+      message: err_1,
     });
   }
   res.json({
@@ -615,6 +644,6 @@ const weeklyActivity = await taskModel.aggregate([
   });
 });
 
-export {  getAllDashboard, updateDashboard,getTopCountries ,getUserRatioPieChart ,getActiveProjects,getProjectPerformance ,getActiveProjectsByUser,getProjectPerformanceByUser,
+export {  updateDashboard,getTopCountries ,getUserRatioPieChart ,getActiveProjects,getProjectPerformance ,getActiveProjectsByUser,getProjectPerformanceByUser,
   weeklyActivity ,weeklyActivityByUser ,getTagsRatio ,getMostModels
- };
+  };

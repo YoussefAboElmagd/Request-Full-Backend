@@ -17,13 +17,17 @@ const createTags = catchAsync(async (req, res, next) => {
 });
 
 const getAllTagsByAdmin = catchAsync(async (req, res, next) => {
+  let err_1 = "No Tags was found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يوجد علامة"
+  }
   let ApiFeat = new ApiFeature(tagsModel.find(), req.query).search();
   let results = await ApiFeat.mongooseQuery;
   results = JSON.stringify(results);
   results = JSON.parse(results);
   if (!ApiFeat || !results) {
     return res.status(404).json({
-      message: "No Tags was found!",
+      message: err_1,
     });
   }
   res.json({
@@ -33,23 +37,30 @@ const getAllTagsByAdmin = catchAsync(async (req, res, next) => {
 });
 const getAllTagsByUser = catchAsync(async (req, res, next) => {
   let { id } = req.params;
+  let err_2 = "User not found!"
+  if(req.query.lang == "ar"){
+    err_2 = "المستخدم غير موجود"
+  }
   let userResults = await userModel.findById(id);
   if (userResults) {
     let results = await tagsModel.find({ createdBy: id });
-    !results && next(new AppError(`not found `, 404));
     results && res.json({ message: "Done", results });
   } else {
-    res.json({ message: " User Id Not Found" });
+    res.json({ message: err_2 });
   }
 });
 
 const updateTags = catchAsync(async (req, res, next) => {
   const { id } = req.params;
+  let err_1 = "No Tags was found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يوجد علامة"
+  }
   const updateeTags = await tagsModel.findByIdAndUpdate(id, req.body, {
     new: true,
   });
   if (!updateeTags) {
-    return res.status(404).json({ message: "Tags not found!" });
+    return res.status(404).json({ message: err_1 });
   }
   res.status(200).json({
     message: "Tag Updated successfully!",
@@ -58,9 +69,13 @@ const updateTags = catchAsync(async (req, res, next) => {
 });
 const deleteTags = catchAsync(async (req, res, next) => {
   const { id } = req.params;
+  let err_1 = "No Tags was found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يوجد علامة"
+  }
   const deleteTags = await tagsModel.deleteOne({ _id: id });
   if (!deleteTags) {
-    return res.status(404).json({ message: "Tags not found!" });
+    return res.status(404).json({ message: err_1 });
   }
   res.status(200).json({
     message: "Tags Deleted successfully!",

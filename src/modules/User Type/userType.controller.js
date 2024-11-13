@@ -14,12 +14,16 @@ const createUserType = catchAsync(async (req, res, next) => {
 
 const getAllUserType = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(userTypeModel.find(), req.query).search();
+  let err_1 = "No UserType was found!"
+  if(req.query.lang == "ar"){
+    err_1 = "!غير موجود نوع المستخدم"
+  }
   let results = await ApiFeat.mongooseQuery;
   results = JSON.stringify(results);
   results = JSON.parse(results);
   if (!ApiFeat || !results) {
     return res.status(404).json({
-      message: "No UserType was found!",
+      message: err_1,
     });
   }
   res.json({
@@ -29,12 +33,16 @@ const getAllUserType = catchAsync(async (req, res, next) => {
 });
 const getMainUserType = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(userTypeModel.find().limit(3), req.query).search();
+  let err_1 = "No UserType was found!"
+  if(req.query.lang == "ar"){
+    err_1 = "!غير موجود نوع المستخدم"
+  }
   let results = await ApiFeat.mongooseQuery;
   results = JSON.stringify(results);
   results = JSON.parse(results);
   if (!ApiFeat || !results) {
     return res.status(404).json({
-      message: "No UserType was found!",
+      message: err_1,
     });
   }
   res.json({
@@ -45,11 +53,15 @@ const getMainUserType = catchAsync(async (req, res, next) => {
 
 const updateUserType = catchAsync(async (req, res, next) => {
   const { id } = req.params;
+  let err_1 = "UserType not found!"
+  if(req.query.lang == "ar"){
+    err_1 = "!غير موجود نوع المستخدم"
+    }
   const updatedUserType = await userTypeModel.findByIdAndUpdate(id, req.body, {
     new: true,
   });
   if (!updatedUserType) {
-    return res.status(404).json({ message: "UserType not found!" });
+    return res.status(404).json({ message: err_1 });
   }
   res.status(200).json({
     message: "UserType updated successfully!",
@@ -58,9 +70,13 @@ const updateUserType = catchAsync(async (req, res, next) => {
 });
 const deleteUserType = catchAsync(async (req, res, next) => {
   const { id } = req.params;
+  let err_1 = "UserType not found!"
+  if(req.query.lang == "ar"){
+    err_1 = "!غير موجود نوع المستخدم"
+    }
   const deleteUserType = await userTypeModel.findByIdAndDelete(id);
   if (!deleteUserType) {
-    return res.status(404).json({ message: "UserType not found!" });
+    return res.status(404).json({ message: err_1 });
   }
   res.status(200).json({
     message: "UserType Deleted successfully!",

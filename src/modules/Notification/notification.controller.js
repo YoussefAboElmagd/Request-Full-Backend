@@ -31,21 +31,28 @@ const createNotification = catchAsync(async (req, res, next) => {
 
 const deleteNotification = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-
+  let err_1 = "Couldn't Delete!  not found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يمكن المسح!  غير موجود"
+  }
   const deletedNotification = await notificationModel.findByIdAndDelete(id);
 
   if (!deletedNotification) {
-    return res.status(404).json({ message: "notification not found!" });
+    return res.status(404).json({ message: err_1 });
   }
 
   res.status(200).json({ message: "notification deleted successfully!" });
 });
 const clearNotification = catchAsync(async (req, res, next) => {
   let { id } = req.params;
+  let err_1 = "Couldn't Delete!  not found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يمكن المسح!  غير موجود"
+  }
   let all = await notificationModel.deleteMany({ receiver: id });
 
   if (!all) {
-    return res.status(404).json({ message: "Couldn't delete!  not found!" });
+    return res.status(404).json({ message: err_1 });
   }
 
   res.status(200).json({ message: "Notification deleted successfully!" });

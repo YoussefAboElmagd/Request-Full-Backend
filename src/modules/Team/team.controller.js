@@ -6,7 +6,6 @@ import { userGroupModel } from "../../../database/models/userGroups.model.js";
 import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import bcrypt from "bcrypt";
-import e from "express";
 
 const createTeam = catchAsync(async (req, res, next) => {
   req.body.model = "66e5611c1771cb44cd6fc7de";
@@ -21,13 +20,17 @@ const createTeam = catchAsync(async (req, res, next) => {
 });
 
 const getAllTeamByAdmin = catchAsync(async (req, res, next) => {
+  let err_1 = "No Team was found!";
+  if (req.query.lang == "ar") {
+    err_1 = "! لا يوجد فريق";
+  }
   let ApiFeat = new ApiFeature(teamModel.find(), req.query).search();
   let results = await ApiFeat.mongooseQuery;
   results = JSON.stringify(results);
   results = JSON.parse(results);
   if (!ApiFeat || !results) {
     return res.status(404).json({
-      message: "No Team was found!",
+      message: err_1,
     });
   }
   res.json({
@@ -36,6 +39,10 @@ const getAllTeamByAdmin = catchAsync(async (req, res, next) => {
   });
 });
 const getAllTeamByUser = catchAsync(async (req, res, next) => {
+  let err_1 = "No Team was found!";
+  if (req.query.lang == "ar") {
+    err_1 = "! لا يوجد فريق";
+  }
   let ApiFeat = new ApiFeature(
     teamModel.find({
       $or: [{ createdBy: req.params.id }, { members: req.params.id }],
@@ -47,7 +54,7 @@ const getAllTeamByUser = catchAsync(async (req, res, next) => {
   results = JSON.parse(results);
   if (!ApiFeat || !results) {
     return res.status(404).json({
-      message: "No Team was found!",
+      message: err_1,
     });
   }
   res.json({
@@ -57,6 +64,10 @@ const getAllTeamByUser = catchAsync(async (req, res, next) => {
 });
 
 const getTeamById = catchAsync(async (req, res, next) => {
+  let err_1 = "No Team was found!";
+  if (req.query.lang == "ar") {
+    err_1 = "! لا يوجد فريق";
+  }
   let ApiFeat = new ApiFeature(
     teamModel.find({ _id: req.params.id }),
     req.query
@@ -66,7 +77,7 @@ const getTeamById = catchAsync(async (req, res, next) => {
   results = JSON.parse(results);
   if (!ApiFeat || !results) {
     return res.status(404).json({
-      message: "No Team was found!",
+      message: err_1,
     });
   }
   res.json({
@@ -75,6 +86,10 @@ const getTeamById = catchAsync(async (req, res, next) => {
   });
 });
 const getTeamCount = catchAsync(async (req, res, next) => {
+  let err_1 = "No Team was found!";
+  if (req.query.lang == "ar") {
+    err_1 = "! لا يوجد فريق";
+  }
   let ApiFeat = new ApiFeature(
     teamModel.find({ createdBy: req.params.id }).select("members"),
     req.query
@@ -84,7 +99,7 @@ const getTeamCount = catchAsync(async (req, res, next) => {
   results = JSON.parse(results);
   if (!ApiFeat || !results) {
     return res.status(404).json({
-      message: "No Team was found!",
+      message: err_1,
     });
   }
   results = results.length;
@@ -94,6 +109,10 @@ const getTeamCount = catchAsync(async (req, res, next) => {
   });
 });
 const delegteTeamAccess = catchAsync(async (req, res, next) => {
+  let err_1 = "Error fetching team members";
+  if (req.query.lang == "ar") {
+    err_1 = "خطأ في جلب أعضاء الفريق";
+  }
   try {
     const team = await teamModel
       .findById(req.params.id)
@@ -147,7 +166,7 @@ const delegteTeamAccess = catchAsync(async (req, res, next) => {
     });
   } catch (error) {
     res.status(500).json({
-      message: "Error fetching team members",
+      message: err_1,
       error: error.message,
     });
   }
@@ -155,32 +174,41 @@ const delegteTeamAccess = catchAsync(async (req, res, next) => {
 
 const DeleteUserFromProject = catchAsync(async (req, res, next) => {
   const { id } = req.params;
+  let err_1 = "Project not found!";
+  let err_2 = "User not found!";
+  if (req.query.lang == "ar") {
+    err_1 = "المشروع غير موجود";
+    err_2 = "المستخدم غير موجود";
+  }
   let { project } = req.body;
-  project =   new mongoose.Types.ObjectId(project);
-let check = await projectModel.findById(project);
-if (!check) {
-  return res.status(404).json({ message: "Project not found!" });
-}
-let updateProject = await projectModel.findByIdAndUpdate(
-  project,
-  { $pull: { members: id } },
-  { new: true }
-);
+  project = new mongoose.Types.ObjectId(project);
+  let check = await projectModel.findById(project);
+  if (!check) {
+    return res.status(404).json({ message: err_1 });
+  }
+  let updateProject = await projectModel.findByIdAndUpdate(
+    project,
+    { $pull: { members: id } },
+    { new: true }
+  );
 
-let UpdateTasks = await projectModel.findById(project).select("tasks");
-if (UpdateTasks) {
-  UpdateTasks.tasks.forEach(async (task) => {
-    await taskModel.findByIdAndUpdate(task, { $pull: { assignees: id } },
-      { new: true });
-  });
-}  
+  let UpdateTasks = await projectModel.findById(project).select("tasks");
+  if (UpdateTasks) {
+    UpdateTasks.tasks.forEach(async (task) => {
+      await taskModel.findByIdAndUpdate(
+        task,
+        { $pull: { assignees: id } },
+        { new: true }
+      );
+    });
+  }
   const updateeUser = await userModel.findByIdAndUpdate(
     id,
-    { $pull: { projects: project} },
+    { $pull: { projects: project } },
     { new: true }
   );
   if (!updateeUser) {
-    return res.status(404).json({ message: "User not found!" });
+    return res.status(404).json({ message: err_2 });
   }
   res.status(200).json({
     message: "User Updated successfully!",
@@ -190,78 +218,95 @@ if (UpdateTasks) {
 
 const updateTeam = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  let { vocation, projects, name, email, password, access,tags,phone ,role } = req.body;
+  let err_phone = "This Phone  already exist";
+  let err_email = "This Email  already exist";
+  let err_email2 = "This Email  is not valid";
+  let err_pass = "Password must be at least 8 characters";
+  let err_5 = "No Team was found!";
+  if (req.query.lang == "ar") {
+    err_5 = "لا يوجد فريق";
+    err_phone = "هذا الهاتف موجود بالفعل";
+    err_email = "هذا البريد الالكتروني موجود بالفعل";
+    err_email2 = "هذا البريد الالكتروني غير صحيح";
+    err_pass = "كلمة المرور يجب ان تكون 8 حروف على الاقل";
+  }
+  let { vocation, projects, name, email, password, access, tags, phone, role } =
+    req.body;
   let existUser = await userModel.findOne({ email: email });
   let existPhone = await userModel.findOne({ phone });
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
   if (existUser) {
-    return res.status(404).json({ message: "Email  already exist!" });
+    return res.status(404).json({ message: err_email });
   } else if (existPhone) {
-    return res.status(404).json({ message: "Phone already exist!" });
+    return res.status(404).json({ message: err_phone });
   } else {
     if (req.body.email !== "" && req.body.email.match(emailFormat)) {
-      if(req.body.password.length < 8){
-        return res.status(409).json({ message: "password must be at least 8 characters" });
+      if (req.body.password.length < 8) {
+        return res.status(409).json({ message: err_pass });
       }
-    password = bcrypt.hashSync(password, Number(process.env.SALT_ROUNDS));
-    let model = "66ba00b0e39d9694110fd3df";
-    let newUser = new userModel({
-      name,
-      email,
-      password,
-      vocation,
-      projects,
-      model,
-      phone,
-      role,
-      tags,
-      access,
-    });
-    const savedUser = await newUser.save();
-    const updateeTeam = await teamModel.findByIdAndUpdate(
-      id,
-      { $push: { members: savedUser._id } },
-      { new: true }
-    );
-    // const updateUserGroup = await userGroupModel.findByIdAndUpdate(
-    //   access,
-    //   { $push: { users: savedUser._id } },
-    //   { new: true }
-    // );
-
-    let addprojects = Array.isArray(projects) ? projects : [projects];
-    addprojects.forEach(async (project) => {
-      await projectModel.findByIdAndUpdate(
-        project,
-        {
-          $push: { members: savedUser._id },
-        },
+      password = bcrypt.hashSync(password, Number(process.env.SALT_ROUNDS));
+      let model = "66ba00b0e39d9694110fd3df";
+      let newUser = new userModel({
+        name,
+        email,
+        password,
+        vocation,
+        projects,
+        model,
+        phone,
+        role,
+        tags,
+        access,
+      });
+      const savedUser = await newUser.save();
+      const updateeTeam = await teamModel.findByIdAndUpdate(
+        id,
+        { $push: { members: savedUser._id } },
         { new: true }
       );
-    });
+      // const updateUserGroup = await userGroupModel.findByIdAndUpdate(
+      //   access,
+      //   { $push: { users: savedUser._id } },
+      //   { new: true }
+      // );
 
-    if (!updateeTeam) {
-      return res.status(404).json({ message: "Team not found!" });
+      let addprojects = Array.isArray(projects) ? projects : [projects];
+      addprojects.forEach(async (project) => {
+        await projectModel.findByIdAndUpdate(
+          project,
+          {
+            $push: { members: savedUser._id },
+          },
+          { new: true }
+        );
+      });
+
+      if (!updateeTeam) {
+        return res.status(404).json({ message: err_5 });
+      }
+      res.status(200).json({
+        message: "Team Updated successfully!",
+        updateeTeam,
+      });
+    } else {
+      return res.status(409).json({ message: err_email2 });
     }
-    res.status(200).json({
-      message: "Team Updated successfully!",
-      updateeTeam,
-    });
-  } else {
-    return res.status(409).json({ message: "this email is not valid" });
-  }
   }
 });
 const updateTeamMembers = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   let { members } = req.body;
+  let err_1 = "No Team was found!";
+  if (req.query.lang == "ar") {
+    err_1 = "! لا يوجد فريق";
+  }
   const updateeTeam = await teamModel.findByIdAndUpdate(
     id,
     { $pull: { members } },
     { new: true }
   );
   if (!updateeTeam) {
-    return res.status(404).json({ message: "Team not found!" });
+    return res.status(404).json({ message: err_1 });
   }
   res.status(200).json({
     message: "Team Updated successfully!",
@@ -283,9 +328,13 @@ const updateTeamMembers = catchAsync(async (req, res, next) => {
 // });
 const deleteTeam = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  const deleteTeam = await teamModel.findByIdAndDelete(id);
+  const deleteTeam = await teamModel.deleteOne({ _id: id });
+  let err_1 = "No Team was found!";
+  if (req.query.lang == "ar") {
+    err_1 = "! لا يوجد فريق";
+  }
   if (!deleteTeam) {
-    return res.status(404).json({ message: "Team not found!" });
+    return res.status(404).json({ message: err_1 });
   }
   res.status(200).json({
     message: "Team Deleted successfully!",

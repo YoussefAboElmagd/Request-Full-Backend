@@ -45,7 +45,10 @@ const createProject = catchAsync(async (req, res, next) => {
 
 const getProjectById = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-
+  let err_1 = "Project Not found!"
+  if(req.query.lang == "ar"){
+    err_1 = "المشروع غير موجود"
+  }
   let results = await projectModel
     .find({ _id: id })
     .populate("contractor")
@@ -65,7 +68,7 @@ const getProjectById = catchAsync(async (req, res, next) => {
       },
     })
     .populate("owner");
-  !results && next(new AppError(" Project Not found!", 404));
+  !results && next(new AppError(err_1, 404));
   results = JSON.stringify(results);
   results = JSON.parse(results);
   let documentsLength = 0;
@@ -111,6 +114,10 @@ const getCounts = catchAsync(async (req, res, next) => {
 
 const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
   let ApiFeat = null;
+  let err_1 = "No Project was found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يوجد مشاريع"
+  }
   if (req.query.status == "all") {
     ApiFeat = new ApiFeature(
       projectModel
@@ -144,7 +151,7 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
 
   if (!ApiFeat || !results) {
     return res.status(404).json({
-      message: "No Project was found!",
+      message: err_1,
     });
   }
 
@@ -186,8 +193,14 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
 
 const getAllProjectByUser = catchAsync(async (req, res, next) => {
   let ApiFeat = null;
+  let err_1 = "No Project was found!"
+  let err_2 = "User not found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يوجد مشاريع"
+    err_2 = "المستخدم غير موجود"
+  }
   let check = await userModel.findById(req.params.id);
-  !check && next(new AppError("User Not found!", 404));
+  !check && next(new AppError(err_2, 404));
   if (
     req.user.role._id == "66d33a4b4ad80e468f231f83" ||
     req.user.role._id == "66d33e7a4ad80e468f231f8d" ||
@@ -201,7 +214,7 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
         .populate({
           path: "tasks",
           select:
-            "title taskPriority taskStatus assignees documents sDate dueDate notes",
+            "title taskPriority taskStatus assignees documents sDate dueDate notes type parentTask",
           populate: {
             path: "assignees",
             model: "user",
@@ -240,7 +253,7 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
   results = JSON.parse(results);
   if (!ApiFeat || !results) {
     return res.status(404).json({
-      message: "No Project was found!",
+      message: err_1,
     });
   }
   let documentsLength = 0;
@@ -331,8 +344,14 @@ const getAllAnalyticsByUser = catchAsync(async (req, res, next) => {
 
 const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
   let foundUser = await userModel.findById(req.params.id);
+  let err_1 = "No Project was found!"
+  let err_2 = "User not found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يوجد مشاريع"
+    err_2 = "المستخدم غير موجود"
+  }
   if (!foundUser) {
-    return res.status(404).json({ message: "User not found!" });
+    return res.status(404).json({ message: err_2 });
   }
   let ApiFeat = null;
   if (req.query.status == "all") {
@@ -372,7 +391,7 @@ const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
   results = JSON.parse(results);
   if (!ApiFeat || !results) {
     return res.status(404).json({
-      message: "No Project was found!",
+      message: err_1,
     });
   }
   let documentsLength = 0;
@@ -470,6 +489,10 @@ const getAllDocsProject = catchAsync(async (req, res, next) => {
 });
 
 const getAllMembersProject = catchAsync(async (req, res, next) => {
+  let err_1 = "No Project was found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يوجد مشاريع"
+  }
   let ApiFeat = new ApiFeature(
     projectModel.findById(req.params.id).populate("members"),
     req.query
@@ -481,7 +504,7 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
 
   if (!ApiFeat || !results) {
     return res.status(404).json({
-      message: "No Project was found!",
+      message: err_1,
     });
   }
   let members = [];
@@ -872,8 +895,14 @@ const getTagsByProject = catchAsync(async (req, res, next) => {
 
 const updateProject = catchAsync(async (req, res, next) => {
   const { id } = req.params;
+  let err_1 = "project not found!"
+  let err_2 = "Budget must be greater than 0"
+  if(req.query.lang == "ar"){
+    err_1 = "المشروع غير موجود"
+    err_2 = "الميزانية يجب ان تكون اكبر من صفر"
+  }
   if (req.body.budget < 0) {
-    return res.status(404).json({ message: "Budget must be greater than 0" });
+    return res.status(404).json({ message: err_2 });
   }
   let {
     name,
@@ -942,7 +971,7 @@ const updateProject = catchAsync(async (req, res, next) => {
   }
 
   if (!updatedProject) {
-    return res.status(404).json({ message: "Project not found!" });
+    return res.status(404).json({ message: err_1 });
   }
   res.status(200).json({
     message: "project updated successfully!",
@@ -951,7 +980,10 @@ const updateProject = catchAsync(async (req, res, next) => {
 });
 const updateProject2 = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-
+  let err_1 = "project not found!"
+  if(req.query.lang == "ar"){
+    err_1 = "المشروع غير موجود"
+  }
   let { documents, tasks, members, contractor, consultant, team, tags, notes } =
     req.body;
   const updatedProject = await projectModel.findByIdAndUpdate(
@@ -974,7 +1006,7 @@ const updateProject2 = catchAsync(async (req, res, next) => {
 
   // }
   if (!updatedProject) {
-    return res.status(404).json({ message: "Project not found!" });
+    return res.status(404).json({ message: err_1 });
   }
   res.status(200).json({
     message: "project updated successfully!",
@@ -989,17 +1021,26 @@ const addMemberForProject = catchAsync(async (req, res, next) => {
   let existUser = await userModel.findOne({ email: email });
   let existPhone = await userModel.findOne({ phone });
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
-
-  if (existUser || existPhone) {
-    return res.status(404).json({ message: "Email already exist!" });
+  let err_email = "Email already exist!"
+  let err_email2 = "this email  is not valid"
+  let err_phone = "Phone already exist!"
+  let err_pass = "password must be at least 8 characters"
+  if(req.query.lang == "ar"){
+    err_email = "البريد الالكتروني موجود بالفعل"
+    err_email2 = "هذا البريد الالكتروني غير صحيح"
+    err_phone = "رقم الهاتف موجود بالفعل"
+    err_pass = "كلمة المرور يجب ان تكون على الاقل 8 حروف"
+  }
+  if (existUser) {
+    return res.status(404).json({ message: err_email });
   } else if (existPhone) {
-    return res.status(404).json({ message: "Phone already exist!" });
+    return res.status(404).json({ message: err_phone });
   } else {
     if (req.body.email !== "" && req.body.email.match(emailFormat)) {
       if (req.body.password.length < 8) {
         return res
           .status(409)
-          .json({ message: "password must be at least 8 characters" });
+          .json({ message: err_pass });
       }
       password = bcrypt.hashSync(password, Number(process.env.SALT_ROUNDS));
       let model = "66ba00b0e39d9694110fd3df";
@@ -1025,25 +1066,25 @@ const addMemberForProject = catchAsync(async (req, res, next) => {
         { new: true }
       );
 
-      if (!savedUser) {
-        return res.status(404).json({ message: "project not found!" });
-      }
       res.status(200).json({
         message: "project Updated successfully!",
         savedUser,
       });
     } else {
-      return res.status(409).json({ message: "this email is not valid" });
+      return res.status(409).json({ message: err_email2 });
     }
   }
 });
 
 const deleteProject = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-
+  let err_1 = "project not found!"
+  if(req.query.lang == "ar"){
+    err_1 = "المشروع غير موجود"
+  }
   const deletedProject = await projectModel.deleteOne({ _id: id });
   if (!deletedProject) {
-    return res.status(404).json({ message: "Project not found!" });
+    return res.status(404).json({ message: err_1 });
   }
   res.status(200).json({ message: "project deleted successfully!" });
 });

@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { taskModel } from "./tasks.model.js";
+import { requsetModel } from "./request.model.js";
 
 const projectSchema = mongoose.Schema(
   {
@@ -219,6 +220,7 @@ projectSchema.pre(/^delete/, { document: false, query: true }, async function ()
   const doc = await this.model.findOne(this.getFilter());
   if (doc) {
     await taskModel.deleteMany({ project: doc._id });
+    await requsetModel.deleteMany({ project: doc._id });
   }
 });
 export const projectModel = mongoose.model("project", projectSchema);

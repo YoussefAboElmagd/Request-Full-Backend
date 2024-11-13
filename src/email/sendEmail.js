@@ -2,7 +2,8 @@ import nodemailer from "nodemailer";
 import { emailTemplate } from "./emailTemp.js";
 // import { userModel } from "../../database/models/user.model.js";
 
-export async function sendEmail(email,code) {
+export async function sendEmail(email,text) {
+  
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -15,7 +16,7 @@ export async function sendEmail(email,code) {
     from: `Admin " <abdelrahmanmohammed851@gmail.com>`, // sender address
     to: `${email}`, // list of receivers
     subject: "Email Verification", // Subject line
-    text: `Email Verification Code: ${code}`, // plain text body
+    text: `${text}`, // plain text body
   });
 
   console.log("Message sent: %s", info.messageId);

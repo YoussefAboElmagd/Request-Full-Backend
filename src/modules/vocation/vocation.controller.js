@@ -1,4 +1,5 @@
 import {vocationModel} from "../../../database/models/vocation.model.js";
+import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 
@@ -12,6 +13,10 @@ const addVocation = catchAsync(async (req,res) => {
     res.json({message : 'Added',saved})
 })
 const getAllVocationsByCreatedBy = catchAsync(async (req, res, next) => {
+  let err = "No vocation was found!"
+  if(req.query.lang == "ar"){
+    err = "لا يوجد مهنة لهذا المستخدم"
+  }
     let ApiFeat = new ApiFeature(
       vocationModel.find({ createdBy: req.params.id }),
       req.query
@@ -21,7 +26,7 @@ const getAllVocationsByCreatedBy = catchAsync(async (req, res, next) => {
     results = JSON.parse(results);
     if (!ApiFeat || !results) {
       return res.status(404).json({
-        message: "No UserGroup was found!",
+        message: err,
       });
     }
     res.json({
@@ -32,21 +37,29 @@ const getAllVocationsByCreatedBy = catchAsync(async (req, res, next) => {
 const updateVocation = catchAsync(async (req,res) => {
     let {id} = req.params;
     let {name} = req.body;
+    let err = "No vocation was found!"
+    if(req.query.lang == "ar"){
+      err = "لا يوجد مهنة  "
+    }
     const updated = await vocationModel.findByIdAndUpdate(id,{name}, {new:true})
     if(updated){
-        res.json({message : 'Updated',updated})
+        res.json({message : 'Name Updated Successfully',updated})
     }else{
-        res.status(404),res.json({message : 'id not found'})
+        res.status(404),res.json({message : err})
     }
 })
 const deleteVocation = catchAsync(async (req,res) => {
     let {id} = req.params;
     let {name} = req.body;
+    let err = "No vocation was found!"
+    if(req.query.lang == "ar"){
+      err = "لا يوجد مهنة  "
+    }
     const deleted = await vocationModel.findByIdAndDelete(id,{name}, {new:true})
     if(deleted){
-        res.json({message : 'Deleted'})
+        res.json({message : 'Deleted Successfully'})
     }else{
-        res.status(404),res.json({message : 'id not found'})
+        res.status(404),res.json({message : err})
     }
 })
 
