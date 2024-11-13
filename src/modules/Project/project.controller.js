@@ -45,9 +45,9 @@ const createProject = catchAsync(async (req, res, next) => {
 
 const getProjectById = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let err_1 = "Project Not found!"
-  if(req.query.lang == "ar"){
-    err_1 = "المشروع غير موجود"
+  let err_1 = "Project Not found!";
+  if (req.query.lang == "ar") {
+    err_1 = "المشروع غير موجود";
   }
   let results = await projectModel
     .find({ _id: id })
@@ -96,27 +96,28 @@ const getCounts = catchAsync(async (req, res, next) => {
   res.json({
     message: "Done",
     projects: await projectModel.countDocuments({
-      $and: [
-        { members: { $in: req.params.id } },
-        {status:"waiting"},
-      ],
+      $and: [{ members: { $in: req.params.id } }, { status: "waiting" }],
     }),
     home: await taskModel.countDocuments({
       $and: [
-        { $or: [{ assignees: { $in: req.params.id } }, {createdBy: req.params.id} ] },
-        { $or: [{status:"waiting"}, {isAproved:false}, ]},
+        {
+          $or: [
+            { assignees: { $in: req.params.id } },
+            { createdBy: req.params.id },
+          ],
+        },
+        { $or: [{ status: "waiting" }, { isAproved: false }] },
       ],
     }),
-
   });
 });
 ////////////////////////////////// admin \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
   let ApiFeat = null;
-  let err_1 = "No Project was found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يوجد مشاريع"
+  let err_1 = "No Project was found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يوجد مشاريع";
   }
   if (req.query.status == "all") {
     ApiFeat = new ApiFeature(
@@ -193,11 +194,11 @@ const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
 
 const getAllProjectByUser = catchAsync(async (req, res, next) => {
   let ApiFeat = null;
-  let err_1 = "No Project was found!"
-  let err_2 = "User not found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يوجد مشاريع"
-    err_2 = "المستخدم غير موجود"
+  let err_1 = "No Project was found!";
+  let err_2 = "User not found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يوجد مشاريع";
+    err_2 = "المستخدم غير موجود";
   }
   let check = await userModel.findById(req.params.id);
   !check && next(new AppError(err_2, 404));
@@ -214,7 +215,7 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
         .populate({
           path: "tasks",
           select:
-            "title taskPriority taskStatus assignees documents sDate dueDate notes type parentTask progress requiredQuantity  approvedQuantity",
+            "title taskPriority taskStatus assignees documents sDate dueDate notes type parentTask progress requiredQuantity  approvedQuantity invoicedQuantity executedQuantity",
           populate: {
             path: "assignees",
             model: "user",
@@ -344,11 +345,11 @@ const getAllAnalyticsByUser = catchAsync(async (req, res, next) => {
 
 const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
   let foundUser = await userModel.findById(req.params.id);
-  let err_1 = "No Project was found!"
-  let err_2 = "User not found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يوجد مشاريع"
-    err_2 = "المستخدم غير موجود"
+  let err_1 = "No Project was found!";
+  let err_2 = "User not found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يوجد مشاريع";
+    err_2 = "المستخدم غير موجود";
   }
   if (!foundUser) {
     return res.status(404).json({ message: err_2 });
@@ -487,11 +488,78 @@ const getAllDocsProject = catchAsync(async (req, res, next) => {
     results,
   });
 });
+const getProjectTagProgress = catchAsync(async (req, res, next) => {
+  let results = await projectModel.aggregate([
+    {
+      $match: { _id: new mongoose.Types.ObjectId(req.params.id) }, // Match the specific project by its ID
+    },
+    {
+      $lookup: {
+        from: "tasks",
+        localField: "_id",
+        foreignField: "project",
+        as: "tasks",
+      },
+    },
+    {
+      $unwind: "$tasks", // Break down the tasks array
+    },
+    {
+      $unwind: "$tasks.tags", // Break down the tags array in each task
+    },
+    {
+      $lookup: {
+        from: "tags", // Name of the tags collection
+        localField: "tasks.tags", // Tag ID in the tasks
+        foreignField: "_id", // Tag ID in the tags collection
+        as: "tagDetails",
+      },
+    },
+    {
+      $unwind: "$tagDetails", // Flatten the populated tags
+    },
+    {
+      $group: {
+        _id: "$tagDetails._id", // Group by tag ID
+        tagName: { $first: "$tagDetails.name" }, // Get the tag name
+        count: { $sum: 1 }, // Count occurrences of each tag
+        totalTags: { $sum: 1 }, // Count total occurrences of tags across tasks
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        tagCounts: {
+          $push: { tagId: "$_id", tagName: "$tagName", count: "$count" },
+        },
+        totalTags: { $sum: "$totalTags" }, // Calculate the total number of tags
+      },
+    },
+    {
+      $unwind: "$tagCounts",
+    },
+    {
+      $project: {
+        tagId: "$tagCounts.tagId",
+        tagName: "$tagCounts.tagName",
+        count: "$tagCounts.count",
+        percentage: {
+          $multiply: [{ $divide: ["$tagCounts.count", "$totalTags"] }, 100],
+        },
+      },
+    },
+  ]);
+
+  res.json({
+    message: "Done",
+    results,
+  });
+});
 
 const getAllMembersProject = catchAsync(async (req, res, next) => {
-  let err_1 = "No Project was found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يوجد مشاريع"
+  let err_1 = "No Project was found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يوجد مشاريع";
   }
   let ApiFeat = new ApiFeature(
     projectModel.findById(req.params.id).populate("members"),
@@ -543,11 +611,11 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
   groupedMembers = members.reduce((acc, member) => {
     if (member.userType != userType && member.role == "owner") {
       ownerTeam.push(member);
-    }else if (member.userType != userType && member.role == "consultant") {
-        consultantTeam.push(member);
-    }else if (member.userType != userType && member.role == "contractor") {
-        constractorTeam.push(member);
-    }else{
+    } else if (member.userType != userType && member.role == "consultant") {
+      consultantTeam.push(member);
+    } else if (member.userType != userType && member.role == "contractor") {
+      constractorTeam.push(member);
+    } else {
       groupedMembers.push(member);
     }
 
@@ -895,11 +963,11 @@ const getTagsByProject = catchAsync(async (req, res, next) => {
 
 const updateProject = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  let err_1 = "project not found!"
-  let err_2 = "Budget must be greater than 0"
-  if(req.query.lang == "ar"){
-    err_1 = "المشروع غير موجود"
-    err_2 = "الميزانية يجب ان تكون اكبر من صفر"
+  let err_1 = "project not found!";
+  let err_2 = "Budget must be greater than 0";
+  if (req.query.lang == "ar") {
+    err_1 = "المشروع غير موجود";
+    err_2 = "الميزانية يجب ان تكون اكبر من صفر";
   }
   if (req.body.budget < 0) {
     return res.status(404).json({ message: err_2 });
@@ -980,9 +1048,9 @@ const updateProject = catchAsync(async (req, res, next) => {
 });
 const updateProject2 = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  let err_1 = "project not found!"
-  if(req.query.lang == "ar"){
-    err_1 = "المشروع غير موجود"
+  let err_1 = "project not found!";
+  if (req.query.lang == "ar") {
+    err_1 = "المشروع غير موجود";
   }
   let { documents, tasks, members, contractor, consultant, team, tags, notes } =
     req.body;
@@ -1021,15 +1089,15 @@ const addMemberForProject = catchAsync(async (req, res, next) => {
   let existUser = await userModel.findOne({ email: email });
   let existPhone = await userModel.findOne({ phone });
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
-  let err_email = "Email already exist!"
-  let err_email2 = "this email  is not valid"
-  let err_phone = "Phone already exist!"
-  let err_pass = "password must be at least 8 characters"
-  if(req.query.lang == "ar"){
-    err_email = "البريد الالكتروني موجود بالفعل"
-    err_email2 = "هذا البريد الالكتروني غير صحيح"
-    err_phone = "رقم الهاتف موجود بالفعل"
-    err_pass = "كلمة المرور يجب ان تكون على الاقل 8 حروف"
+  let err_email = "Email already exist!";
+  let err_email2 = "this email  is not valid";
+  let err_phone = "Phone already exist!";
+  let err_pass = "password must be at least 8 characters";
+  if (req.query.lang == "ar") {
+    err_email = "البريد الالكتروني موجود بالفعل";
+    err_email2 = "هذا البريد الالكتروني غير صحيح";
+    err_phone = "رقم الهاتف موجود بالفعل";
+    err_pass = "كلمة المرور يجب ان تكون على الاقل 8 حروف";
   }
   if (existUser) {
     return res.status(404).json({ message: err_email });
@@ -1038,9 +1106,7 @@ const addMemberForProject = catchAsync(async (req, res, next) => {
   } else {
     if (req.body.email !== "" && req.body.email.match(emailFormat)) {
       if (req.body.password.length < 8) {
-        return res
-          .status(409)
-          .json({ message: err_pass });
+        return res.status(409).json({ message: err_pass });
       }
       password = bcrypt.hashSync(password, Number(process.env.SALT_ROUNDS));
       let model = "66ba00b0e39d9694110fd3df";
@@ -1078,9 +1144,9 @@ const addMemberForProject = catchAsync(async (req, res, next) => {
 
 const deleteProject = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  let err_1 = "project not found!"
-  if(req.query.lang == "ar"){
-    err_1 = "المشروع غير موجود"
+  let err_1 = "project not found!";
+  if (req.query.lang == "ar") {
+    err_1 = "المشروع غير موجود";
   }
   const deletedProject = await projectModel.deleteOne({ _id: id });
   if (!deletedProject) {
@@ -1108,4 +1174,5 @@ export {
   getFilesForDownload,
   addMemberForProject,
   getCounts,
+  getProjectTagProgress,
 };
