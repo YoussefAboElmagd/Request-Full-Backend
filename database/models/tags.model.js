@@ -31,14 +31,10 @@ const tagsSchema = mongoose.Schema(
   { timestamps: true }
 );
 
-tagsSchema.pre("save", async function (req,next) {
+tagsSchema.pre("save", async function (next) {
   const tag = this;
-  // console.log(`tag`, req.query);
   
-  // let err = "The `createdBy` user does not exist, cannot save this tag."
-  // if(req.query.lang == "ar"){
-  //   err = "المستخدم المنشئ غير موجود، لا يمكن حفظ هذه العلامة."
-  // }
+  let err = "The `createdBy` user does not exist, cannot save this tag."
   const userExists = await mongoose.model("user").exists({ _id: tag.createdBy });
 
   if (!userExists) {

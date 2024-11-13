@@ -214,7 +214,7 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
         .populate({
           path: "tasks",
           select:
-            "title taskPriority taskStatus assignees documents sDate dueDate notes type parentTask",
+            "title taskPriority taskStatus assignees documents sDate dueDate notes type parentTask progress requiredQuantity  approvedQuantity",
           populate: {
             path: "assignees",
             model: "user",

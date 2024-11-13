@@ -176,18 +176,29 @@ taskSchema.pre('findOneAndUpdate',async function (next) {
   const project = await projectModel.findById(taskToUpdate.project);
   let dueDate = new Date(project.dueDate).toISOString().split('T')[0];
   let sDate = new Date(project.sDate).toISOString().split('T')[0];
+  const queryData = this.getOptions().context?.query; // Access the query data
+  let err_date_1 = "Start date must be less than due date" ;
+  let err_date_2 = `Due date of task must be less than or equal to ${dueDate} (due date of project) `;
+  let err_date_3 = `Start date of task must be less than or equal to ${sDate} (Start date of project) `;
+  let err_date_4 = `Start date of task must be less than or equal to ${dueDate} ( End date of project) `;
+  if(queryData.lang == "ar"){
+    err_date_1 = "تاريخ البدء يجب ان يكون اقل من تاريخ الانتهاء";
+    err_date_2 = `تاريخ الانتهاء يجب ان يكون اقل من او يساوي ${dueDate} (تاريخ انتهاء المشروع) `;
+    err_date_3 = `تاريخ البدء يجب ان يكون اقل من او يساوي ${sDate} (تاريخ بدء المشروع) `;
+    err_date_4 = `تاريخ البدء يجب ان يكون اقل من او يساوي ${dueDate} (تاريخ انتهاء المشروع) `;  
+  }
   if (update.dueDate || update.sDate) {
     if(new Date(update.sDate) > new Date(update.dueDate)){
-      return res.status(404).json({ message: "Start date must be less than due date" });
+      return res.status(404).json({ message: err_date_1 });
     }
     if(new Date(update.dueDate) > new Date(project.dueDate)){
-      return res.status(404).json({ message: `Due date of task must be less than or equal to ${dueDate} (due date of project) ` });
+      return res.status(404).json({ message:err_date_2 });
     }
     if(new Date(update.sDate) < new Date(project.sDate)){
-      return res.status(404).json({ message: `Start date of task must be less than or equal to ${sDate} (Start date of project) ` });
+      return res.status(404).json({ message: err_date_3 });
     }
     if(new Date(update.sDate) > new Date(project.dueDate)){
-      return res.status(404).json({ message: `Start date of task must be less than or equal to ${dueDate} ( End date of project) ` });
+      return res.status(404).json({ message: err_date_4 });
     }
   }
   next();
@@ -205,6 +216,17 @@ taskSchema.pre("findOneAndUpdate", async function (next) {
   const taskToUpdate = await mongoose.model("task").findOne(this.getQuery());  
   const parentTaskId = taskToUpdate?.parentTask || update.parentTask;
   if (parentTaskId) {
+    const queryData = this.getOptions().context?.query; // Access the query data
+    let err_valid_1 = "Required quantity can't be greater than total required quantity";
+    let err_valid_2 = "Invoiced quantity can't be greater than total invoiced quantity";
+    let err_valid_3 = "Executed quantity can't be greater than total executed quantity";
+    let err_valid_4 = "Approved quantity can't be greater than total approved quantity";
+    if(queryData.lang == "ar"){
+      err_valid_1 = "الكمية المطلوبة يجب ان تكون اقل من او يساوي مجموع الكمية المصنعة";
+      err_valid_2 = "الكمية المفوترة يجب ان تكون اقل من او يساوي مجموع الكمية المفوترة";
+      err_valid_3 = "الكمية المنفذة يجب ان تكون اقل من او يساوي مجموع الكمية المنفذة";
+      err_valid_4 = "الكمية المعتمدة يجب ان تكون اقل من او يساوي مجموع الكمية المعتمدة";
+    }
     const allSubTasks = await mongoose.model("task").find({ parentTask: parentTaskId });
     const parentTask = await mongoose.model("task").findById(parentTaskId);
     let totalInvoicedQuantity = update.invoicedQuantity ?? taskToUpdate.invoicedQuantity;
@@ -218,16 +240,16 @@ taskSchema.pre("findOneAndUpdate", async function (next) {
       totalRequiredQuantity += subTask.requiredQuantity;
     });
     if (parentTask.requiredQuantity < totalRequiredQuantity) {
-      return next(new AppError("Required quantity can't be greater than total required quantity", 400));
+      return next(new AppError(err_valid_1, 400));
     }
     if (parentTask.invoicedQuantity < totalInvoicedQuantity) {
-      return next(new AppError("Invoiced quantity can't be greater than total invoiced quantity", 400));
+      return next(new AppError(err_valid_2, 400));
     }
     if (parentTask.executedQuantity < totalExecutedQuantity) {
-      return next(new AppError("Executed quantity can't be greater than total executed quantity", 400));
+      return next(new AppError(err_valid_3, 400));
     }
     if (parentTask.approvedQuantity < totalApprovedQuantity) {
-      return next(new AppError("Approved quantity can't be greater than total approved quantity", 400));
+      return next(new AppError(err_valid_4, 400));
     }
   }
   next();

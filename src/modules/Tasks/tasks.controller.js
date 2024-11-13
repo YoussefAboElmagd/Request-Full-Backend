@@ -497,7 +497,8 @@ const updateTask = catchAsync(async (req, res, next) => {
       },
       ...updatedFields, // Spread the rest of the fields directly
     },
-    { new: true }
+    
+    {  new: true ,context: { query: req.query } } 
   );
 
   if (!updatedTask) {
