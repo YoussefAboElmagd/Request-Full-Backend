@@ -15,9 +15,7 @@ const createTask = catchAsync(async (req, res, next) => {
   let err_1 = "Project not found!";
   let err_2 = "Parent task not found";
   let err_date_1 = "Start date must be less than or equal to due date";
-  let err_date_2 = `Due date of task must be less than or equal to ${dueDate} (due date of project) `;
-  let err_date_3 = `Start date of task must be less than or equal to ${sDate} (Start date of project) `;
-  let err_date_4 = `Start date of task must be less than or equal to ${dueDate} ( End date of project) `;
+
   let err_valid_1 = "Required quantity can't be greater than total required quantity";
   let err_valid_2 = "Invoiced quantity can't be greater than total invoiced quantity";
   let err_valid_3 = "Executed quantity can't be greater than total executed quantity";
@@ -26,9 +24,7 @@ const createTask = catchAsync(async (req, res, next) => {
     err_1 = "المشروع غير موجود";
     err_2 = "المهمة الأساسية غير موجودة";
     err_date_1 = "تاريخ البدء يجب ان يكون اقل من او يساوي تاريخ الانتهاء";
-    err_date_2 = `تاريخ الانتهاء يجب ان يكون اقل من او يساوي ${dueDate} (تاريخ انتهاء المشروع) `;
-    err_date_3 = `تاريخ البدء يجب ان يكون اقل من او يساوي ${sDate} (تاريخ بدء المشروع) `;
-    err_date_4 = `تاريخ البدء يجب ان يكون اقل من او يساوي ${dueDate} (تاريخ انتهاء المشروع) `;
+
     err_valid_1 = "الكمية المطلوبة يجب ان تكون اقل من او يساوي مجموع الكمية المصنعة";
     err_valid_2 = "الكمية المفوترة يجب ان تكون اقل من او يساوي مجموع الكمية المفوترة";
     err_valid_3 = "الكمية المنفذة يجب ان تكون اقل من او يساوي مجموع الكمية المنفذة";
@@ -48,7 +44,14 @@ const createTask = catchAsync(async (req, res, next) => {
     }
     let dueDate = new Date(project.dueDate).toISOString().split("T")[0];
     let sDate = new Date(project.sDate).toISOString().split("T")[0];
-
+    let err_date_2 = `Due date of task must be less than or equal to ${dueDate} (due date of project) `;
+    let err_date_3 = `Start date of task must be less than or equal to ${sDate} (Start date of project) `;
+    let err_date_4 = `Start date of task must be less than or equal to ${dueDate} ( End date of project) `;
+    if(req.query.lang == "ar"){
+      err_date_2 = `تاريخ الانتهاء يجب ان يكون اقل من او يساوي ${dueDate} (تاريخ انتهاء المشروع) `;
+      err_date_3 = `تاريخ البدء يجب ان يكون اقل من او يساوي ${sDate} (تاريخ بدء المشروع) `;
+      err_date_4 = `تاريخ البدء يجب ان يكون اقل من او يساوي ${dueDate} (تاريخ انتهاء المشروع) `;
+    }
     if (task.sDate && task.dueDate) {
       if (new Date(task.sDate) > new Date(task.dueDate)) {
         return res
