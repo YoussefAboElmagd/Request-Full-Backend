@@ -614,19 +614,15 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
   let consultantTeam = [];
   let constractorTeam = [];
   let groupedMembers = members;
-  // groupedMembers = members.reduce((acc, member) => {
-  //   if (member.userType != userType && member.role == "owner") {
-  //     ownerTeam.push(member);
-  //   } else if (member.userType != userType && member.role == "consultant") {
-  //     consultantTeam.push(member);
-  //   } else if (member.userType != userType && member.role == "contractor") {
-  //     constractorTeam.push(member);
-  //   } else {
-  //     groupedMembers.push(member);
-  //   }
-
-  //   return groupedMembers;
-  // }, []);
+  members = members.reduce((acc, member) => {
+    if ( member.role == "owner") {
+      ownerTeam.push(member);
+    } else if (member.role == "consultant") {
+      consultantTeam.push(member);
+    } else if (member.role == "contractor") {
+      constractorTeam.push(member);
+    }
+  }, []);
 
   res.json({
     message: "Done",

@@ -81,7 +81,7 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
   isFound = await userModel.findOne({ email: req.body.email });
   if (isFound) {
     sendInvite(req.body.email , link);
-     return res.json({
+    return res.json({
       message: message,
     })
 
