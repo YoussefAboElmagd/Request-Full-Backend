@@ -1,3 +1,4 @@
+import { required } from "joi";
 import mongoose from "mongoose";
 
 const requsetSchema = mongoose.Schema(
@@ -5,10 +6,6 @@ const requsetSchema = mongoose.Schema(
     refNO: {
       type: String,
       required: true,
-    },
-    supplier: {
-      type: String,
-      // required: true,
     },
     description: {
       type: String,
@@ -96,6 +93,24 @@ const requsetSchema = mongoose.Schema(
       immutable: true,
       required: true,
     },
+    consultantsComment:[
+      {
+      type:String,
+      //required:true
+      }
+    ],
+    approvedMaterialSubmittalNo : {
+      type : Number,
+      //required : true
+    },
+    BoqItemNo : {
+      type : Number,
+      //required : true
+    },
+    deliveryNoteNo : {
+      type : Number,
+      //required : true
+    }
   },
   { timestamps: true }
 );
