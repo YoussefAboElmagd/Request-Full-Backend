@@ -54,6 +54,42 @@ const projectSchema = mongoose.Schema(
       default: false,
       required: true,
     },
+    requestForDocumentSubmittalApprovalModel : {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref : "request",
+      default: [],
+      // required: true,
+    },
+    requestForApprovalOfMaterialsModel: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref : "request",
+      default: [],
+      // required: true,
+    },
+    workRequestModel: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref : "request",
+      default: [],
+      // required: true,
+    },
+    tableOfQuantitiesModel: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref : "request",
+      default: [],
+      // required: true,
+    },
+    requestForInspectionFormModel: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref : "request",
+      default: [],
+      // required: true,
+    },
+    approvalOfSchemesModel: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref : "request",
+      default: [],
+      // required: true,
+    },
     notes: [
       {
         content: { type: String },

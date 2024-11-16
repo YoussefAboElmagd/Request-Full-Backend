@@ -27,6 +27,12 @@ const requsetSchema = mongoose.Schema(
       ref: "project",
       required: true, 
     },
+    task: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "task",
+      default: null,
+      // required: true, 
+    },
     comment: {
       type: [String],
     },

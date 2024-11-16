@@ -1,3 +1,4 @@
+import { projectModel } from "../../../database/models/project.model.js";
 import { requsetModel } from "../../../database/models/request.model.js";
 import ApiFeature from "../../utils/apiFeature.js";
 import AppError from "../../utils/appError.js";
@@ -11,7 +12,6 @@ const createRequest = catchAsync(async (req, res, next) => {
   let err_1 = "Project not found!"
   let err_date1 = `Due date of model must be less than or equal to ${dueDate} (due date of project) `
   let err_date2 = `Start date of model must be less than or equal to ${sDate} (Start date of project) `
-  let text = `Email Verification Code: ` 
   if(req.query.lang == "ar"){
     err_1 = "المشروع غير موجود"
     err_date1 = `تاريخ الانتهاء يجب ان يكون اقل من او يساوي ${dueDate} (تاريخ انتهاء المشروع) `

@@ -24,6 +24,7 @@ const createProject = catchAsync(async (req, res, next) => {
   let newProject = new projectModel(req.body);
 
   newProject.members.push(newProject.createdBy);
+  newProject.owner = newProject.createdBy;
   // newProject.members.push(newProject.contractor);
   // newProject.members.push(newProject.owner);
   // newProject.members.push(newProject.consultant);
@@ -211,7 +212,7 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
       projectModel
         .find({ members: { $in: req.params.id } })
         .sort({ $natural: -1 })
-        .select("tasks name isSelected")
+        .select("tasks name isSelected sDate dueDate")
         .populate({
           path: "tasks",
           select:
@@ -231,11 +232,11 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
       projectModel
         .find({ members: { $in: req.params.id } })
         .sort({ $natural: -1 })
-        .select("tasks name isSelected")
+        .select("tasks name isSelected sDate dueDate")
         .populate({
           path: "tasks",
           select:
-            "title taskPriority taskStatus assignees documents sDate dueDate notes",
+            "title taskPriority taskStatus assignees documents sDate dueDate notes type parentTask progress requiredQuantity  approvedQuantity invoicedQuantity executedQuantity",
           match: { assignees: { $in: req.params.id } },
           populate: {
             path: "assignees",
@@ -559,7 +560,7 @@ const getProjectTagProgress = catchAsync(async (req, res, next) => {
 const getAllMembersProject = catchAsync(async (req, res, next) => {
   let err_1 = "No Project was found!";
   if (req.query.lang == "ar") {
-    err_1 = "لا يوجد مشاريع";
+    err_1 = "المشروع غير موجود";
   }
   let ApiFeat = new ApiFeature(
     projectModel.findById(req.params.id).populate("members"),
@@ -591,7 +592,7 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
   }
 
   let roles = ["owner", "consultant", "contractor"];
-  const groupAdmins = roles.reduce((acc, role) => {
+  let groupAdmins = roles.reduce((acc, role) => {
     acc[role] = null;
     return acc;
   }, {});
@@ -604,6 +605,11 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
       }
     }
   });
+  groupAdmins = {
+    owner: results.owner,
+    consultant: results.consultant,
+    contractor: results.contractor,
+  };
   let ownerTeam = [];
   let consultantTeam = [];
   let constractorTeam = [];
@@ -995,6 +1001,12 @@ const updateProject = catchAsync(async (req, res, next) => {
     budget,
     tags,
     notes,
+    approvalOfSchemesModel,
+    workRequestModel,
+    requestForInspectionFormModel,
+    requestForApprovalOfMaterialsModel,
+    requestForDocumentSubmittalApprovalModel,
+    tableOfQuantitiesModel,
   } = req.body;
   const updatedProject = await projectModel.findByIdAndUpdate(
     id,
@@ -1017,6 +1029,12 @@ const updateProject = catchAsync(async (req, res, next) => {
         members,
         tags,
         notes,
+        approvalOfSchemesModel,
+        workRequestModel,
+        requestForInspectionFormModel,
+        requestForApprovalOfMaterialsModel,
+        requestForDocumentSubmittalApprovalModel,
+        tableOfQuantitiesModel,
       },
       contractor,
       consultant,
@@ -1052,8 +1070,22 @@ const updateProject2 = catchAsync(async (req, res, next) => {
   if (req.query.lang == "ar") {
     err_1 = "المشروع غير موجود";
   }
-  let { documents, tasks, members, contractor, consultant, team, tags, notes } =
-    req.body;
+  let {
+    documents,
+    tasks,
+    members,
+    contractor,
+    consultant,
+    team,
+    tags,
+    notes,
+    approvalOfSchemesModel,
+    workRequestModel,
+    requestForInspectionFormModel,
+    requestForApprovalOfMaterialsModel,
+    requestForDocumentSubmittalApprovalModel,
+    tableOfQuantitiesModel,
+  } = req.body;
   const updatedProject = await projectModel.findByIdAndUpdate(
     id,
     {
@@ -1065,6 +1097,12 @@ const updateProject2 = catchAsync(async (req, res, next) => {
         consultant,
         tags,
         notes,
+        approvalOfSchemesModel,
+        workRequestModel,
+        requestForInspectionFormModel,
+        requestForApprovalOfMaterialsModel,
+        requestForDocumentSubmittalApprovalModel,
+        tableOfQuantitiesModel,
       },
       team,
     },

@@ -16,19 +16,27 @@ const createTask = catchAsync(async (req, res, next) => {
   let err_2 = "Parent task not found";
   let err_date_1 = "Start date must be less than or equal to due date";
 
-  let err_valid_1 = "Required quantity can't be greater than total required quantity";
-  let err_valid_2 = "Invoiced quantity can't be greater than total invoiced quantity";
-  let err_valid_3 = "Executed quantity can't be greater than total executed quantity";
-  let err_valid_4 = "Approved quantity can't be greater than total approved quantity";
+  let err_valid_1 =
+    "Required quantity can't be greater than total required quantity";
+  let err_valid_2 =
+    "Invoiced quantity can't be greater than total invoiced quantity";
+  let err_valid_3 =
+    "Executed quantity can't be greater than total executed quantity";
+  let err_valid_4 =
+    "Approved quantity can't be greater than total approved quantity";
   if (req.query.lang == "ar") {
     err_1 = "المشروع غير موجود";
     err_2 = "المهمة الأساسية غير موجودة";
     err_date_1 = "تاريخ البدء يجب ان يكون اقل من او يساوي تاريخ الانتهاء";
 
-    err_valid_1 = "الكمية المطلوبة يجب ان تكون اقل من او يساوي مجموع الكمية المصنعة";
-    err_valid_2 = "الكمية المفوترة يجب ان تكون اقل من او يساوي مجموع الكمية المفوترة";
-    err_valid_3 = "الكمية المنفذة يجب ان تكون اقل من او يساوي مجموع الكمية المنفذة";
-    err_valid_4 = "الكمية المعتمدة يجب ان تكون اقل من او يساوي مجموع الكمية المعتمدة";
+    err_valid_1 =
+      "الكمية المطلوبة يجب ان تكون اقل من او يساوي مجموع الكمية المصنعة";
+    err_valid_2 =
+      "الكمية المفوترة يجب ان تكون اقل من او يساوي مجموع الكمية المفوترة";
+    err_valid_3 =
+      "الكمية المنفذة يجب ان تكون اقل من او يساوي مجموع الكمية المنفذة";
+    err_valid_4 =
+      "الكمية المعتمدة يجب ان تكون اقل من او يساوي مجموع الكمية المعتمدة";
   }
   tasks = tasks.map((task) => ({
     ...task,
@@ -47,37 +55,29 @@ const createTask = catchAsync(async (req, res, next) => {
     let err_date_2 = `Due date of task must be less than or equal to ${dueDate} (due date of project) `;
     let err_date_3 = `Start date of task must be less than or equal to ${sDate} (Start date of project) `;
     let err_date_4 = `Start date of task must be less than or equal to ${dueDate} ( End date of project) `;
-    if(req.query.lang == "ar"){
+    if (req.query.lang == "ar") {
       err_date_2 = `تاريخ الانتهاء يجب ان يكون اقل من او يساوي ${dueDate} (تاريخ انتهاء المشروع) `;
       err_date_3 = `تاريخ البدء يجب ان يكون اقل من او يساوي ${sDate} (تاريخ بدء المشروع) `;
       err_date_4 = `تاريخ البدء يجب ان يكون اقل من او يساوي ${dueDate} (تاريخ انتهاء المشروع) `;
     }
     if (task.sDate && task.dueDate) {
       if (new Date(task.sDate) > new Date(task.dueDate)) {
-        return res
-          .status(404)
-          .json({ message: err_date_1 });
+        return res.status(404).json({ message: err_date_1 });
       }
       if (new Date(task.dueDate) > new Date(project.dueDate)) {
-        return res
-          .status(404)
-          .json({
-            message: err_date_2,
-          });
+        return res.status(404).json({
+          message: err_date_2,
+        });
       }
       if (new Date(task.sDate) < new Date(project.sDate)) {
-        return res
-          .status(404)
-          .json({
-            message: err_date_3,
-          });
+        return res.status(404).json({
+          message: err_date_3,
+        });
       }
       if (new Date(task.sDate) > new Date(project.dueDate)) {
-        return res
-          .status(404)
-          .json({
-            message: err_date_4,
-          });
+        return res.status(404).json({
+          message: err_date_4,
+        });
       }
     }
     if (task.parentTask) {
@@ -102,36 +102,16 @@ const createTask = catchAsync(async (req, res, next) => {
       });
 
       if (parentTask.requiredQuantity < totalRequiredQuantity) {
-        return next(
-          new AppError(
-            err_valid_1,
-            400
-          )
-        );
+        return next(new AppError(err_valid_1, 400));
       }
       if (parentTask.invoicedQuantity < totalInvoicedQuantity) {
-        return next(
-          new AppError(
-            err_valid_2,
-            400
-          )
-        );
+        return next(new AppError(err_valid_2, 400));
       }
       if (parentTask.executedQuantity < totalExecutedQuantity) {
-        return next(
-          new AppError(
-            err_valid_3,
-            400
-          )
-        );
+        return next(new AppError(err_valid_3, 400));
       }
       if (parentTask.approvedQuantity < totalApprovedQuantity) {
-        return next(
-          new AppError(
-            err_valid_4,
-            400
-          )
-        );
+        return next(new AppError(err_valid_4, 400));
       }
       let newSubTaskLog = await taskLogModel.findOneAndUpdate(
         { taskId: task.parentTask },
@@ -164,7 +144,6 @@ const createTask = catchAsync(async (req, res, next) => {
         {
           changes_en: [`${user.name} Created a Task`],
           changes_ar: [`${user.name} تم انشاء مهمة `],
-
         },
       ],
     });
@@ -177,9 +156,9 @@ const createTask = catchAsync(async (req, res, next) => {
 });
 
 const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
-  let err_1 = "No Task was found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يوجد مهام"
+  let err_1 = "No Task was found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يوجد مهام";
   }
   let ApiFeat = new ApiFeature(
     taskModel.find().populate("project").sort({ $natural: -1 }),
@@ -226,9 +205,9 @@ const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
   });
 });
 const getAllTaskByUser = catchAsync(async (req, res, next) => {
-  let err_1 = "No Task was found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يوجد مهام"
+  let err_1 = "No Task was found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يوجد مهام";
   }
   let ApiFeat = new ApiFeature(
     taskModel
@@ -280,9 +259,9 @@ const getAllTaskByUser = catchAsync(async (req, res, next) => {
 });
 const getAllTaskByProject = catchAsync(async (req, res, next) => {
   let ApiFeat = null;
-  let err_1 = "No Task was found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يوجد مهام"
+  let err_1 = "No Task was found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يوجد مهام";
   }
   if (req.query.status == "all") {
     ApiFeat = new ApiFeature(
@@ -345,9 +324,9 @@ const getAllTaskByProject = catchAsync(async (req, res, next) => {
 
 const getTaskById = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let err_1 = "Task not found!"
-  if(req.query.lang == "ar"){
-    err_1 = "المهمة غير موجودة"
+  let err_1 = "Task not found!";
+  if (req.query.lang == "ar") {
+    err_1 = "المهمة غير موجودة";
   }
   let results = await taskModel
     .findById(id)
@@ -368,9 +347,9 @@ const getTaskById = catchAsync(async (req, res, next) => {
 });
 
 const getAllAssigness = catchAsync(async (req, res, next) => {
-  let err_1 = "Task not found!"
-  if(req.query.lang == "ar"){
-    err_1 = "المهمة غير موجودة"
+  let err_1 = "Task not found!";
+  if (req.query.lang == "ar") {
+    err_1 = "المهمة غير موجودة";
   }
   let results = await taskModel
     .findById(req.params.id)
@@ -388,11 +367,11 @@ const getAllAssigness = catchAsync(async (req, res, next) => {
 const scheduleRecurringTasks = catchAsync(async (req, res, next) => {
   let check = await projectModel.findById(req.params.projectId);
   let check2 = await taskModel.findById(req.params.id);
-  let err_1 = "Task not found!"
-  let err_2 = "Project not found!"
-  if(req.query.lang == "ar"){
-    err_1 = "المهمة غير موجودة"
-    err_2 = "المشروع غير موجود"
+  let err_1 = "Task not found!";
+  let err_2 = "Project not found!";
+  if (req.query.lang == "ar") {
+    err_1 = "المهمة غير موجودة";
+    err_2 = "المشروع غير موجود";
   }
   if (!check || check2) {
     return res.status(404).json({ message: err_2 });
@@ -432,16 +411,19 @@ const scheduleRecurringTasks = catchAsync(async (req, res, next) => {
   });
 });
 const getAllSubTasksByParentTask = catchAsync(async (req, res, next) => {
-  let err_1 = "Task not found!"
-  if(req.query.lang == "ar"){
-    err_1 = "المهمة غير موجودة"
+  let err_1 = "Task not found!";
+  if (req.query.lang == "ar") {
+    err_1 = "المهمة غير موجودة";
   }
-  let results = await taskModel.find({ parentTask: req.params.id }).populate({
-    path: "assignees",
-    select: "_id profilePic name",
-  });
+  let results = await taskModel
+    .find({ parentTask: req.params.id })
+    .populate({
+      path: "assignees",
+      select: "_id profilePic name",
+    })
+    .populate("parentTask");
   if (!results) {
-    return res.status(404).json({ message: err_1});
+    return res.status(404).json({ message: err_1 });
   }
 
   res.json({
@@ -453,9 +435,9 @@ const getAllSubTasksByParentTask = catchAsync(async (req, res, next) => {
 const getAllParentTasks = catchAsync(async (req, res, next) => {
   let userId = new mongoose.Types.ObjectId(req.params.id);
   let projectId = new mongoose.Types.ObjectId(req.params.projectId);
-  let err_1 = "Task not found!"
-  if(req.query.lang == "ar"){
-    err_1 = "المهمة غير موجودة"
+  let err_1 = "Task not found!";
+  if (req.query.lang == "ar") {
+    err_1 = "المهمة غير موجودة";
   }
   let results = await taskModel
     .find({
@@ -479,49 +461,78 @@ const getAllParentTasks = catchAsync(async (req, res, next) => {
 const updateTask = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const userId = req.query.id;
-  const updatedFields = req.body;
-  let err_1 = "Task not found!"
-  let err_2 = "User not found!"
-  if(req.query.lang == "ar"){
-    err_1 = "المهمة غير موجودة"
-    err_2 = "المستخدم غير موجود"
+  const updatedFields = req.body; // Assume updates come from request body
+
+  const { documents, assignees, notes, ...otherUpdatedFields } = updatedFields;
+
+  let err_1 = "Task not found!";
+  let err_2 = "User not found!";
+  if (req.query.lang === "ar") {
+    err_1 = "المهمة غير موجودة";
+    err_2 = "المستخدم غير موجود";
   }
-  // Update the task
-  const updatedTask = await taskModel.findByIdAndUpdate(
-    id,
-    {
-      $push: {
-        documents: updatedFields.documents,
-        assignees: updatedFields.assignees,
-        notes: updatedFields.notes,
+
+  try {
+    if(req.body.assignees){
+      if (!Array.isArray(req.body.assignees)) {
+        req.body.assignees = [req.body.assignees];
+      }
+    }
+    const updatedTask = await taskModel.findByIdAndUpdate(
+      id,
+      {
+        $push: {
+          documents: { $each: documents || [] },
+          assignees: { $each: assignees || [] },
+          notes: { $each: notes || [] },
+          approvalOfSchemesModel: { $each: approvalOfSchemesModel || [] },
+          workRequestModel: { $each: workRequestModel || [] },
+          requestForInspectionFormModel: {
+            $each: requestForInspectionFormModel || [],
+          },
+          requestForApprovalOfMaterialsModel: {
+            $each: requestForApprovalOfMaterialsModel || [],
+          },
+          requestForDocumentSubmittalApprovalModel: {
+            $each: requestForDocumentSubmittalApprovalModel || [],
+          },
+          tableOfQuantitiesModel: { $each: tableOfQuantitiesModel || [] },
+        },
+        ...otherUpdatedFields,
       },
-      ...updatedFields, // Spread the rest of the fields directly
-    },
-    
-    {  new: true ,context: { query: req.query } } 
-  );
+      { new: true, context: { query: req.query } }
+    );
 
-  if (!updatedTask) {
-    return res.status(404).json({ message: err_1 });
-  }
-  const user = await userModel.findById(userId);
-  if (!user) {
-    return res.status(404).json({ message: err_2 });
-  }
-  const changes_en = generateChangeLogs(updatedFields, user.name);
-  const changes_ar = generateChangeLogsArabic(updatedFields, user.name);
-  await taskLogModel.findOneAndUpdate(
-    { taskId: id },
-    {
-      $push: { updates: [{ changes_en },{changes_ar}] },
-    },
-    { new: true }
-  );
+    if (!updatedTask) {
+      return res.status(404).json({ message: err_1 });
+    }
 
-  res.status(200).json({
-    message: "Task updated successfully!",
-    updatedTask,
-  });
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: err_2 });
+    }
+
+    const changes_en = generateChangeLogs(updatedFields, user.name);
+    const changes_ar = generateChangeLogsArabic(updatedFields, user.name);
+
+    await taskLogModel.findOneAndUpdate(
+      { taskId: id },
+      {
+        $push: { updates: [{ changes_en }, { changes_ar }] },
+      },
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: "Task updated successfully!",
+      updatedTask,
+    });
+  } catch (error) {
+    console.error("Error updating task:", error);
+    return res
+      .status(500)
+      .json({ message: "Internal Server Error", error: error.message });
+  }
 });
 
 const generateChangeLogs = (updatedFields, userName) => {
@@ -551,6 +562,14 @@ const generateChangeLogs = (updatedFields, userName) => {
     notes: "Task Notes",
     assignees: "Task Assignees",
     documents: "Task Documents",
+    approvalOfSchemesModel: "Approval Of Schemes Model",
+    workRequestModel: "Work Request Model",
+    requestForInspectionFormModel: "Request For Inspection Form Model",
+    requestForApprovalOfMaterialsModel:
+      "Request For Approval Of Materials Model",
+    requestForDocumentSubmittalApprovalModel:
+      "Request For Document Submittal Approval Model",
+    tableOfQuantitiesModel: "Table Of Quantities Model",
   };
 
   return Object.entries(updatedFields)
@@ -568,8 +587,7 @@ const generateChangeLogsArabic = (updatedFields, userName) => {
     approvalOfSchemes: "نموذج الموافقة على المخططات",
     workRequest: "نموذج طلب العمل",
     requestForApprovalOfMaterials: "طلب الموافقة على المواد",
-    requestForDocumentSubmittalApproval:
-      "طلب الموافقة على المستندات",
+    requestForDocumentSubmittalApproval: "طلب الموافقة على المستندات",
     taskStatus: "حالة المهمة",
     taskPriority: "أولوية المهمة",
     isAproved: "المهمة معتمدة",
@@ -584,24 +602,40 @@ const generateChangeLogsArabic = (updatedFields, userName) => {
     notes: "ملاحظات المهمة",
     assignees: "المكلفون",
     documents: "مستندات المهمة",
+    approvalOfSchemesModel: "نموذج الموافقة على المخططات",
+    workRequestModel: "نموذج طلب العمل",
+    requestForInspectionFormModel: " طلب استمارة المراجعة",
+    requestForApprovalOfMaterialsModel: "طلب الموافقة على المواد",
+    requestForDocumentSubmittalApprovalModel: "طلب الموافقة على المستندات",
+    tableOfQuantitiesModel: "جدول الكميات",
   };
   return Object.entries(updatedFields)
-    .filter(([key]) => fieldMappings[key]) 
+    .filter(([key]) => fieldMappings[key])
     .map(([key]) => `${userName} قام بتحديث ${fieldMappings[key]}`);
 };
 
 const updateTask2 = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let err_1 = "Task not found!"
-  if(req.query.lang == "ar"){
-    err_1 = "المهمة غير موجودة"
+  let err_1 = "Task not found!";
+  if (req.query.lang == "ar") {
+    err_1 = "المهمة غير موجودة";
   }
   let { documents, assignees, notes } = req.body;
   let updatedTask = await taskModel.findByIdAndUpdate(
     id,
 
     {
-      $pull: { documents, assignees, notes },
+      $pull: {
+        documents,
+        assignees,
+        notes,
+        approvalOfSchemesModel,
+        workRequestModel,
+        requestForInspectionFormModel,
+        requestForApprovalOfMaterialsModel,
+        requestForDocumentSubmittalApprovalModel,
+        tableOfQuantitiesModel,
+      },
     },
     {
       new: true,
@@ -622,13 +656,37 @@ const updateTask2 = catchAsync(async (req, res, next) => {
     changes_en.push(`${user.name} Deleted user from task`);
     changes_ar.push(`${user.name} حذف المستخدم من المهمة`);
   }
+  if (req.body.approvalOfSchemesModel) {
+    changes_en.push(`${user.name} Deleted approval Of Schemes Model from task`);
+    changes_ar.push(`${user.name} حذف نموذج الموافقة على المخططات من المهمة`);
+  }
+  if (req.body.workRequestModel) {
+    changes_en.push(`${user.name} Deleted work Request Model from task`);
+    changes_ar.push(`${user.name} حذف نموذج طلب العمل من المهمة`);
+  }
+  if (req.body.requestForInspectionFormModel) {
+    changes_en.push(`${user.name} Deleted request For Inspection Form Model from task`);
+    changes_ar.push(`${user.name} حذف طلب استمارة المراجعة من المهمة`);
+  }
+  if (req.body.requestForApprovalOfMaterialsModel) {
+    changes_en.push(`${user.name} Deleted request For Approval Of Materials Model from task`);
+    changes_ar.push(`${user.name} حذف طلب الموافقة على المواد من المهمة`);
+  }
+  if (req.body.requestForDocumentSubmittalApprovalModel) {
+    changes_en.push(`${user.name} Deleted request For Document Submittal Approval Model from task`);
+    changes_ar.push(`${user.name} حذف طلب الموافقة على المستندات من المهمة`);
+  }
+  if (req.body.tableOfQuantitiesModel) {
+    changes_en.push(`${user.name} Deleted table Of Quantities Model from task`);
+    changes_ar.push(`${user.name} حذف جدول الكميات من المهمة`);
+  }
   if (req.body.documents) {
     changes_en.push(`${user.name} Deleted Task Document`);
     changes_ar.push(`${user.name} حذف مستند المهمة`);
     if (!Array.isArray(req.body.documents)) {
       req.body.documents = [req.body.documents];
     }
-    removeFiles("documents", req.body.document);
+    removeFiles("documents", req.body.documents);
   }
   let newTaskLog = await taskLogModel.findOneAndUpdate(
     { taskId: id },
@@ -649,9 +707,9 @@ const updateTask2 = catchAsync(async (req, res, next) => {
 });
 const deleteTask = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let err_1 = "Task not found!"
-  if(req.query.lang == "ar"){
-    err_1 = "المهمة غير موجودة"
+  let err_1 = "Task not found!";
+  if (req.query.lang == "ar") {
+    err_1 = "المهمة غير موجودة";
   }
   let subTask = await taskModel.findById(id);
   if (subTask.parentTask) {
