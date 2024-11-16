@@ -563,7 +563,7 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
     err_1 = "المشروع غير موجود";
   }
   let ApiFeat = new ApiFeature(
-    projectModel.findById(req.params.id).populate("members"),
+    projectModel.findById(req.params.id).populate("members").populate("owner").populate("consultant").populate("contractor"),
     req.query
   )
     .sort()
