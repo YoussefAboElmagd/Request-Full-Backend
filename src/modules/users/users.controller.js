@@ -73,7 +73,7 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
   let message = "Invite has been sent!"
   if(req.query.lang == "ar"){
     err_2 = "هذا البريد الالكتروني غير صحيح"
-    message = "تم إرسال الرسالة  "
+    message = "تم إرسال الدعوة  "
   }
   if (req.body.email === "" || req.body.email.match(emailFormat)) {
     return res.status(409).json({ message: err_2 });

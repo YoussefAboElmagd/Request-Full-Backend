@@ -610,16 +610,17 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
     consultant: results.consultant ,
     contractor: results.contractor ,
   };
+  let list = [groupAdmins.owner, groupAdmins.consultant, groupAdmins.contractor];
   let ownerTeam = [];
   let consultantTeam = [];
   let constractorTeam = [];
   let groupedMembers = members;
-  members = members.reduce((acc, member) => {
-    if ( member.role == "owner") {
+  let memberss = members.reduce((acc, member) => {
+    if (member.role == "owner" && !list.includes(groupAdmins.owner)) {
       ownerTeam.push(member);
-    } else if (member.role == "consultant") {
+    } else if (member.role == "consultant" && !list.includes(groupAdmins.consultant)) {
       consultantTeam.push(member);
-    } else if (member.role == "contractor") {
+    } else if (member.role == "contractor" && !list.includes(groupAdmins.contractor)) {
       constractorTeam.push(member);
     }
   }, []);
