@@ -194,7 +194,6 @@ taskSchema.post(/^find/, async function (docs) {
 if(doc){
   if (doc.dueDate && doc.dueDate < new Date() && doc.taskStatus !== "completed") {
     doc.taskStatus = "delayed";
-    doc.save();
   }
   if (doc.documents && doc.documents.length > 0) {
     await documentsModel.updateMany(
@@ -306,5 +305,6 @@ taskSchema.pre(/^delete/, { document: false, query: true }, async function () {
 taskSchema.pre(/^find/, function () {
   this.populate('tags');
   this.populate('unit');
+  this.populate('parentTask');
 })
 export const taskModel = mongoose.model("task", taskSchema);

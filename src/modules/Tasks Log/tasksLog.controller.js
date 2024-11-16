@@ -33,12 +33,12 @@ const getAllTaskLogByTask = catchAsync(async (req, res, next) => {
     results=results[0]
     results.updates.forEach(update => {
       if (update.changes_ar !== undefined) {
-          update.changes = update.changes_ar; // Copy changes_ar to schanges
-          delete update.changes_ar; // Remove changes_ar
+          update.changes = update.changes_ar; 
+          delete update.changes_ar; 
       }
       if (update.changes_en !== undefined) {
-          update.changes = update.changes_en; // Copy changes_en to schanges
-          delete update.changes_en; // Remove changes_en
+          update.changes = update.changes_en; 
+          delete update.changes_en; 
       }
   });
 }

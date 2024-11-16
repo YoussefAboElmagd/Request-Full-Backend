@@ -232,6 +232,16 @@ const getUserById = catchAsync(async (req, res, next) => {
   let lastSignIn = req.lastSignIn
   results && res.json({ message: "Done", results,lastSignIn });
 });
+const getUserCompanyDetails = catchAsync(async (req, res, next) => {
+  let { id } = req.params;
+  let message = "User Not found"
+  if(req.query.lang == "ar"){
+    message = "المستخدم غير موجود"
+  }
+  let results = await userModel.findById(id).select("companyName companyLogo signature electronicStamp");
+  !results && next(new AppError(message, 404));
+  results && res.json({ message: "Done", results, });
+});
 const getUserTags = catchAsync(async (req, res, next) => {
   let { id } = req.params;
   let message = "User Not found"
@@ -419,5 +429,6 @@ export {
   getInTouch,
   sendInviteToProject,
   getUserByEmail,
-  getSubscriptionPeriod
+  getSubscriptionPeriod,
+  getUserCompanyDetails,
 };
