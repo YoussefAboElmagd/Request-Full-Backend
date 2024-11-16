@@ -606,9 +606,9 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
     }
   });
   groupAdmins = {
-    owner: results.owner,
-    consultant: results.consultant,
-    contractor: results.contractor,
+    owner: results.owner || {},
+    consultant: results.consultant || {},
+    contractor: results.contractor || {},
   };
   let ownerTeam = [];
   let consultantTeam = [];
