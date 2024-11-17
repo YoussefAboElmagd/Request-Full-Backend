@@ -80,10 +80,12 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
     message = "تم إرسال الدعوة  "
   }
   for (const invitation of invitations) {
-    if (invitation.email === "" || invitation.email.match(emailFormat)) {
+    if (invitation.email === "" || !invitation.email.match(emailFormat)) {
       return res.status(409).json({ message: `${invitation.email} ${err_2}` });
     }
-    isFound = await userModel.findOne({ email: invitation.email });
+    console.log(invitation.email.match(emailFormat));
+    
+    let isFound = await userModel.findOne({ email: invitation.email });
     let roleName = await userTypeModel.findOne({ _id: invitation.role }).select("name");
     let projectName = await projectModel.findOne({ _id: invitation.project }).select("name");
     let addedInvitations = await invitationModel.insertMany(invitation);
