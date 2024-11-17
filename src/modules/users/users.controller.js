@@ -116,6 +116,14 @@ if (!check) {
   return res.status(404).json({ message: err_1 });
 }
 
+if(req.body.isApproved){
+  let foundUser = await userModel.findOne({ email: check.email });
+  if(foundUser){
+    await projectModel.findOneAndUpdate({ _id: check.project }, { $push: { members: foundUser._id } },{new :true});
+}else{
+  return res.status(404).json({ message: "User not found!" });
+}
+}
   let updated = await invitationModel.findByIdAndUpdate(
     id,
     req.body,
@@ -124,14 +132,6 @@ if (!check) {
 
   if (!updated) {
     return res.status(404).json({ message: err_1 });
-  }
-  if(req.body.isApproved){
-    let foundUser = await userModel.findOne({ email: check.email });
-    if(foundUser){
-      await projectModel.findOneAndUpdate({ _id: check.project }, { $push: { members: foundUser._id } },{new :true});
-  }else{
-    return res.status(404).json({ message: "User not found!" });
-  }
   }
   res.status(200).json({ message: "Done", updated });
 });
