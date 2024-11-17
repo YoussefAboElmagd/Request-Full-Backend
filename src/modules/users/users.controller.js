@@ -278,14 +278,14 @@ const getUserForInvite = catchAsync(async (req, res, next) => {
     message2 = "الدعوة غير موجودة"
   }
   let results = await userModel.findById(id).select("name email");
-  let data = await invitationModel.findById({ _id:req.query.id }).select("role project projectName");
+  let data = await invitationModel.findById({ _id:req.query.id }).select("role project projectName isSignUp").populate("role");
   if(!data){
     return res.status(404).json({
       message: message2,
     });
   }
-  results= {...results._doc,...data._doc}
   !results && next(new AppError(message, 404));
+  results= {...results._doc,...data._doc}
   results && res.json({ message: "Done", results });
 });
 const getUserCompanyDetails = catchAsync(async (req, res, next) => {
