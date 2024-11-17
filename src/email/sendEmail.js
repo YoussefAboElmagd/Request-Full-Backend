@@ -40,7 +40,7 @@ export async function sendInvite(recipient,projectName,roleName,link) {
         the link ${link}.`,
     });
 
-  await Promise.all(info);
+  // await Promise.all(info);
     console.log('All emails sent successfully!');
   } catch (error) {
     console.error('Error sending emails:', error);

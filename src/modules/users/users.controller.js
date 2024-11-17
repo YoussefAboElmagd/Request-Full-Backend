@@ -79,33 +79,34 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
     err_2 = "هذا البريد الالكتروني غير صحيح"
     message = "تم إرسال الدعوة  "
   }
-  for (const invitation of invitations) {
+  for (let invitation of invitations) {
     if (invitation.email === "" || !invitation.email.match(emailFormat)) {
-      return res.status(409).json({ message: `${invitation.email} ${err_2}` });
+      return res.status(409).json({ message: `${invitation.email}  ${err_2}.` });
     }
-    console.log(invitation.email.match(emailFormat));
-    
-    let isFound = await userModel.findOne({ email: invitation.email });
-    let roleName = await userTypeModel.findOne({ _id: invitation.role }).select("name");
-    let projectName = await projectModel.findOne({ _id: invitation.project }).select("name");
-    let addedInvitations = await invitationModel.insertMany(invitation);
-    if (isFound) {
-      await invitationModel.findByIdAndUpdate(
-        addedInvitations[0]._id,
-        { isSignUp: true },
-        { new: true }
-      )
-      sendInvite(invitation,projectName,roleName , link);
-      return res.json({
-        message: message,isSignUp: true
-      })
-    }else{
-      sendInvite(invitation,projectName,roleName, link);
-      return res.json({
-        message: message,isSignUp: false
-      })
+
+    try {
+      let isFound = await userModel.findOne({ email: invitation.email });
+      let roleName = await userTypeModel.findOne({ _id: invitation.role }).select("jobTitle");
+      let projectName = await projectModel.findOne({ _id: invitation.project }).select("name");
+      let addedInvitations = new invitationModel(invitation);
+      let savedData =await addedInvitations.save();
+      
+      if (isFound) {
+        await invitationModel.findByIdAndUpdate(
+          savedData._id,
+          { isSignUp: true },
+          { new: true }
+        );
+      } 
+        sendInvite(invitation, projectName.name, roleName.jobTitle, link);
+    } catch (error) {
+      return res.status(500).json({ message: "An error occurred.", error: error.message });
     }
-}
+  }
+    return res.json({
+      message: message,
+    });
+  
 })
 const updateInvite = catchAsync(async (req, res, next) => {
   let { id } = req.params;
