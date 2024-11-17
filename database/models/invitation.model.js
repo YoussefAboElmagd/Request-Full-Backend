@@ -20,6 +20,10 @@ const invitationSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    projectName: {
+      type: String,
+      required: true,
+    },
     isSignUp:{
       type: Boolean,
       default: false,

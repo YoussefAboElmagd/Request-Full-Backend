@@ -19,6 +19,7 @@ usersRouter.get("/tags/:id", usersController.getUserTags);
 usersRouter.get("/email/", usersController.getUserByEmail);
 usersRouter.get("/companyDetails/:id", usersController.getUserCompanyDetails);
 usersRouter.get("/sub/:id", usersController.getSubscriptionPeriod);
+usersRouter.get("/invite/:id", usersController.getUserForInvite);
 
 // usersRouter.post("/contactUs/:id", usersController.postMessage);
 usersRouter.post("/getInTouch/", usersController.getInTouch);
@@ -42,4 +43,5 @@ usersRouter.put(
   usersController.updateCollection
 );
 usersRouter.delete("/:id", usersController.deleteUser);
+usersRouter.delete("/invite/:id", usersController.deleteInvite);
 export default usersRouter;

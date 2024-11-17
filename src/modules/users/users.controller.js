@@ -70,7 +70,7 @@ const getInTouch = catchAsync(async (req, res, next) => {
 });
 
 const sendInviteToProject = catchAsync(async (req, res, next) => {
-  let link = "http://62.72.32.44:4005/SignUp/ChooseRole"
+  let link = "https://request-sa.com/Invitation"
   let invitations = Array.isArray(req.body) ? req.body : [req.body];
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
   let err_2 = "This Email is not valid"
@@ -87,7 +87,7 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
     try {
       let isFound = await userModel.findOne({ email: invitation.email });
       let roleName = await userTypeModel.findOne({ _id: invitation.role }).select("jobTitle");
-      let projectName = await projectModel.findOne({ _id: invitation.project }).select("name");
+      let project = await projectModel.findOne({ _id: invitation.project }).select("name");
       let addedInvitations = new invitationModel(invitation);
       let savedData =await addedInvitations.save();
       
@@ -98,7 +98,7 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
           { new: true }
         );
       } 
-        sendInvite(invitation, projectName.name, roleName.jobTitle, link);
+        sendInvite(invitation, project.name, roleName.jobTitle,savedData._id, link);
     } catch (error) {
       return res.status(500).json({ message: "An error occurred.", error: error.message });
     }
@@ -118,25 +118,16 @@ const updateInvite = catchAsync(async (req, res, next) => {
 if (!check) { 
   return res.status(404).json({ message: err_1 });
 }
-
-if(req.body.isApproved){
+if(req.body.isApproved == true){
   let foundUser = await userModel.findOne({ email: check.email });
   if(foundUser){
     await projectModel.findOneAndUpdate({ _id: check.project }, { $push: { members: foundUser._id } },{new :true});
+    await invitationModel.deleteOne({ _id: id });
 }else{
   return res.status(404).json({ message: "User not found!" });
 }
 }
-  let updated = await invitationModel.findByIdAndUpdate(
-    id,
-    req.body,
-    { new: true }
-  );
-
-  if (!updated) {
-    return res.status(404).json({ message: err_1 });
-  }
-  res.status(200).json({ message: "Done", updated });
+  res.status(200).json({ message: "Done",  });
 });
 
 const updateCollection = catchAsync(async (req, res, next) => {
@@ -277,6 +268,25 @@ const getUserById = catchAsync(async (req, res, next) => {
   !results && next(new AppError(message, 404));
   let lastSignIn = req.lastSignIn
   results && res.json({ message: "Done", results,lastSignIn });
+});
+const getUserForInvite = catchAsync(async (req, res, next) => {
+  let { id } = req.params;
+  let message = "User Not found"
+  let message2 = "Invitation Not found"
+  if(req.query.lang == "ar"){
+    message = "المستخدم غير موجود"
+    message2 = "الدعوة غير موجودة"
+  }
+  let results = await userModel.findById(id).select("name email");
+  let data = await invitationModel.findById({ _id:req.query.id }).select("role project projectName");
+  if(!data){
+    return res.status(404).json({
+      message: message2,
+    });
+  }
+  results= {...results._doc,...data._doc}
+  !results && next(new AppError(message, 404));
+  results && res.json({ message: "Done", results });
 });
 const getUserCompanyDetails = catchAsync(async (req, res, next) => {
   let { id } = req.params;
@@ -458,6 +468,22 @@ const deleteUser = catchAsync(async (req, res, next) => {
 
   res.status(200).json({ message: "User deleted successfully!" });
 });
+const deleteInvite = catchAsync(async (req, res, next) => {
+  let { id } = req.params;
+  let err = "couldn't Delete! Invite not found!"
+  if(req.query.lang == "ar"){
+    err = "لا يمكن المسح! الدعوة غير موجود"
+  }
+  let deletedUser = await invitationModel.deleteOne({ _id: id });
+
+  if (!deletedUser) {
+    return res
+      .status(404)
+      .json({ message: err });
+  }
+
+  res.status(200).json({ message: "invite deleted successfully!" });
+});
 
 export {
   getAllUsersByAdmin,
@@ -478,4 +504,6 @@ export {
   getSubscriptionPeriod,
   getUserCompanyDetails,
   updateInvite,
+  getUserForInvite,
+  deleteInvite,
 };

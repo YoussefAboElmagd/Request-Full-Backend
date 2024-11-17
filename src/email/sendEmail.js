@@ -21,7 +21,7 @@ export async function sendEmail(email,text) {
 
   console.log("Message sent: %s", info.messageId);
 }
-export async function sendInvite(recipient,projectName,roleName,link) {
+export async function sendInvite(recipient,projectName,roleName,id,link) {
   try {
 
   const transporter = nodemailer.createTransport({
@@ -37,7 +37,7 @@ export async function sendInvite(recipient,projectName,roleName,link) {
       to: recipient.email, 
       subject: 'Invitation Email',
       text: `You have been invited to ${projectName} as ${roleName}.
-        the link ${link}.`,
+        the link ${link}?id=${id}.`,
     });
 
   // await Promise.all(info);
