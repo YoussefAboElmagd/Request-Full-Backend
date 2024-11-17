@@ -23,6 +23,7 @@ usersRouter.get("/sub/:id", usersController.getSubscriptionPeriod);
 // usersRouter.post("/contactUs/:id", usersController.postMessage);
 usersRouter.post("/getInTouch/", usersController.getInTouch);
 usersRouter.post("/invite/", usersController.sendInviteToProject);
+usersRouter.put("/invite/:id", usersController.updateInvite);
 
 usersRouter.put("/:id", usersController.updateUser);
 usersRouter.put("/pull/:id", usersController.updateUser2);

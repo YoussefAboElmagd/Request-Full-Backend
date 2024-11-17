@@ -6,6 +6,9 @@ import { DateTime } from "luxon";
 import { photoUpload } from "../../utils/removeFiles.js";
 import { contactUs, contactUs2, sendInvite } from "../../email/sendEmail.js";
 import cron from "node-cron";
+import { invitationModel } from "../../../database/models/invitation.model.js";
+import { userTypeModel } from "../../../database/models/userType.model.js";
+import { projectModel } from "../../../database/models/project.model.js";
 
 const updateprofilePic = catchAsync(async (req, res, next) => {
   let { id } = req.params;
@@ -68,6 +71,7 @@ const getInTouch = catchAsync(async (req, res, next) => {
 
 const sendInviteToProject = catchAsync(async (req, res, next) => {
   let link = "http://62.72.32.44:4005/SignUp/ChooseRole"
+  let invitations = Array.isArray(req.body) ? req.body : [req.body];
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
   let err_2 = "This Email is not valid"
   let message = "Invite has been sent!"
@@ -75,24 +79,63 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
     err_2 = "هذا البريد الالكتروني غير صحيح"
     message = "تم إرسال الدعوة  "
   }
-  if (req.body.email === "" || req.body.email.match(emailFormat)) {
-    return res.status(409).json({ message: err_2 });
-  }
-  isFound = await userModel.findOne({ email: req.body.email });
-  if (isFound) {
-    sendInvite(req.body.email , link);
-    return res.json({
-      message: message,
-    })
-
-  }else{
-
-    sendInvite(req.body.email , link);
-    return res.json({
-      message: message,
-    })
-  }
+  for (const invitation of invitations) {
+    if (invitation.email === "" || invitation.email.match(emailFormat)) {
+      return res.status(409).json({ message: `${invitation.email} ${err_2}` });
+    }
+    isFound = await userModel.findOne({ email: invitation.email });
+    let roleName = await userTypeModel.findOne({ _id: invitation.role }).select("name");
+    let projectName = await projectModel.findOne({ _id: invitation.project }).select("name");
+    let addedInvitations = await invitationModel.insertMany(invitation);
+    if (isFound) {
+      await invitationModel.findByIdAndUpdate(
+        addedInvitations[0]._id,
+        { isSignUp: true },
+        { new: true }
+      )
+      sendInvite(invitation,projectName,roleName , link);
+      return res.json({
+        message: message,isSignUp: true
+      })
+    }else{
+      sendInvite(invitation,projectName,roleName, link);
+      return res.json({
+        message: message,isSignUp: false
+      })
+    }
+}
 })
+const updateInvite = catchAsync(async (req, res, next) => {
+  let { id } = req.params;
+  let check = await invitationModel.findById(id);
+  let err_1 = "Ivitation not found!"
+  if(req.query.lang == "ar"){
+    err_1 = "الدعوة غير موجودة"
+  }
+if (!check) { 
+  return res.status(404).json({ message: err_1 });
+}
+
+  let updated = await invitationModel.findByIdAndUpdate(
+    id,
+    req.body,
+    { new: true }
+  );
+
+  if (!updated) {
+    return res.status(404).json({ message: err_1 });
+  }
+  if(req.body.isApproved){
+    let foundUser = await userModel.findOne({ email: check.email });
+    if(foundUser){
+      await projectModel.findOneAndUpdate({ _id: check.project }, { $push: { members: foundUser._id } },{new :true});
+  }else{
+    return res.status(404).json({ message: "User not found!" });
+  }
+  }
+  res.status(200).json({ message: "Done", updated });
+});
+
 const updateCollection = catchAsync(async (req, res, next) => {
   let { id } = req.params;
   let check = await userModel.findById(id);
@@ -431,4 +474,5 @@ export {
   getUserByEmail,
   getSubscriptionPeriod,
   getUserCompanyDetails,
+  updateInvite,
 };

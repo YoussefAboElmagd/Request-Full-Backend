@@ -16,13 +16,17 @@ const invitationSchema = mongoose.Schema(
       ref: "userType",
       required: true,
     },
+    email: {
+      type: String,
+      required: true,
+    },
     isSignUp:{
       type: Boolean,
       default: false,
     },
-    email: {
-      type: String,
-      required: true,
+    isApproved:{
+      type: Boolean,
+      default: false,
     },
     createdBy:{
       type: mongoose.Schema.Types.ObjectId,

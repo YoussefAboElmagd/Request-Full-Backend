@@ -102,7 +102,7 @@ const requsetSchema = mongoose.Schema(
       type : Number,
       //required : true
     },
-    BoqItemNo : {
+    boqItemNo : {
       type : Number,
       //required : true
     },
