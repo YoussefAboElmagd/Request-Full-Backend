@@ -563,7 +563,12 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
     err_1 = "المشروع غير موجود";
   }
   let ApiFeat = new ApiFeature(
-    projectModel.findById(req.params.id).populate("members").populate("owner").populate("consultant").populate("contractor"),
+    projectModel
+      .findById(req.params.id)
+      .populate("members")
+      .populate("owner")
+      .populate("consultant")
+      .populate("contractor"),
     req.query
   )
     .sort()
@@ -605,18 +610,21 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
   //     }
   //   }
   // });
-    groupAdmins = {
-    owner: results.owner ,
-    consultant: results.consultant || null, 
+  groupAdmins = {
+    owner: results.owner,
+    consultant: results.consultant || null,
     contractor: results.contractor || null,
   };
-  let list = [groupAdmins.owner, groupAdmins.consultant, groupAdmins.contractor];
+  let list = [
+    groupAdmins.owner,
+    groupAdmins.consultant,
+    groupAdmins.contractor,
+  ];
   let ownerTeam = [];
   let consultantTeam = [];
   let constractorTeam = [];
   let groupedMembers = members;
   let memberss = members.reduce((acc, member) => {
-    
     if (member.role == "owner" && !list.includes(member._id)) {
       ownerTeam.push(member);
     } else if (member.role == "consultant" && !list.includes(member._id)) {
@@ -1001,9 +1009,9 @@ const updateProject = catchAsync(async (req, res, next) => {
     notes,
     approvalOfSchemesModel,
     workRequestModel,
-    requestForInspectionFormModel,
+    requestForMaterialAndEquipmentInspection,
     requestForApprovalOfMaterialsModel,
-    requestForDocumentSubmittalApprovalModel,
+    requestForDrawingSubmittalApproval,
     tableOfQuantitiesModel,
   } = req.body;
   const updatedProject = await projectModel.findByIdAndUpdate(
@@ -1029,9 +1037,9 @@ const updateProject = catchAsync(async (req, res, next) => {
         notes,
         approvalOfSchemesModel,
         workRequestModel,
-        requestForInspectionFormModel,
+        requestForMaterialAndEquipmentInspection,
         requestForApprovalOfMaterialsModel,
-        requestForDocumentSubmittalApprovalModel,
+        requestForDrawingSubmittalApproval,
         tableOfQuantitiesModel,
       },
       contractor,
@@ -1079,9 +1087,9 @@ const updateProject2 = catchAsync(async (req, res, next) => {
     notes,
     approvalOfSchemesModel,
     workRequestModel,
-    requestForInspectionFormModel,
+    requestForMaterialAndEquipmentInspection,
     requestForApprovalOfMaterialsModel,
-    requestForDocumentSubmittalApprovalModel,
+    requestForDrawingSubmittalApproval,
     tableOfQuantitiesModel,
   } = req.body;
   const updatedProject = await projectModel.findByIdAndUpdate(
@@ -1097,9 +1105,9 @@ const updateProject2 = catchAsync(async (req, res, next) => {
         notes,
         approvalOfSchemesModel,
         workRequestModel,
-        requestForInspectionFormModel,
+        requestForMaterialAndEquipmentInspection,
         requestForApprovalOfMaterialsModel,
-        requestForDocumentSubmittalApprovalModel,
+        requestForDrawingSubmittalApproval,
         tableOfQuantitiesModel,
       },
       team,

@@ -87,23 +87,23 @@ const taskSchema = mongoose.Schema(
     unit: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "unit",
-      // required: true, 
+      // required: true,
     },
     taskStatus: {
       type: String,
-      enum: ["working", "completed","delayed","waiting"],
+      enum: ["working", "completed", "delayed", "waiting"],
       default: "waiting",
       required: true,
     },
     taskPriority: {
       type: String,
-      enum: ["medium", "high","low"],
+      enum: ["medium", "high", "low"],
       default: "medium",
       required: true,
     },
     type: {
       type: String,
-      enum: ["toq","milestone","recurring","oneTime"],
+      enum: ["toq", "milestone", "recurring", "oneTime"],
       required: true,
     },
     progress: {
@@ -116,44 +116,48 @@ const taskSchema = mongoose.Schema(
       default: false,
       required: true,
     },
-    requestForDocumentSubmittalApprovalModel : {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref : "request",
-      default: [],
-      // required: true,
-    },
-    requestForApprovalOfMaterialsModel: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref : "request",
-      default: [],
-      // required: true,
-    },
-    workRequestModel: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref : "request",
-      default: [],
-      // required: true,
-    },
+    // requestForDrawingSubmittalApproval: {
+    //   type: [mongoose.Schema.Types.ObjectId],
+    //   ref: "request",
+    //   default: [],
+    //   // required: true,
+    // },
+    // requestForApprovalOfMaterialsModel: {
+    //   type: [mongoose.Schema.Types.ObjectId],
+    //   ref: "request",
+    //   default: [],
+    //   // required: true,
+    // },
+    // workRequestModel: {
+    //   type: [mongoose.Schema.Types.ObjectId],
+    //   ref: "request",
+    //   default: [],
+    //   // required: true,
+    // },
     // tableOfQuantitiesModel: {
     //   type: [mongoose.Schema.Types.ObjectId],
     //   ref : "request",
     //   default: [],
     //   // required: true,
     // },
-    requestForInspectionFormModel: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref : "request",
-      default: [],
-      // required: true,
+    // requestForMaterialAndEquipmentInspection: {
+    //   type: [mongoose.Schema.Types.ObjectId],
+    //   ref: "request",
+    //   default: [],
+    //   // required: true,
+    // },
+    // requestForDocumentsubmittalApproval: {
+    //   type: [mongoose.Schema.Types.ObjectId],
+    //   ref: "request",
+    //   default: [],
+    //   // required: true,
+    // },
+    recurrenceInterval: { type: Number, default: 1 },
+    recurrenceUnit: {
+      type: String,
+      enum: ["days", "weeks", "months"],
+      default: "days",
     },
-    approvalOfSchemesModel: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref : "request",
-      default: [],
-      // required: true,
-    },
-    recurrenceInterval: { type: Number ,default:1 },
-    recurrenceUnit: { type: String, enum: ['days', 'weeks', 'months'], default: 'days' },
     recurrenceEndDate: { type: Date },
     notes: [
       {
@@ -173,10 +177,10 @@ const taskSchema = mongoose.Schema(
   { timestamps: true }
 );
 
-taskSchema.pre('save', async function (next) {
+taskSchema.pre("save", async function (next) {
   if (this.dueDate && this.dueDate < new Date()) {
     this.taskStatus = "delayed";
-  } 
+  }
   next();
 });
 
@@ -191,83 +195,105 @@ taskSchema.post(/^find/, async function (docs) {
     docs = [docs]; // Convert to array if it's a single document
   }
   docs.forEach(async (doc) => {
-if(doc){
-  if (doc.dueDate && doc.dueDate < new Date() && doc.taskStatus !== "completed") {
-    doc.taskStatus = "delayed";
-  }
-  if (doc.documents && doc.documents.length > 0) {
-    await documentsModel.updateMany(
-      { _id: { $in: doc.documents } },
-      { $set: { tag: doc.tags } } 
-    );
-    doc.save();
-}
-}
+    if (doc) {
+      if (
+        doc.dueDate &&
+        doc.dueDate < new Date() &&
+        doc.taskStatus !== "completed"
+      ) {
+        doc.taskStatus = "delayed";
+      }
+      if (doc.documents && doc.documents.length > 0) {
+        await documentsModel.updateMany(
+          { _id: { $in: doc.documents } },
+          { $set: { tag: doc.tags } }
+        );
+        doc.save();
+      }
+    }
   });
 });
-taskSchema.pre('findOneAndUpdate',async function (next) {
+taskSchema.pre("findOneAndUpdate", async function (next) {
   const update = this.getUpdate();
-  const taskToUpdate = await mongoose.model("task").findOne(this.getQuery());  
+  const taskToUpdate = await mongoose.model("task").findOne(this.getQuery());
   const project = await projectModel.findById(taskToUpdate.project);
-  let dueDate = new Date(project.dueDate).toISOString().split('T')[0];
-  let sDate = new Date(project.sDate).toISOString().split('T')[0];
+  let dueDate = new Date(project.dueDate).toISOString().split("T")[0];
+  let sDate = new Date(project.sDate).toISOString().split("T")[0];
   const queryData = this.getOptions().context?.query; // Access the query data
-  let err_date_1 = "Start date must be less than due date" ;
+  let err_date_1 = "Start date must be less than due date";
   let err_date_2 = `Due date of task must be less than or equal to ${dueDate} (due date of project) `;
   let err_date_3 = `Start date of task must be less than or equal to ${sDate} (Start date of project) `;
   let err_date_4 = `Start date of task must be less than or equal to ${dueDate} ( End date of project) `;
-  if(queryData.lang == "ar"){
+  if (queryData.lang == "ar") {
     err_date_1 = "تاريخ البدء يجب ان يكون اقل من تاريخ الانتهاء";
     err_date_2 = `تاريخ الانتهاء يجب ان يكون اقل من او يساوي ${dueDate} (تاريخ انتهاء المشروع) `;
     err_date_3 = `تاريخ البدء يجب ان يكون اقل من او يساوي ${sDate} (تاريخ بدء المشروع) `;
-    err_date_4 = `تاريخ البدء يجب ان يكون اقل من او يساوي ${dueDate} (تاريخ انتهاء المشروع) `;  
+    err_date_4 = `تاريخ البدء يجب ان يكون اقل من او يساوي ${dueDate} (تاريخ انتهاء المشروع) `;
   }
   if (update.dueDate || update.sDate) {
-    if(new Date(update.sDate) > new Date(update.dueDate)){
+    if (new Date(update.sDate) > new Date(update.dueDate)) {
       return res.status(404).json({ message: err_date_1 });
     }
-    if(new Date(update.dueDate) > new Date(project.dueDate)){
-      return res.status(404).json({ message:err_date_2 });
+    if (new Date(update.dueDate) > new Date(project.dueDate)) {
+      return res.status(404).json({ message: err_date_2 });
     }
-    if(new Date(update.sDate) < new Date(project.sDate)){
+    if (new Date(update.sDate) < new Date(project.sDate)) {
       return res.status(404).json({ message: err_date_3 });
     }
-    if(new Date(update.sDate) > new Date(project.dueDate)){
+    if (new Date(update.sDate) > new Date(project.dueDate)) {
       return res.status(404).json({ message: err_date_4 });
     }
   }
   next();
 });
-taskSchema.pre('findOneAndUpdate', function (next) {
+taskSchema.pre("findOneAndUpdate", function (next) {
   const update = this.getUpdate();
-  if (update.dueDate && new Date(update.dueDate) < new Date() && update.status !== "completed") {
+  if (
+    update.dueDate &&
+    new Date(update.dueDate) < new Date() &&
+    update.status !== "completed"
+  ) {
     this.setUpdate({ ...update, taskStatus: "delayed" });
   }
 
   next();
 });
 taskSchema.pre("findOneAndUpdate", async function (next) {
-  const update = this.getUpdate(); 
-  const taskToUpdate = await mongoose.model("task").findOne(this.getQuery());  
+  const update = this.getUpdate();
+  const taskToUpdate = await mongoose.model("task").findOne(this.getQuery());
   const parentTaskId = taskToUpdate?.parentTask || update.parentTask;
   if (parentTaskId) {
     const queryData = this.getOptions().context?.query; // Access the query data
-    let err_valid_1 = "Required quantity can't be greater than total required quantity";
-    let err_valid_2 = "Invoiced quantity can't be greater than total invoiced quantity";
-    let err_valid_3 = "Executed quantity can't be greater than total executed quantity";
-    let err_valid_4 = "Approved quantity can't be greater than total approved quantity";
-    if(queryData.lang == "ar"){
-      err_valid_1 = "الكمية المطلوبة يجب ان تكون اقل من او يساوي مجموع الكمية المصنعة";
-      err_valid_2 = "الكمية المفوترة يجب ان تكون اقل من او يساوي مجموع الكمية المفوترة";
-      err_valid_3 = "الكمية المنفذة يجب ان تكون اقل من او يساوي مجموع الكمية المنفذة";
-      err_valid_4 = "الكمية المعتمدة يجب ان تكون اقل من او يساوي مجموع الكمية المعتمدة";
+    let err_valid_1 =
+      "Required quantity can't be greater than total required quantity";
+    let err_valid_2 =
+      "Invoiced quantity can't be greater than total invoiced quantity";
+    let err_valid_3 =
+      "Executed quantity can't be greater than total executed quantity";
+    let err_valid_4 =
+      "Approved quantity can't be greater than total approved quantity";
+    if (queryData.lang == "ar") {
+      err_valid_1 =
+        "الكمية المطلوبة يجب ان تكون اقل من او يساوي مجموع الكمية المصنعة";
+      err_valid_2 =
+        "الكمية المفوترة يجب ان تكون اقل من او يساوي مجموع الكمية المفوترة";
+      err_valid_3 =
+        "الكمية المنفذة يجب ان تكون اقل من او يساوي مجموع الكمية المنفذة";
+      err_valid_4 =
+        "الكمية المعتمدة يجب ان تكون اقل من او يساوي مجموع الكمية المعتمدة";
     }
-    const allSubTasks = await mongoose.model("task").find({ parentTask: parentTaskId });
+    const allSubTasks = await mongoose
+      .model("task")
+      .find({ parentTask: parentTaskId });
     const parentTask = await mongoose.model("task").findById(parentTaskId);
-    let totalInvoicedQuantity = update.invoicedQuantity ?? taskToUpdate.invoicedQuantity;
-    let totalExecutedQuantity = update.executedQuantity ?? taskToUpdate.executedQuantity;
-    let totalApprovedQuantity = update.approvedQuantity ?? taskToUpdate.approvedQuantity;
-    let totalRequiredQuantity = update.requiredQuantity ?? taskToUpdate.requiredQuantity;
+    let totalInvoicedQuantity =
+      update.invoicedQuantity ?? taskToUpdate.invoicedQuantity;
+    let totalExecutedQuantity =
+      update.executedQuantity ?? taskToUpdate.executedQuantity;
+    let totalApprovedQuantity =
+      update.approvedQuantity ?? taskToUpdate.approvedQuantity;
+    let totalRequiredQuantity =
+      update.requiredQuantity ?? taskToUpdate.requiredQuantity;
     allSubTasks.forEach((subTask) => {
       totalInvoicedQuantity += subTask.invoicedQuantity;
       totalExecutedQuantity += subTask.executedQuantity;
@@ -293,7 +319,11 @@ taskSchema.pre("findOneAndUpdate", async function (next) {
 taskSchema.pre(/^delete/, { document: false, query: true }, async function () {
   const doc = await this.model.findOne(this.getFilter());
   if (doc) {
-    await projectModel.findOneAndUpdate({ _id: doc.project }, { $pull: { tasks: doc._id } }, { new: true });
+    await projectModel.findOneAndUpdate(
+      { _id: doc.project },
+      { $pull: { tasks: doc._id } },
+      { new: true }
+    );
     await taskLogModel.deleteMany({ taskId: doc._id });
     if (doc.documents && doc.documents.length > 0) {
       removeFiles("documents", doc.documents);
@@ -303,8 +333,8 @@ taskSchema.pre(/^delete/, { document: false, query: true }, async function () {
 });
 
 taskSchema.pre(/^find/, function () {
-  this.populate('tags');
-  this.populate('unit');
-  this.populate('parentTask');
-})
+  this.populate("tags");
+  this.populate("unit");
+  this.populate("parentTask");
+});
 export const taskModel = mongoose.model("task", taskSchema);

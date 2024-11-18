@@ -473,7 +473,7 @@ const updateTask = catchAsync(async (req, res, next) => {
   }
 
   try {
-    if(req.body.assignees){
+    if (req.body.assignees) {
       if (!Array.isArray(req.body.assignees)) {
         req.body.assignees = [req.body.assignees];
       }
@@ -487,14 +487,14 @@ const updateTask = catchAsync(async (req, res, next) => {
           notes: { $each: notes || [] },
           approvalOfSchemesModel: { $each: approvalOfSchemesModel || [] },
           workRequestModel: { $each: workRequestModel || [] },
-          requestForInspectionFormModel: {
-            $each: requestForInspectionFormModel || [],
+          requestForMaterialAndEquipmentInspection: {
+            $each: requestForMaterialAndEquipmentInspection || [],
           },
           requestForApprovalOfMaterialsModel: {
             $each: requestForApprovalOfMaterialsModel || [],
           },
-          requestForDocumentSubmittalApprovalModel: {
-            $each: requestForDocumentSubmittalApprovalModel || [],
+          requestForDrawingSubmittalApproval: {
+            $each: requestForDrawingSubmittalApproval || [],
           },
           // tableOfQuantitiesModel: { $each: tableOfQuantitiesModel || [] },
         },
@@ -562,14 +562,15 @@ const generateChangeLogs = (updatedFields, userName) => {
     notes: "Task Notes",
     assignees: "Task Assignees",
     documents: "Task Documents",
-    approvalOfSchemesModel: "Approval Of Schemes Model",
-    workRequestModel: "Work Request Model",
-    requestForInspectionFormModel: "Request For Inspection Form Model",
-    requestForApprovalOfMaterialsModel:
-      "Request For Approval Of Materials Model",
-    requestForDocumentSubmittalApprovalModel:
-      "Request For Document Submittal Approval Model",
-    tableOfQuantitiesModel: "Table Of Quantities Model",
+    // approvalOfSchemesModel: "Approval Of Schemes Model",
+    // workRequestModel: "Work Request Model",
+    // requestForMaterialAndEquipmentInspection:
+    //   "Request For Inspection Form Model",
+    // requestForApprovalOfMaterialsModel:
+    //   "Request For Approval Of Materials Model",
+    // requestForDrawingSubmittalApproval:
+    //   "Request For Document Submittal Approval Model",
+    // tableOfQuantitiesModel: "Table Of Quantities Model",
   };
 
   return Object.entries(updatedFields)
@@ -602,12 +603,12 @@ const generateChangeLogsArabic = (updatedFields, userName) => {
     notes: "ملاحظات المهمة",
     assignees: "المكلفون",
     documents: "مستندات المهمة",
-    approvalOfSchemesModel: "نموذج الموافقة على المخططات",
-    workRequestModel: "نموذج طلب العمل",
-    requestForInspectionFormModel: " طلب استمارة المراجعة",
-    requestForApprovalOfMaterialsModel: "طلب الموافقة على المواد",
-    requestForDocumentSubmittalApprovalModel: "طلب الموافقة على المستندات",
-    tableOfQuantitiesModel: "جدول الكميات",
+    // approvalOfSchemesModel: "نموذج الموافقة على المخططات",
+    // workRequestModel: "نموذج طلب العمل",
+    // requestForMaterialAndEquipmentInspection: " طلب استمارة المراجعة",
+    // requestForApprovalOfMaterialsModel: "طلب الموافقة على المواد",
+    // requestForDrawingSubmittalApproval: "طلب الموافقة على المستندات",
+    // tableOfQuantitiesModel: "جدول الكميات",
   };
   return Object.entries(updatedFields)
     .filter(([key]) => fieldMappings[key])
@@ -629,11 +630,11 @@ const updateTask2 = catchAsync(async (req, res, next) => {
         documents,
         assignees,
         notes,
-        approvalOfSchemesModel,
-        workRequestModel,
-        requestForInspectionFormModel,
-        requestForApprovalOfMaterialsModel,
-        requestForDocumentSubmittalApprovalModel,
+        // approvalOfSchemesModel,
+        // workRequestModel,
+        // requestForMaterialAndEquipmentInspection,
+        // requestForApprovalOfMaterialsModel,
+        // requestForDrawingSubmittalApproval,
         // tableOfQuantitiesModel,
       },
     },
@@ -656,30 +657,36 @@ const updateTask2 = catchAsync(async (req, res, next) => {
     changes_en.push(`${user.name} Deleted user from task`);
     changes_ar.push(`${user.name} حذف المستخدم من المهمة`);
   }
-  if (req.body.approvalOfSchemesModel) {
-    changes_en.push(`${user.name} Deleted approval Of Schemes Model from task`);
-    changes_ar.push(`${user.name} حذف نموذج الموافقة على المخططات من المهمة`);
-  }
-  if (req.body.workRequestModel) {
-    changes_en.push(`${user.name} Deleted work Request Model from task`);
-    changes_ar.push(`${user.name} حذف نموذج طلب العمل من المهمة`);
-  }
-  if (req.body.requestForInspectionFormModel) {
-    changes_en.push(`${user.name} Deleted request For Inspection Form Model from task`);
-    changes_ar.push(`${user.name} حذف طلب استمارة المراجعة من المهمة`);
-  }
-  if (req.body.requestForApprovalOfMaterialsModel) {
-    changes_en.push(`${user.name} Deleted request For Approval Of Materials Model from task`);
-    changes_ar.push(`${user.name} حذف طلب الموافقة على المواد من المهمة`);
-  }
-  if (req.body.requestForDocumentSubmittalApprovalModel) {
-    changes_en.push(`${user.name} Deleted request For Document Submittal Approval Model from task`);
-    changes_ar.push(`${user.name} حذف طلب الموافقة على المستندات من المهمة`);
-  }
-  if (req.body.tableOfQuantitiesModel) {
-    changes_en.push(`${user.name} Deleted table Of Quantities Model from task`);
-    changes_ar.push(`${user.name} حذف جدول الكميات من المهمة`);
-  }
+  // if (req.body.approvalOfSchemesModel) {
+  //   changes_en.push(`${user.name} Deleted approval Of Schemes Model from task`);
+  //   changes_ar.push(`${user.name} حذف نموذج الموافقة على المخططات من المهمة`);
+  // }
+  // if (req.body.workRequestModel) {
+  //   changes_en.push(`${user.name} Deleted work Request Model from task`);
+  //   changes_ar.push(`${user.name} حذف نموذج طلب العمل من المهمة`);
+  // }
+  // if (req.body.requestForMaterialAndEquipmentInspection) {
+  //   changes_en.push(
+  //     `${user.name} Deleted request For Inspection Form Model from task`
+  //   );
+  //   changes_ar.push(`${user.name} حذف طلب استمارة المراجعة من المهمة`);
+  // }
+  // if (req.body.requestForApprovalOfMaterialsModel) {
+  //   changes_en.push(
+  //     `${user.name} Deleted request For Approval Of Materials Model from task`
+  //   );
+  //   changes_ar.push(`${user.name} حذف طلب الموافقة على المواد من المهمة`);
+  // }
+  // if (req.body.requestForDrawingSubmittalApproval) {
+  //   changes_en.push(
+  //     `${user.name} Deleted request For Document Submittal Approval Model from task`
+  //   );
+  //   changes_ar.push(`${user.name} حذف طلب الموافقة على المستندات من المهمة`);
+  // }
+  // if (req.body.tableOfQuantitiesModel) {
+  //   changes_en.push(`${user.name} Deleted table Of Quantities Model from task`);
+  //   changes_ar.push(`${user.name} حذف جدول الكميات من المهمة`);
+  // }
   if (req.body.documents) {
     changes_en.push(`${user.name} Deleted Task Document`);
     changes_ar.push(`${user.name} حذف مستند المهمة`);

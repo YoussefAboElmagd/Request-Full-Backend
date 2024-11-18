@@ -14,17 +14,17 @@ const projectSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["working", "completed","delayed","waiting"],
+      enum: ["working", "completed", "delayed", "waiting"],
       default: "waiting",
       required: true,
     },
     projectPriority: {
       type: String,
-      enum: ["medium", "high","low"],
+      enum: ["medium", "high", "low"],
       default: "medium",
       required: true,
     },
-    requestForDocumentSubmittalApproval : {
+    requestForDocumentSubmittalApproval: {
       type: Boolean,
       default: false,
       required: true,
@@ -54,42 +54,42 @@ const projectSchema = mongoose.Schema(
       default: false,
       required: true,
     },
-    requestForDocumentSubmittalApprovalModel : {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref : "request",
-      default: [],
-      // required: true,
-    },
-    requestForApprovalOfMaterialsModel: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref : "request",
-      default: [],
-      // required: true,
-    },
-    workRequestModel: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref : "request",
-      default: [],
-      // required: true,
-    },
+    // requestForDrawingSubmittalApproval: {
+    //   type: [mongoose.Schema.Types.ObjectId],
+    //   ref: "request",
+    //   default: [],
+    //   // required: true,
+    // },
+    // requestForApprovalOfMaterialsModel: {
+    //   type: [mongoose.Schema.Types.ObjectId],
+    //   ref: "request",
+    //   default: [],
+    //   // required: true,
+    // },
+    // workRequestModel: {
+    //   type: [mongoose.Schema.Types.ObjectId],
+    //   ref: "request",
+    //   default: [],
+    //   // required: true,
+    // },
     // tableOfQuantitiesModel: {
     //   type: [mongoose.Schema.Types.ObjectId],
     //   ref : "request",
     //   default: [],
     //   // required: true,
     // },
-    requestForInspectionFormModel: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref : "request",
-      default: [],
-      // required: true,
-    },
-    approvalOfSchemesModel: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref : "request",
-      default: [],
-      // required: true,
-    },
+    // requestForMaterialAndEquipmentInspection: {
+    //   type: [mongoose.Schema.Types.ObjectId],
+    //   ref: "request",
+    //   default: [],
+    //   // required: true,
+    // },
+    // approvalOfSchemesModel: {
+    //   type: [mongoose.Schema.Types.ObjectId],
+    //   ref: "request",
+    //   default: [],
+    //   // required: true,
+    // },
     notes: [
       {
         content: { type: String },
@@ -151,9 +151,9 @@ const projectSchema = mongoose.Schema(
       default: 0,
       required: true,
     },
-    members: 
-      [{ type: mongoose.Schema.Types.ObjectId, ref: "user",default: [],}]
-    ,
+    members: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "user", default: [] },
+    ],
     tags: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "tag",
@@ -173,11 +173,14 @@ const projectSchema = mongoose.Schema(
   { timestamps: true }
 );
 
-projectSchema.post('find', async function(docs) {
+projectSchema.post("find", async function (docs) {
   for (let project of docs) {
     const tasks = await taskModel.find({ project: project._id });
-    const validTasks = tasks.filter(task => task.type === "toq");
-    const totalProgress = validTasks.reduce((sum, task) => sum + task.progress, 0);
+    const validTasks = tasks.filter((task) => task.type === "toq");
+    const totalProgress = validTasks.reduce(
+      (sum, task) => sum + task.progress,
+      0
+    );
     const taskCount = validTasks.length;
     project.progress = taskCount > 0 ? totalProgress / taskCount : 0;
   }
@@ -188,32 +191,39 @@ projectSchema.post(/^find/, async function (docs, next) {
     docs = [docs]; // Convert to array if it's a single document
   }
   docs.forEach(async (doc) => {
-if(doc){
-  if (doc.dueDate && doc.dueDate < new Date() && doc.status !== "completed") {
-    doc.status = "delayed";
-    doc.save();
-  }
-  // if (doc.team) {
-  //   const team = await teamModel.findOne({ _id: doc.team });
-  //   if (team) {
-  //     const newMembers = team.members.filter((item) => !doc.members.includes(item));
-  //     doc.members.push(...newMembers);
-  //   }
-  // }
-}    
+    if (doc) {
+      if (
+        doc.dueDate &&
+        doc.dueDate < new Date() &&
+        doc.status !== "completed"
+      ) {
+        doc.status = "delayed";
+        doc.save();
+      }
+      // if (doc.team) {
+      //   const team = await teamModel.findOne({ _id: doc.team });
+      //   if (team) {
+      //     const newMembers = team.members.filter((item) => !doc.members.includes(item));
+      //     doc.members.push(...newMembers);
+      //   }
+      // }
+    }
   });
 
   next();
 });
 
-projectSchema.pre('findOneAndUpdate', async function (next) {
+projectSchema.pre("findOneAndUpdate", async function (next) {
   const update = this.getUpdate();
 
   // Check if the dueDate needs to update the status
-  if (update.dueDate && new Date(update.dueDate) < new Date() && update.status !== "completed") {
+  if (
+    update.dueDate &&
+    new Date(update.dueDate) < new Date() &&
+    update.status !== "completed"
+  ) {
     this.setUpdate({ ...update, status: "delayed" });
   }
-
 
   // If team is being updated
   // if (update.team) {
@@ -252,11 +262,15 @@ projectSchema.pre('findOneAndUpdate', async function (next) {
 //   this.populate('members','owner','consultant','contractor','tasks');
 // })
 
-projectSchema.pre(/^delete/, { document: false, query: true }, async function () {
-  const doc = await this.model.findOne(this.getFilter());
-  if (doc) {
-    await taskModel.deleteMany({ project: doc._id });
-    await requsetModel.deleteMany({ project: doc._id });
+projectSchema.pre(
+  /^delete/,
+  { document: false, query: true },
+  async function () {
+    const doc = await this.model.findOne(this.getFilter());
+    if (doc) {
+      await taskModel.deleteMany({ project: doc._id });
+      await requsetModel.deleteMany({ project: doc._id });
+    }
   }
-});
+);
 export const projectModel = mongoose.model("project", projectSchema);

@@ -6,16 +6,22 @@ const requsetSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    title: {
+      type: String,
+      required: true,
+    },
     description: {
       type: String,
-      // required: true,
+      required: true,
     },
     qty: {
       type: Number,
+      default:null,
       // required: true,
     },
     supplier: {
       type: String,
+      default:null,
       // required: true,
     },
     project: {
@@ -61,7 +67,7 @@ const requsetSchema = mongoose.Schema(
       ref: "user",
       required: true,
     },
-    Contractor: {
+    contractor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       // required: true,
@@ -69,21 +75,25 @@ const requsetSchema = mongoose.Schema(
     consultant: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
+      default:null,
       // required: true,
     },
     reviewedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
+      default:null,
       // required: true,
     },
     notedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
+      default:null,
       // required: true,
     },
     submitedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
+      default:null,
       // required: true,
     },
     model: {
@@ -100,14 +110,17 @@ const requsetSchema = mongoose.Schema(
     ],
     approvedMaterialSubmittalNo : {
       type : Number,
+      default:null,
       //required : true
     },
     boqItemNo : {
       type : Number,
+      default:null,
       //required : true
     },
     deliveryNoteNo : {
       type : Number,
+      default:null,
       //required : true
     }
   },
