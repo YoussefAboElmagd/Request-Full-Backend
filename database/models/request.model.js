@@ -125,6 +125,11 @@ const requsetSchema = mongoose.Schema(
       type : Number,
       default:null,
       //required : true
+    },
+    remarks : {
+      type : String,
+      default:null,
+      //required : true
     }
   },
   { timestamps: true }
