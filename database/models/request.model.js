@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const requsetSchema = mongoose.Schema(
   {
-    refNO: {
+    refNo: {
       type: String,
       required: true,
     },
