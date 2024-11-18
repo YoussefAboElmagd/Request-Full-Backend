@@ -37,6 +37,7 @@ const requsetSchema = mongoose.Schema(
     },
     comment: {
       type: [String],
+      default: [],
     },
     date: {
       type: Date,
@@ -52,14 +53,17 @@ const requsetSchema = mongoose.Schema(
       ref: "actionCode",
       required: true, 
     },
-    units: {
+    unit: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "unit",
+      default: null,
       // required: true, 
     },
     reason: {
       type: mongoose.Schema.Types.ObjectId,
-      ref:"reason"
+      ref:"reason" ,
+      default: null,
+
       // required: true,
     },
     createdBy: {
@@ -70,6 +74,7 @@ const requsetSchema = mongoose.Schema(
     contractor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
+      default: null,
       // required: true,
     },
     consultant: {
@@ -102,12 +107,10 @@ const requsetSchema = mongoose.Schema(
       immutable: true,
       required: true,
     },
-    consultantsComment:[
-      {
-      type:String,
-      //required:true
-      }
-    ],
+    consultantsComment:{  
+    type: [String],
+    default: [],
+  },
     approvedMaterialSubmittalNo : {
       type : Number,
       default:null,
@@ -129,7 +132,7 @@ const requsetSchema = mongoose.Schema(
 
 requsetSchema.pre(/^find/, function () {
   this.populate('actionCode');
-  this.populate('units');
+  this.populate('unit');
   this.populate('discipline');
   this.populate('reason');
 })
