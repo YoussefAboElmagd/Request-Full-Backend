@@ -112,8 +112,10 @@ const updateInvite = catchAsync(async (req, res, next) => {
   let { id } = req.params;
   let check = await invitationModel.findById(id);
   let err_1 = "Ivitation not found!"
+  let err_2 = "Ivitation not vaild!"
   if(req.query.lang == "ar"){
     err_1 = "الدعوة غير موجودة"
+    err_2 = "الدعوة غير صالحة"
   }
 if (!check) { 
   return res.status(404).json({ message: err_1 });
@@ -123,11 +125,13 @@ if(req.body.isApproved == true){
   if(foundUser){
     await projectModel.findOneAndUpdate({ _id: check.project }, { $push: { members: foundUser._id } },{new :true});
     await invitationModel.deleteOne({ _id: id });
+    return res.status(200).json({ message: "Done",  });
 }else{
   return res.status(404).json({ message: "User not found!" });
 }
+}else{
+  return res.status(404).json({ message: err_2 });
 }
-  res.status(200).json({ message: "Done",  });
 });
 
 const updateCollection = catchAsync(async (req, res, next) => {
