@@ -485,17 +485,17 @@ const updateTask = catchAsync(async (req, res, next) => {
           documents: { $each: documents || [] },
           assignees: { $each: assignees || [] },
           notes: { $each: notes || [] },
-          approvalOfSchemesModel: { $each: approvalOfSchemesModel || [] },
-          workRequestModel: { $each: workRequestModel || [] },
-          requestForMaterialAndEquipmentInspection: {
-            $each: requestForMaterialAndEquipmentInspection || [],
-          },
-          requestForApprovalOfMaterialsModel: {
-            $each: requestForApprovalOfMaterialsModel || [],
-          },
-          requestForDrawingSubmittalApproval: {
-            $each: requestForDrawingSubmittalApproval || [],
-          },
+          // approvalOfSchemesModel: { $each: approvalOfSchemesModel || [] },
+          // workRequestModel: { $each: workRequestModel || [] },
+          // requestForMaterialAndEquipmentInspection: {
+          //   $each: requestForMaterialAndEquipmentInspection || [],
+          // },
+          // requestForApprovalOfMaterialsModel: {
+          //   $each: requestForApprovalOfMaterialsModel || [],
+          // },
+          // requestForDrawingSubmittalApproval: {
+          //   $each: requestForDrawingSubmittalApproval || [],
+          // },
           // tableOfQuantitiesModel: { $each: tableOfQuantitiesModel || [] },
         },
         ...otherUpdatedFields,
