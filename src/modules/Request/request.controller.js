@@ -74,6 +74,26 @@ const getAllRequestByUser = catchAsync(async (req, res, next) => {
   !results && next(new AppError(err_2, 404));
   results && res.json({ message: "Done", results });
 });
+const getAllRequestByProject = catchAsync(async (req, res, next) => {
+  let { id } = req.params;
+  let err_2 = "Project not found!"
+  if(req.query.lang == "ar"){
+    err_2 = "المشروع غير موجود"
+  }
+  let results = await requsetModel.find({ project: id });
+  !results && next(new AppError(err_2, 404));
+  results && res.json({ message: "Done", results });
+});
+const getAllRequestByTask = catchAsync(async (req, res, next) => {
+  let { id } = req.params;
+  let err_2 = "Task not found!"
+  if(req.query.lang == "ar"){
+    err_2 = "المهمة غير موجود"
+  }
+  let results = await requsetModel.find({ task: id });
+  !results && next(new AppError(err_2, 404));
+  results && res.json({ message: "Done", results });
+});
 const updateRequest = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   let err_1 = "No Model was found!"
@@ -113,4 +133,6 @@ export {
   updateRequest,
   deleteRequest,
   getAllRequestByUser,
+  getAllRequestByProject,
+  getAllRequestByTask,
 };

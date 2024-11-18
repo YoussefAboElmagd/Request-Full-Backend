@@ -496,7 +496,7 @@ const updateTask = catchAsync(async (req, res, next) => {
           requestForDocumentSubmittalApprovalModel: {
             $each: requestForDocumentSubmittalApprovalModel || [],
           },
-          tableOfQuantitiesModel: { $each: tableOfQuantitiesModel || [] },
+          // tableOfQuantitiesModel: { $each: tableOfQuantitiesModel || [] },
         },
         ...otherUpdatedFields,
       },
@@ -634,7 +634,7 @@ const updateTask2 = catchAsync(async (req, res, next) => {
         requestForInspectionFormModel,
         requestForApprovalOfMaterialsModel,
         requestForDocumentSubmittalApprovalModel,
-        tableOfQuantitiesModel,
+        // tableOfQuantitiesModel,
       },
     },
     {

@@ -72,12 +72,12 @@ const projectSchema = mongoose.Schema(
       default: [],
       // required: true,
     },
-    tableOfQuantitiesModel: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref : "request",
-      default: [],
-      // required: true,
-    },
+    // tableOfQuantitiesModel: {
+    //   type: [mongoose.Schema.Types.ObjectId],
+    //   ref : "request",
+    //   default: [],
+    //   // required: true,
+    // },
     requestForInspectionFormModel: {
       type: [mongoose.Schema.Types.ObjectId],
       ref : "request",
