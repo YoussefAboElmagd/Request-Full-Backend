@@ -13,13 +13,13 @@ import { projectModel } from "../../../database/models/project.model.js";
 const updateprofilePic = catchAsync(async (req, res, next) => {
   let { id } = req.params;
   let check = await userModel.findById(id);
-  let err_1 = "User not found!"
-  if(req.query.lang == "ar"){
-    err_1 = "المستخدم غير موجود"  
+  let err_1 = "User not found!";
+  if (req.query.lang == "ar") {
+    err_1 = "المستخدم غير موجود";
   }
-if (!check) { 
-  return res.status(404).json({ message: err_1 });
-}
+  if (!check) {
+    return res.status(404).json({ message: err_1 });
+  }
   const profilePic = photoUpload(req, "profilePic", "profilePic");
 
   let updatedProfile = await userModel.findByIdAndUpdate(
@@ -31,144 +31,170 @@ if (!check) {
   if (!updatedProfile) {
     return res.status(404).json({ message: err_1 });
   }
-  res.status(200).json({ message: "Profile updated successfully!", profilePic });
+  res
+    .status(200)
+    .json({ message: "Profile updated successfully!", profilePic });
 });
-
 
 const postMessage = catchAsync(async (req, res, next) => {
   let { id } = req.params;
   let user = await userModel.findById(id);
-  let err_1 = "couldn't post! user not found!"
-  let message = "Message sent to admin"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يمكن إرسال الرسالة! المستخدم غير موجود!"
-    message = "تم إرسال الرسالة إلى المسؤول"
+  let err_1 = "couldn't post! user not found!";
+  let message = "Message sent to admin";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يمكن إرسال الرسالة! المستخدم غير موجود!";
+    message = "تم إرسال الرسالة إلى المسؤول";
   }
   !user && res.status(404).json({ message: "couldn't post! user not found!" });
-  contactUs( user.name,user.email,req.body.message);
+  contactUs(user.name, user.email, req.body.message);
   res.json({ message: message, user });
 });
 const getInTouch = catchAsync(async (req, res, next) => {
-  let err_1 = "This Phone is not valid"
-  let err_2 = "This Email is not valid"
-  let message = "Message sent to admin"
-  if(req.query.lang == "ar"){
-    err_1 = "هذا الهاتف غير صحيح"
-    err_2 = "هذا البريد الالكتروني غير صحيح"
-    message = "تم إرسال الرسالة إلى المسؤول"
+  let err_1 = "This Phone is not valid";
+  let err_2 = "This Email is not valid";
+  let message = "Message sent to admin";
+  if (req.query.lang == "ar") {
+    err_1 = "هذا الهاتف غير صحيح";
+    err_2 = "هذا البريد الالكتروني غير صحيح";
+    message = "تم إرسال الرسالة إلى المسؤول";
   }
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
   if (req.body.phone === "" || req.body.phone.length < 9) {
     return res.status(409).json({ message: err_1 });
   }
   if (req.body.email !== "" && req.body.email.match(emailFormat)) {
-    contactUs2( req.body.name,req.body.email,req.body.phone,req.body.message);
-    res.json({ message: message});
-  }else{
+    contactUs2(req.body.name, req.body.email, req.body.phone, req.body.message);
+    res.json({ message: message });
+  } else {
     return res.status(409).json({ message: err_2 });
   }
 });
 
 const sendInviteToProject = catchAsync(async (req, res, next) => {
-  let link = "https://request-sa.com/Invitation"
+  let link = "https://request-sa.com/Invitation";
   let invitations = Array.isArray(req.body) ? req.body : [req.body];
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
-  let err_2 = "This Email is not valid"
-  let message = "Invite has been sent!"
-  if(req.query.lang == "ar"){
-    err_2 = "هذا البريد الالكتروني غير صحيح"
-    message = "تم إرسال الدعوة  "
+  let err_2 = "This Email is not valid";
+  let message = "Invite has been sent!";
+  if (req.query.lang == "ar") {
+    err_2 = "هذا البريد الالكتروني غير صحيح";
+    message = "تم إرسال الدعوة  ";
   }
   for (let invitation of invitations) {
     if (invitation.email === "" || !invitation.email.match(emailFormat)) {
-      return res.status(409).json({ message: `${invitation.email}  ${err_2}.` });
+      return res
+        .status(409)
+        .json({ message: `${invitation.email}  ${err_2}.` });
     }
 
     try {
       let isFound = await userModel.findOne({ email: invitation.email });
-      let roleName = await userTypeModel.findOne({ _id: invitation.role }).select("jobTitle");
-      let project = await projectModel.findOne({ _id: invitation.project }).select("name");
+      let roleName = await userTypeModel
+        .findOne({ _id: invitation.role })
+        .select("jobTitle");
+      let project = await projectModel
+        .findOne({ _id: invitation.project })
+        .select("name");
       let addedInvitations = new invitationModel(invitation);
-      let savedData =await addedInvitations.save();
-      
+      let savedData = await addedInvitations.save();
+
       if (isFound) {
         await invitationModel.findByIdAndUpdate(
           savedData._id,
           { isSignUp: true },
           { new: true }
         );
-      } 
-        sendInvite(invitation, project.name, roleName.jobTitle,savedData._id, link);
+      }
+      sendInvite(
+        invitation,
+        project.name,
+        roleName.jobTitle,
+        savedData._id,
+        link
+      );
     } catch (error) {
-      return res.status(500).json({ message: "An error occurred.", error: error.message });
+      return res
+        .status(500)
+        .json({ message: "An error occurred.", error: error.message });
     }
   }
-    return res.json({
-      message: message,
-    });
-  
-})
+  return res.json({
+    message: message,
+  });
+});
 const updateInvite = catchAsync(async (req, res, next) => {
   let { id } = req.params;
   let check = await invitationModel.findById(id);
-  let err_1 = "Ivitation not found!"
-  if(req.query.lang == "ar"){
-    err_1 = "الدعوة غير موجودة"
+  let err_1 = "Ivitation not found!";
+  let err_2 = "Ivitation not vaild!";
+  if (req.query.lang == "ar") {
+    err_1 = "الدعوة غير موجودة";
+    err_2 = "الدعوة غير صالحة";
   }
-if (!check) { 
-  return res.status(404).json({ message: err_1 });
-}
-if(req.body.isApproved == true){
-  let foundUser = await userModel.findOne({ email: check.email });
-  if(foundUser){
-    await projectModel.findOneAndUpdate({ _id: check.project }, { $push: { members: foundUser._id } },{new :true});
-    await invitationModel.deleteOne({ _id: id });
-  }else{
-    return res.status(404).json({ message: "User not found!" });
+  if (!check) {
+    return res.status(404).json({ message: err_1 });
   }
-}
-return res.status(200).json({ message: "Done",  });
+  if (req.body.isApproved == true) {
+    let foundUser = await userModel.findOne({ email: check.email });
+    if (foundUser) {
+      await projectModel.findOneAndUpdate(
+        { _id: check.project },
+        { $push: { members: foundUser._id } },
+        { new: true }
+      );
+      await invitationModel.deleteOne({ _id: id });
+      return res.status(200).json({ message: "Done" });
+    } else {
+      return res.status(404).json({ message: "User not found!" });
+    }
+  } else {
+    return res.status(404).json({ message: err_2 });
+  }
 });
 
 const updateCollection = catchAsync(async (req, res, next) => {
   let { id } = req.params;
   let check = await userModel.findById(id);
-  let err_1 = "User not found!"
-  let err_2 = "Couldn't update!  not found!"
-  let message = "Company Files updated successfully!"
-  if(req.query.lang == "ar"){
-    err_1 = "المستخدم غير موجود"
-    err_2 = "لا يمكن تحديث هذا المستخدم!"
-    message = "تم تحديث ملفات الشركة بنجاح!"
+  let err_1 = "User not found!";
+  let err_2 = "Couldn't update!  not found!";
+  let message = "Company Files updated successfully!";
+  if (req.query.lang == "ar") {
+    err_1 = "المستخدم غير موجود";
+    err_2 = "لا يمكن تحديث هذا المستخدم!";
+    message = "تم تحديث ملفات الشركة بنجاح!";
   }
-  if (!check) { 
+  if (!check) {
     return res.status(404).json({ message: err_1 });
   }
   const updates = {};
   const companyLogo = photoUpload(req, "companyLogo", "company");
   const electronicStamp = photoUpload(req, "electronicStamp", "company");
   const signature = photoUpload(req, "signature", "company");
-  
+
   if (signature) updates.signature = signature;
   if (companyLogo) updates.companyLogo = companyLogo;
   if (electronicStamp) updates.electronicStamp = electronicStamp;
-  if(req.body.companyName){
-    updates.companyName = req.body.companyName
+  if (req.body.companyName) {
+    updates.companyName = req.body.companyName;
   }
   if (Object.keys(updates).length > 0) {
-    const updatedProfile = await userModel.findByIdAndUpdate(id, updates, { new: true });
-  }
-  else{
+    const updatedProfile = await userModel.findByIdAndUpdate(id, updates, {
+      new: true,
+    });
+  } else {
     return res.status(404).json({ message: err_2 });
   }
-  res.status(200).json({ message: message, updates});
+  res.status(200).json({ message: message, updates });
 });
 
 const getAllUsersByAdmin = catchAsync(async (req, res, next) => {
-  let ApiFeat = new ApiFeature(userModel.find().limit(5).sort({ $natural: -1 }), req.query).search();
-  let message = "No users was found! add a new user to get started!"
-  if(req.query.lang == "ar"){
-    message = "لا يوجد مستخدمين! أضف مستخدم جديد للبدء!"
+  let ApiFeat = new ApiFeature(
+    userModel.find().limit(5).sort({ $natural: -1 }),
+    req.query
+  ).search();
+  let message = "No users was found! add a new user to get started!";
+  if (req.query.lang == "ar") {
+    message = "لا يوجد مستخدمين! أضف مستخدم جديد للبدء!";
   }
   let results = await ApiFeat.mongooseQuery;
   if (!results) {
@@ -183,9 +209,9 @@ const getAllUsersByAdmin = catchAsync(async (req, res, next) => {
   });
 });
 const getAllowners = catchAsync(async (req, res, next) => {
-  let message = "No users was found! add a new user to get started!"
-  if(req.query.lang == "ar"){
-    message = "لا يوجد مستخدمين! أضف مستخدم جديد للبدء!"
+  let message = "No users was found! add a new user to get started!";
+  if (req.query.lang == "ar") {
+    message = "لا يوجد مستخدمين! أضف مستخدم جديد للبدء!";
   }
   let ApiFeat = new ApiFeature(
     userModel.find({ role: "66d33a4b4ad80e468f231f83" }),
@@ -208,9 +234,9 @@ const getAllowners = catchAsync(async (req, res, next) => {
   }
 });
 const getAllcontractors = catchAsync(async (req, res, next) => {
-  let message = "No users was found! add a new user to get started!"
-  if(req.query.lang == "ar"){
-    message = "لا يوجد مستخدمين! أضف مستخدم جديد للبدء!"
+  let message = "No users was found! add a new user to get started!";
+  if (req.query.lang == "ar") {
+    message = "لا يوجد مستخدمين! أضف مستخدم جديد للبدء!";
   }
   let ApiFeat = new ApiFeature(
     userModel.find({ role: "66d33ec44ad80e468f231f91" }),
@@ -233,9 +259,9 @@ const getAllcontractors = catchAsync(async (req, res, next) => {
   }
 });
 const getAllconsultant = catchAsync(async (req, res, next) => {
-  let message = "No users was found! add a new user to get started!"
-  if(req.query.lang == "ar"){
-    message = "لا يوجد مستخدمين! أضف مستخدم جديد للبدء!"
+  let message = "No users was found! add a new user to get started!";
+  if (req.query.lang == "ar") {
+    message = "لا يوجد مستخدمين! أضف مستخدم جديد للبدء!";
   }
   let ApiFeat = new ApiFeature(
     userModel.find({ role: "66d33e7a4ad80e468f231f8d" }),
@@ -260,49 +286,54 @@ const getAllconsultant = catchAsync(async (req, res, next) => {
 
 const getUserById = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let message = "User Not found"
-  if(req.query.lang == "ar"){
-    message = "المستخدم غير موجود"
+  let message = "User Not found";
+  if (req.query.lang == "ar") {
+    message = "المستخدم غير موجود";
   }
   let results = await userModel.findById(id);
   !results && next(new AppError(message, 404));
-  let lastSignIn = req.lastSignIn
-  results && res.json({ message: "Done", results,lastSignIn });
+  let lastSignIn = req.lastSignIn;
+  results && res.json({ message: "Done", results, lastSignIn });
 });
 const getUserForInvite = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let message = "User Not found"
-  let message2 = "Invitation Not found"
-  if(req.query.lang == "ar"){
-    message = "المستخدم غير موجود"
-    message2 = "الدعوة غير موجودة"
+  let message = "User Not found";
+  let message2 = "Invitation Not found";
+  if (req.query.lang == "ar") {
+    message = "المستخدم غير موجود";
+    message2 = "الدعوة غير موجودة";
   }
   let results = await userModel.findById(id).select("name email");
-  let data = await invitationModel.findById({ _id:req.query.id }).select("role project projectName isSignUp").populate("role");
-  if(!data){
+  let data = await invitationModel
+    .findById({ _id: req.query.id })
+    .select("role project projectName isSignUp")
+    .populate("role");
+  if (!data) {
     return res.status(404).json({
       message: message2,
     });
   }
   !results && next(new AppError(message, 404));
-  results= {...results._doc,...data._doc}
+  results = { ...results._doc, ...data._doc };
   results && res.json({ message: "Done", results });
 });
 const getUserCompanyDetails = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let message = "User Not found"
-  if(req.query.lang == "ar"){
-    message = "المستخدم غير موجود"
+  let message = "User Not found";
+  if (req.query.lang == "ar") {
+    message = "المستخدم غير موجود";
   }
-  let results = await userModel.findById(id).select("companyName companyLogo signature electronicStamp");
+  let results = await userModel
+    .findById(id)
+    .select("companyName companyLogo signature electronicStamp");
   !results && next(new AppError(message, 404));
-  results && res.json({ message: "Done", results, });
+  results && res.json({ message: "Done", results });
 });
 const getUserTags = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let message = "User Not found"
-  if(req.query.lang == "ar"){
-    message = "المستخدم غير موجود"
+  let message = "User Not found";
+  if (req.query.lang == "ar") {
+    message = "المستخدم غير موجود";
   }
   let results = await userModel.findById(id).select("tags");
   !results && next(new AppError(message, 404));
@@ -310,11 +341,11 @@ const getUserTags = catchAsync(async (req, res, next) => {
   results && res.json({ message: "Done", results });
 });
 const getUserByEmail = catchAsync(async (req, res, next) => {
-  let message = "Email Not found"
-  if(req.query.lang == "ar"){
-    message = "البريد الإلكتروني غير موجود"
+  let message = "Email Not found";
+  if (req.query.lang == "ar") {
+    message = "البريد الإلكتروني غير موجود";
   }
-  let results = await userModel.find({email: req.body.email});
+  let results = await userModel.find({ email: req.body.email });
   !results && next(new AppError(message, 404));
   results = results.tags;
   results && res.json({ message: "Done", results });
@@ -322,9 +353,9 @@ const getUserByEmail = catchAsync(async (req, res, next) => {
 
 const updateUser = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let err = "couldn't update! not found!"
-  if(req.query.lang == "ar"){
-    err = "لا يمكن التحديث! المستخدم غير موجود"
+  let err = "couldn't update! not found!";
+  if (req.query.lang == "ar") {
+    err = "لا يمكن التحديث! المستخدم غير موجود";
   }
   if (req.body.dateOfBirth) {
     req.body.dateOfBirth = DateTime.fromISO(req.body.dateOfBirth).toISODate();
@@ -355,12 +386,12 @@ const updateUser = catchAsync(async (req, res, next) => {
     renewalSubscription,
     userGroups,
     access,
-    plan
+    plan,
   } = req.body;
   let results = await userModel.findByIdAndUpdate(
     id,
     {
-      $push: { projects, tags ,userGroups},
+      $push: { projects, tags, userGroups },
       name,
       phone,
       password,
@@ -383,7 +414,7 @@ const updateUser = catchAsync(async (req, res, next) => {
       renewalSubscription,
       twoWayAuthentication,
       access,
-      plan
+      plan,
     },
     { new: true }
   );
@@ -393,9 +424,9 @@ const updateUser = catchAsync(async (req, res, next) => {
 
 const getSubscriptionPeriod = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let message = "User Not found"
-  if(req.query.lang == "ar"){
-    message = "المستخدم غير موجود"
+  let message = "User Not found";
+  if (req.query.lang == "ar") {
+    message = "المستخدم غير موجود";
   }
   let result = await userModel.findById(id);
   !result && next(new AppError(message, 404));
@@ -408,25 +439,29 @@ const getSubscriptionPeriod = catchAsync(async (req, res, next) => {
     trialStartDate: result.trialStartDate,
     trialEndDate: result.trialEndDate,
     remainingDays: remainingDays,
-};
-results && res.json({ message: "Done", results });
-today.setMinutes(today.getMinutes() + 1);
+  };
+  results && res.json({ message: "Done", results });
+  today.setMinutes(today.getMinutes() + 1);
 
   const cronExpression = `${today.getMinutes()} ${today.getHours()} * * *`;
-  
+
   const task = cron.schedule(cronExpression, async () => {
     try {
-      console.log(remainingDays,"remaining Days");
-      if(remainingDays <= 0){
-      let user =  await userModel.findByIdAndUpdate(id, {
-          isTrialActive: false,
-          isOnFreeTrial: false,
-          trialEndDate: new Date(),
-          subscriptionType: "normal",
-        },{new: true});
-        console.log(user,"user");
+      console.log(remainingDays, "remaining Days");
+      if (remainingDays <= 0) {
+        let user = await userModel.findByIdAndUpdate(
+          id,
+          {
+            isTrialActive: false,
+            isOnFreeTrial: false,
+            trialEndDate: new Date(),
+            subscriptionType: "normal",
+          },
+          { new: true }
+        );
+        console.log(user, "user");
       }
-      
+
       task.stop();
     } catch (error) {
       console.error("Error during cron job execution:", error);
@@ -436,15 +471,15 @@ today.setMinutes(today.getMinutes() + 1);
 
 const updateUser2 = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let { projects, tags ,userGroups } = req.body;
-  let err = "couldn't update! not found!"
-  if(req.query.lang == "ar"){
-    err = "لا يمكن التحديث! المستخدم غير موجود"
+  let { projects, tags, userGroups } = req.body;
+  let err = "couldn't update! not found!";
+  if (req.query.lang == "ar") {
+    err = "لا يمكن التحديث! المستخدم غير موجود";
   }
   let results = await userModel.findByIdAndUpdate(
     id,
     {
-      $pull: { projects, tags ,userGroups },
+      $pull: { projects, tags, userGroups },
     },
     { new: true }
   );
@@ -454,32 +489,28 @@ const updateUser2 = catchAsync(async (req, res, next) => {
 
 const deleteUser = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let err = "couldn't Delete! not found!"
-  if(req.query.lang == "ar"){
-    err = "لا يمكن المسح! المستخدم غير موجود"
+  let err = "couldn't Delete! not found!";
+  if (req.query.lang == "ar") {
+    err = "لا يمكن المسح! المستخدم غير موجود";
   }
   let deletedUser = await userModel.deleteOne({ _id: id });
 
   if (!deletedUser) {
-    return res
-      .status(404)
-      .json({ message: err });
+    return res.status(404).json({ message: err });
   }
 
   res.status(200).json({ message: "User deleted successfully!" });
 });
 const deleteInvite = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let err = "couldn't Delete! Invite not found!"
-  if(req.query.lang == "ar"){
-    err = "لا يمكن المسح! الدعوة غير موجود"
+  let err = "couldn't Delete! Invite not found!";
+  if (req.query.lang == "ar") {
+    err = "لا يمكن المسح! الدعوة غير موجود";
   }
   let deletedUser = await invitationModel.deleteOne({ _id: id });
 
   if (!deletedUser) {
-    return res
-      .status(404)
-      .json({ message: err });
+    return res.status(404).json({ message: err });
   }
 
   res.status(200).json({ message: "invite deleted successfully!" });
