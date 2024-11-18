@@ -597,15 +597,15 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
     return acc;
   }, {});
 
-  let userType = "superUser";
-  members.forEach((member) => {
-    if (roles.includes(member.role)) {
-      if (member.userType == userType) {
-        groupAdmins[member.role] = member;
-      }
-    }
-  });
-  groupAdmins = {
+  // let userType = "superUser";
+  // members.forEach((member) => {
+  //   if (roles.includes(member.role)) {
+  //     if (member.userType == userType) {
+  //       groupAdmins[member.role] = member;
+  //     }
+  //   }
+  // });
+    groupAdmins = {
     owner: results.owner ,
     consultant: results.consultant || null, 
     contractor: results.contractor || null,
@@ -616,11 +616,12 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
   let constractorTeam = [];
   let groupedMembers = members;
   let memberss = members.reduce((acc, member) => {
-    if (member.role == "owner" && !list.includes(groupAdmins.owner)) {
+    
+    if (member.role == "owner" && !list.includes(member._id)) {
       ownerTeam.push(member);
-    } else if (member.role == "consultant" && !list.includes(groupAdmins.consultant)) {
+    } else if (member.role == "consultant" && !list.includes(member._id)) {
       consultantTeam.push(member);
-    } else if (member.role == "contractor" && !list.includes(groupAdmins.contractor)) {
+    } else if (member.role == "contractor" && !list.includes(member._id)) {
       constractorTeam.push(member);
     }
   }, []);
