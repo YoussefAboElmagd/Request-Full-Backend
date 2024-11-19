@@ -173,6 +173,10 @@ const requsetSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    sent: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
@@ -199,14 +203,12 @@ requsetSchema.pre('save', async function (next) {
   next();
 });
 
-// requsetSchema.pre(/^find/, async function (next) {
-//   const docs = await this.model.find(this.getFilter());
-//   for (const doc of docs) {
-//     await populateOwnerConsultantContractor(doc);
-//   }
-//   console.log(docs);
-//   next();
-// });
+requsetSchema.post(/^find/, async function (docs) {
+  if (!Array.isArray(docs)) docs = [docs]; 
+  for (const doc of docs) {
+    await populateOwnerConsultantContractor(doc);
+  }
+});
 
 requsetSchema.pre(/^find/, function () {
   this.populate("actionCode");

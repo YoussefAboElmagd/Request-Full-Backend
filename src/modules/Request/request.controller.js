@@ -65,7 +65,7 @@ const getAllRequest = catchAsync(async (req, res, next) => {
   });
 });
 const getRequestById = catchAsync(async (req, res, next) => {
-  let ApiFeat = new ApiFeature(requsetModel.findById(req.params.id).populate("project"), req.query).search();
+  let ApiFeat = new ApiFeature(requsetModel.findById(req.params.id).populate("project").populate("owner").populate("contractor").populate("consultant"), req.query).search();
   let err_1 = "No Model was found!"
   if(req.query.lang == "ar"){
     err_1 = "لا يوجد نماذج"
