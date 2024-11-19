@@ -126,11 +126,31 @@ const requsetSchema = mongoose.Schema(
       default:null,
       //required : true
     },
+    cell : {
+      type : Number,
+      default:null,
+      //required : true
+    },
     remarks : {
       type : String,
       default:null,
       //required : true
-    }
+    },
+    location : {
+      type : String,
+      default:null,
+      //required : true
+    },
+    workArea : {
+      type : String,
+      default:null,
+      //required : true
+    },
+    inspectionDate: {
+      type: Date,
+      default:null,
+      // required: true,
+    },
   },
   { timestamps: true }
 );
