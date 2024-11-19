@@ -178,7 +178,12 @@ const taskSchema = mongoose.Schema(
 );
 
 taskSchema.pre("save", async function (next) {
-  if (this.dueDate && this.dueDate < new Date()) {
+  if (
+    this.dueDate &&
+    this.dueDate < new Date() &&
+    this.dueDate.toDateString() !== new Date().toDateString() &&
+    this.taskStatus !== "completed"
+  ) {
     this.taskStatus = "delayed";
   }
   next();
@@ -199,6 +204,7 @@ taskSchema.post(/^find/, async function (docs) {
       if (
         doc.dueDate &&
         doc.dueDate < new Date() &&
+        doc.dueDate.toDateString() !== new Date().toDateString() &&
         doc.taskStatus !== "completed"
       ) {
         doc.taskStatus = "delayed";
@@ -251,6 +257,7 @@ taskSchema.pre("findOneAndUpdate", function (next) {
   if (
     update.dueDate &&
     new Date(update.dueDate) < new Date() &&
+    update.dueDate.toDateString() !== new Date().toDateString() &&
     update.status !== "completed"
   ) {
     this.setUpdate({ ...update, taskStatus: "delayed" });
