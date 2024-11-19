@@ -63,7 +63,6 @@ const requsetSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref:"reason" ,
       default: null,
-
       // required: true,
     },
     createdBy: {
@@ -160,6 +159,12 @@ requsetSchema.pre(/^find/, function () {
   this.populate('unit');
   this.populate('discipline');
   this.populate('reason');
+  this.populate('createdBy');
+  this.populate('submittedBy');
+  this.populate('contractor');
+  this.populate('consultant');
+  this.populate('reviewedBy');
+  this.populate('notedBy');
 })
 
 export const requsetModel = mongoose.model("requset", requsetSchema);
