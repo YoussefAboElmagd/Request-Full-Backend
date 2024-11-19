@@ -64,6 +64,25 @@ const getAllRequest = catchAsync(async (req, res, next) => {
     results,
   });
 });
+const getRequestById = catchAsync(async (req, res, next) => {
+  let ApiFeat = new ApiFeature(requsetModel.findById(req.params.id), req.query).search();
+  let err_1 = "No Model was found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يوجد نماذج"
+  }
+  let results = await ApiFeat.mongooseQuery;
+  results = JSON.stringify(results);
+  results = JSON.parse(results);
+  if (!ApiFeat || !results) {
+    return res.status(404).json({
+      message: err_1,
+    });
+  }
+  res.json({
+    message: "Done",
+    results,
+  });
+});
 const getAllRequestByUser = catchAsync(async (req, res, next) => {
   let { id } = req.params;
   let err_2 = "User not found!"
@@ -135,4 +154,5 @@ export {
   getAllRequestByUser,
   getAllRequestByProject,
   getAllRequestByTask,
+  getRequestById,
 };
