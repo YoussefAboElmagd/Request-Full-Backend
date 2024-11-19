@@ -199,14 +199,14 @@ requsetSchema.pre('save', async function (next) {
   next();
 });
 
-requsetSchema.pre(/^find/, async function (next) {
-  const docs = await this.model.find(this.getFilter());
-  for (const doc of docs) {
-    await populateOwnerConsultantContractor(doc);
-  }
-  console.log(docs);
-  next();
-});
+// requsetSchema.pre(/^find/, async function (next) {
+//   const docs = await this.model.find(this.getFilter());
+//   for (const doc of docs) {
+//     await populateOwnerConsultantContractor(doc);
+//   }
+//   console.log(docs);
+//   next();
+// });
 
 requsetSchema.pre(/^find/, function () {
   this.populate("actionCode");
