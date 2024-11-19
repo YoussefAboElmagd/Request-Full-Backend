@@ -160,7 +160,7 @@ requsetSchema.pre(/^find/, function () {
   this.populate('discipline');
   this.populate('reason');
   this.populate('createdBy');
-  this.populate('submittedBy');
+  this.populate('submitedBy');
   this.populate('contractor');
   this.populate('consultant');
   this.populate('reviewedBy');
