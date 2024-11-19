@@ -70,6 +70,12 @@ const requsetSchema = mongoose.Schema(
       ref: "user",
       required: true,
     },
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      default: null,
+      // required: true,
+    },
     contractor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
@@ -168,9 +174,39 @@ const requsetSchema = mongoose.Schema(
       default: false,
     },
   },
-
   { timestamps: true }
 );
+
+async function populateOwnerConsultantContractor(doc) {
+  if (doc.project) {
+    const project = await mongoose
+      .model('project')
+      .findById(doc.project)
+      .select('owner consultant contractor');
+
+    if (project) {
+      doc.owner = project.owner || null ;
+      doc.consultant = project.consultant|| null ;
+      doc.contractor = project.contractor || null ;
+    }
+  }
+}
+
+requsetSchema.pre('save', async function (next) {
+  if (this.isNew) {
+    await populateOwnerConsultantContractor(this);
+  }
+  next();
+});
+
+requsetSchema.pre(/^find/, async function (next) {
+  const docs = await this.model.find(this.getFilter());
+  for (const doc of docs) {
+    await populateOwnerConsultantContractor(doc);
+  }
+  console.log(docs);
+  next();
+});
 
 requsetSchema.pre(/^find/, function () {
   this.populate("actionCode");
@@ -180,6 +216,7 @@ requsetSchema.pre(/^find/, function () {
   this.populate("createdBy");
   this.populate("submitedBy");
   this.populate("contractor");
+  this.populate("owner");
   this.populate("consultant");
   this.populate("reviewedBy");
   this.populate("notedBy");
