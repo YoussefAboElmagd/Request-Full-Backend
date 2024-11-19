@@ -127,9 +127,13 @@ const updateInvite = catchAsync(async (req, res, next) => {
   let check = await invitationModel.findById(id);
   let err_1 = "Ivitation not found!";
   let err_2 = "Ivitation not vaild!";
+  let err_3 = "User not found!";
+  let err_4 = "Your role is not correct like Invitation!";
   if (req.query.lang == "ar") {
     err_1 = "الدعوة غير موجودة";
     err_2 = "الدعوة غير صالحة";
+    err_3 = "المستخدم غير موجود";
+    err_4 = "دورك غير صحيح مثل الدعوة!"
   }
   if (!check) {
     return res.status(404).json({ message: err_1 });
@@ -137,15 +141,24 @@ const updateInvite = catchAsync(async (req, res, next) => {
   if (req.body.isApproved == true) {
     let foundUser = await userModel.findOne({ email: check.email });
     if (foundUser) {
+      let updates = {$push: { members: foundUser._id },}
+      if(foundUser.role == check.role && check.role == "66d33e7a4ad80e468f231f8d"){ //consultant
+        updates.consultant = foundUser._id
+      }
+      if(foundUser.role == check.role && check.role == "66d33ec44ad80e468f231f91"){ //contractor
+        updates.contractor = foundUser._id
+      }else{
+        return res.status(404).json({ message: err_4 });
+      }
       await projectModel.findOneAndUpdate(
         { _id: check.project },
-        { $push: { members: foundUser._id } },
+        updates,
         { new: true }
       );
       await invitationModel.deleteOne({ _id: id });
       return res.status(200).json({ message: "Done" });
     } else {
-      return res.status(404).json({ message: "User not found!" });
+      return res.status(404).json({ message: err_3 });
     }
   } else {
     return res.status(404).json({ message: err_2 });
