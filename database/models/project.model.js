@@ -109,16 +109,19 @@ const projectSchema = mongoose.Schema(
     consultant: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
+      default: null,
       // required: true,
     },
     contractor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
+      default: null,
       // required: true,
     },
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
+      default: null,
       // required: true,
     },
     createdBy: {

@@ -141,14 +141,21 @@ const updateInvite = catchAsync(async (req, res, next) => {
   if (req.body.isApproved == true) {
     let foundUser = await userModel.findOne({ email: check.email });
     if (foundUser) {
-      let updates = {$push: { members: foundUser._id },}
-      if(check.role == "66d33e7a4ad80e468f231f8d"){ //consultant
+      let updates = {}
+      let project = await projectModel.findById(check.project);
+      if(check.role == "66d33e7a4ad80e468f231f8d" && project.consultant == null){ //consultant
         updates.consultant = foundUser._id
+        updates.$push = { members: foundUser._id }
+      }else{
+        updates.$push = { members: foundUser._id }
       }
-      if(check.role == "66d33ec44ad80e468f231f91"){ //contractor
+      if(check.role == "66d33ec44ad80e468f231f91" && project.contractor == null){ //contractor
         updates.contractor = foundUser._id
+        updates.$push = { members: foundUser._id }
+      }else{
+        updates.$push = { members: foundUser._id }
       }
-      
+
       await projectModel.findOneAndUpdate(
         { _id: check.project },
         updates,
