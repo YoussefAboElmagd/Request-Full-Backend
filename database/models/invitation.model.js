@@ -20,6 +20,11 @@ const invitationSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    comment: {
+      type: String,
+      default:"",
+      // required: true,
+    },
     projectName: {
       type: String,
       required: true,

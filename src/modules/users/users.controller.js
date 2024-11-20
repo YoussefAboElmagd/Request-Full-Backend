@@ -325,7 +325,7 @@ const getUserForInvite = catchAsync(async (req, res, next) => {
   let results = await userModel.findById(id).select("name email");
   let data = await invitationModel
     .findById({ _id: req.query.id })
-    .select("role project projectName isSignUp")
+    .select("role project projectName isSignUp comment")
     .populate("role");
   if (!data) {
     return res.status(404).json({

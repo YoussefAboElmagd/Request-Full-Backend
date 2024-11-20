@@ -173,6 +173,36 @@ const taskSchema = mongoose.Schema(
       immutask: true,
       required: true,
     },
+    requestForDocumentSubmittalApproval: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+    requestForApprovalOfMaterials: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+    workRequest: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+    tableOfQuantities: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+    requestForInspectionForm: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+    approvalOfSchemes: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
   },
   { timestamps: true }
 );

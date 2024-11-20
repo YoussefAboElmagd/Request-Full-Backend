@@ -155,8 +155,8 @@ const requsetSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["reviewingFromContractor","reviewingFromConsultant","reviewingFromOwner", "approved", "rejected"],
-      default: "reviewingFromContractor",
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
     },
     ownerStatus: {
       type: String,
@@ -210,6 +210,24 @@ requsetSchema.post(/^find/, async function (docs) {
   }
 });
 
+requsetSchema.pre("findOneAndUpdate", function (next) {
+  const update = this.getUpdate();
+  if(update.ownerStatus || update.contractorStatus || update.consultantStatus){
+    
+    if (
+      (update.ownerStatus === "rejected" && update.contractorStatus === "rejected")||(update.ownerStatus === "rejected" && update.consultantStatus === "rejected")||(update.contractorStatus === "rejected" && update.consultantStatus === "rejected")
+    ) {
+      this.setUpdate({ ...update, status: "rejected" });
+    }
+    if (
+      update.ownerStatus === "approved" && update.contractorStatus === "approved" && update.consultantStatus === "approved"
+    ) {
+      this.setUpdate({ ...update, status: "approved" });
+    }
+  }
+
+  next();
+});
 requsetSchema.pre(/^find/, function () {
   this.populate("actionCode");
   this.populate("unit");
