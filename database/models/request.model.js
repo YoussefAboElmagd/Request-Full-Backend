@@ -158,17 +158,20 @@ const requsetSchema = mongoose.Schema(
       enum: ["reviewingFromContractor","reviewingFromConsultant","reviewingFromOwner", "approved", "rejected"],
       default: "reviewingFromContractor",
     },
-    ownerApproval: {
-      type: Boolean,
-      default: false,
+    ownerStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
     },
-    consultantApproval: {
-      type: Boolean,
-      default: false,
+    consultantStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
     },
-    contractorApproval: {
-      type: Boolean,
-      default: false,
+    contractorStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
     },
     sent: {
       type: Boolean,
