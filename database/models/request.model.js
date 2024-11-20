@@ -161,15 +161,15 @@ const requsetSchema = mongoose.Schema(
       enum: ["reviewingFormContractor","reviewingFromConsultant","reviewingFormOwner", "approved", "rejected"],
       default: "reviewingFormContractor",
     },
-    ownerAprroval: {
+    ownerApproval: {
       type: Boolean,
       default: false,
     },
-    consultantAprroval: {
+    consultantApproval: {
       type: Boolean,
       default: false,
     },
-    contractorAprroval: {
+    contractorApproval: {
       type: Boolean,
       default: false,
     },
