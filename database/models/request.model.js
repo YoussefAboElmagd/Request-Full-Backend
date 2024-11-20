@@ -186,7 +186,7 @@ async function populateOwnerConsultantContractor(doc) {
     const project = await mongoose
       .model('project')
       .findById(doc.project)
-      .select('owner consultant contractor');
+      .select('owner consultant contractor').populate('owner consultant contractor');
 
     if (project) {
       doc.owner = project.owner || null ;

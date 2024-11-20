@@ -204,9 +204,10 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
   let check = await userModel.findById(req.params.id);
   !check && next(new AppError(err_2, 404));
   if (
-    req.user.role._id == "66d33a4b4ad80e468f231f83" ||
-    req.user.role._id == "66d33e7a4ad80e468f231f8d" ||
-    req.user.role._id == "66d33ec44ad80e468f231f91"
+    (req.user.role._id == "66d33a4b4ad80e468f231f83" ||
+      req.user.role._id == "66d33e7a4ad80e468f231f8d" ||
+      req.user.role._id == "66d33ec44ad80e468f231f91") &&
+      req.user.userType == "superUser"
   ) {
     ApiFeat = new ApiFeature(
       projectModel
