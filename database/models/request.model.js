@@ -89,20 +89,17 @@ const requsetSchema = mongoose.Schema(
       // required: true,
     },
     reviewedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "user",
+      type: String,
       default: null,
       // required: true,
     },
     notedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "user",
+      type: String,
       default: null,
       // required: true,
     },
     submitedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "user",
+      type: String,
       default: null,
       // required: true,
     },
@@ -158,8 +155,8 @@ const requsetSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["reviewingFormContractor","reviewingFromConsultant","reviewingFormOwner", "approved", "rejected"],
-      default: "reviewingFormContractor",
+      enum: ["reviewingFromContractor","reviewingFromConsultant","reviewingFromOwner", "approved", "rejected"],
+      default: "reviewingFromContractor",
     },
     ownerApproval: {
       type: Boolean,
