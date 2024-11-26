@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import { userModel } from "./user.model.js";
+import AppError from "../../src/utils/appError.js";
 
 const requsetSchema = mongoose.Schema(
   {
@@ -51,7 +53,7 @@ const requsetSchema = mongoose.Schema(
     actionCode: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "actionCode",
-      required: true,
+      // required: true,
     },
     unit: {
       type: mongoose.Schema.Types.ObjectId,
@@ -83,6 +85,18 @@ const requsetSchema = mongoose.Schema(
       // required: true,
     },
     consultant: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      default: null,
+      // required: true,
+    },
+    firstUpdatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      default: null,
+      // required: true,
+    },
+    secondUpdatedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       default: null,
@@ -199,6 +213,8 @@ async function populateOwnerConsultantContractor(doc) {
 requsetSchema.pre('save', async function (next) {
   if (this.isNew) {
     await populateOwnerConsultantContractor(this);
+    let user = await userModel.findById(this.createdBy);
+    this.submitedBy = user.signature;
   }
   next();
 });
@@ -210,10 +226,9 @@ requsetSchema.post(/^find/, async function (docs) {
   }
 });
 
-requsetSchema.pre("findOneAndUpdate", function (next) {
+requsetSchema.pre("findOneAndUpdate", async function (next) {
   const update = this.getUpdate();
   if(update.ownerStatus || update.contractorStatus || update.consultantStatus){
-    
     if (
       (update.ownerStatus === "rejected" && update.contractorStatus === "rejected")||(update.ownerStatus === "rejected" && update.consultantStatus === "rejected")||(update.contractorStatus === "rejected" && update.consultantStatus === "rejected")
     ) {
@@ -225,6 +240,20 @@ requsetSchema.pre("findOneAndUpdate", function (next) {
       this.setUpdate({ ...update, status: "approved" });
     }
   }
+  if(update.firstUpdatedBy){
+    let user = await userModel.findById(update.firstUpdatedBy);
+    if(!user){
+      return new AppError("User not found", 404);
+    }
+    this.setUpdate({ ...update, notedBy: user.signature });
+  }
+  if(update.secondUpdatedBy){
+    let user = await userModel.findById(update.secondUpdatedBy);
+    if(!user){
+      return new AppError("User not found", 404);
+    }
+    this.setUpdate({ ...update, reviewedBy: user.signature });
+  }
 
   next();
 });
@@ -234,12 +263,11 @@ requsetSchema.pre(/^find/, function () {
   this.populate("discipline");
   this.populate("reason");
   this.populate("createdBy");
-  this.populate("submitedBy");
   this.populate("contractor");
   this.populate("owner");
   this.populate("consultant");
-  this.populate("reviewedBy");
-  this.populate("notedBy");
+  this.populate("firstUpdatedBy");
+  this.populate("secondUpdatedBy");
 });
 
 export const requsetModel = mongoose.model("requset", requsetSchema);

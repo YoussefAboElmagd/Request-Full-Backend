@@ -41,6 +41,12 @@ export const signUp = catchAsync(async (req, res, next) => {
 
   req.body.model = "66ba00b0e39d9694110fd3df";
   req.body.userType = "superUser";
+  req.body.access ={
+    create:true,
+    read:true,
+    edit:true,
+    delete:true
+  }
   req.body.dateOfBirth = new Date("1950/01/02");
   // req.body.profilePic = "https://api.request-sa.com/profilePic/profile.png";
   req.body.verificationCode = generateUniqueId({
