@@ -10,6 +10,10 @@ const vocationSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    name: {
+      type: String,
+      default: null,
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",

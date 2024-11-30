@@ -26,6 +26,11 @@ const getAllVocationsByCreatedBy = catchAsync(async (req, res, next) => {
   let err = "No vocation was found!"
   let ApiFeat = null;
   let defaultQuery = null;
+  defaultQuery = await vocationModel.find().limit(8).select('nameEN _id createdBy');
+    ApiFeat = new ApiFeature(
+      vocationModel.find({ createdBy: req.params.id }).select('nameEN _id createdBy'),
+      req.query
+    ).search();
   if(req.query.lang == "ar"){
     err = "لا يوجد مهنة لهذا المستخدم"
     defaultQuery = await vocationModel.find().limit(8).select('nameAR _id createdBy');
@@ -34,11 +39,6 @@ const getAllVocationsByCreatedBy = catchAsync(async (req, res, next) => {
       req.query
     ).search();
   }
-  defaultQuery = await vocationModel.find().limit(8).select('nameEN _id createdBy');
-    ApiFeat = new ApiFeature(
-      vocationModel.find({ createdBy: req.params.id }).select('nameEN _id createdBy'),
-      req.query
-    ).search();
     let result = await ApiFeat.mongooseQuery;
     result = JSON.stringify(result);
     result = JSON.parse(result);
