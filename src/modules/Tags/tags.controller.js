@@ -1,3 +1,4 @@
+import { projectModel } from "../../../database/models/project.model.js";
 import { tagsModel } from "../../../database/models/tags.model.js";
 import { userModel } from "../../../database/models/user.model.js";
 import ApiFeature from "../../utils/apiFeature.js";
@@ -49,6 +50,20 @@ const getAllTagsByUser = catchAsync(async (req, res, next) => {
     res.json({ message: err_2 });
   }
 });
+const getAllTagsByProject = catchAsync(async (req, res, next) => {
+  let { id } = req.params;
+  let err_2 = "project not found!"
+  if(req.query.lang == "ar"){
+    err_2 = "المشروع غير موجود"
+  }
+  let results = await projectModel.findById(id);
+  if (results) {
+    let tags = await tagsModel.find({ createdBy: results.consultant._id });
+    tags && res.json({ message: "Done", tags });
+  } else {
+    res.json({ message: err_2 });
+  }
+});
 
 const updateTags = catchAsync(async (req, res, next) => {
   const { id } = req.params;
@@ -87,6 +102,7 @@ export {
   createTags,
   getAllTagsByAdmin,
   getAllTagsByUser,
+  getAllTagsByProject,
   updateTags,
   deleteTags,
 };

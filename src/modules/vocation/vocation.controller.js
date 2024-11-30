@@ -5,6 +5,16 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const getAllVocations = catchAsync( async (req,res) => {
     const allVocations = await vocationModel.find()
+      //   results.forEach(update => {
+  //     if (update.nameAR !== undefined) {
+  //         update.name = update.nameAR; 
+  //         delete update.nameAR; 
+  //     }
+  //     if (update.nameEN !== undefined) {
+  //         update.name = update.nameEN; 
+  //         delete update.nameEN; 
+  //     }
+  // });
     res.json({message:'Done',allVocations})
 })
 const addVocation = catchAsync(async (req,res) => {
@@ -14,21 +24,40 @@ const addVocation = catchAsync(async (req,res) => {
 })
 const getAllVocationsByCreatedBy = catchAsync(async (req, res, next) => {
   let err = "No vocation was found!"
+  let ApiFeat = null;
+  let defaultQuery = null;
   if(req.query.lang == "ar"){
     err = "لا يوجد مهنة لهذا المستخدم"
-  }
-    let ApiFeat = new ApiFeature(
-      vocationModel.find({ createdBy: req.params.id }),
+    defaultQuery = await vocationModel.find().limit(8).select('nameAR _id createdBy');
+    ApiFeat = new ApiFeature(
+      vocationModel.find({ createdBy: req.params.id }).select('nameAR _id createdBy'),
       req.query
     ).search();
-    let results = await ApiFeat.mongooseQuery;
-    results = JSON.stringify(results);
-    results = JSON.parse(results);
-    if (!ApiFeat || !results) {
+  }
+  defaultQuery = await vocationModel.find().limit(8).select('nameEN _id createdBy');
+    ApiFeat = new ApiFeature(
+      vocationModel.find({ createdBy: req.params.id }).select('nameEN _id createdBy'),
+      req.query
+    ).search();
+    let result = await ApiFeat.mongooseQuery;
+    result = JSON.stringify(result);
+    result = JSON.parse(result);
+    if (!ApiFeat || !result) {
       return res.status(404).json({
         message: err,
       });
     }
+    let results = defaultQuery.concat(result);
+    results.forEach(update => {
+      if (update.nameAR !== undefined) {
+          update.name = update.nameAR; 
+          delete update.nameAR; 
+      }
+      if (update.nameEN !== undefined) {
+          update.name = update.nameEN; 
+          delete update.nameEN; 
+      }
+  });
     res.json({
       message: "Done",
       results,
@@ -36,16 +65,15 @@ const getAllVocationsByCreatedBy = catchAsync(async (req, res, next) => {
   });
 const updateVocation = catchAsync(async (req,res) => {
     let {id} = req.params;
-    let {name} = req.body;
     let err = "No vocation was found!"
     if(req.query.lang == "ar"){
       err = "لا يوجد مهنة  "
     }
-    const updated = await vocationModel.findByIdAndUpdate(id,{name}, {new:true})
+    const updated = await vocationModel.findByIdAndUpdate(id,req.body, {new:true})
     if(updated){
-        res.json({message : 'Name Updated Successfully',updated})
+        return res.json({message : 'Name Updated Successfully',updated})
     }else{
-        res.status(404),res.json({message : err})
+        return res.status(404),res.json({message : err})
     }
 })
 const deleteVocation = catchAsync(async (req,res) => {
@@ -57,9 +85,9 @@ const deleteVocation = catchAsync(async (req,res) => {
     }
     const deleted = await vocationModel.findByIdAndDelete(id,{name}, {new:true})
     if(deleted){
-        res.json({message : 'Deleted Successfully'})
+        return res.json({message : 'Deleted Successfully'})
     }else{
-        res.status(404),res.json({message : err})
+        return res.status(404),res.json({message : err})
     }
 })
 

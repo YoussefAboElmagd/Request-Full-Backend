@@ -13,16 +13,16 @@ const vocationSchema = mongoose.Schema(
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
-      // required: true,
+      required: true,
     },
   },
   { timestamps: true }
 );
 
-vocationSchema.pre(/^find/, function () {
-  this.populate("nameEn");
-  this.populate("nameAR");
-});
+// vocationSchema.pre(/^find/, function () {
+//   this.populate("nameEn");
+//   this.populate("nameAR");
+// });
 
 export const vocationModel = mongoose.model("vocation", vocationSchema);
 
