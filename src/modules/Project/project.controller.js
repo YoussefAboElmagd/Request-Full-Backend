@@ -207,7 +207,7 @@ const getAllProjectByUser = catchAsync(async (req, res, next) => {
     (req.user.role._id == "66d33a4b4ad80e468f231f83" ||
       req.user.role._id == "66d33e7a4ad80e468f231f8d" ||
       req.user.role._id == "66d33ec44ad80e468f231f91") &&
-      req.user.userType == "superUser"
+    req.user.userType == "superUser"
   ) {
     ApiFeat = new ApiFeature(
       projectModel
@@ -446,6 +446,10 @@ const getAllProjectByStatusByUser = catchAsync(async (req, res, next) => {
   });
 });
 const getAllDocsProject = catchAsync(async (req, res, next) => {
+  let err_1 = "No Project was found!";
+  if (req.query.lang == "ar") {
+    err_1 = "المشروع غير موجود";
+  }
   let results = await projectModel.aggregate([
     {
       $match: { _id: new mongoose.Types.ObjectId(req.params.id) }, // Match the specific project by its ID
@@ -471,6 +475,11 @@ const getAllDocsProject = catchAsync(async (req, res, next) => {
     },
   ]);
 
+    if (!results) {
+    return res.status(404).json({
+      message: err_1,
+    });
+  }
   // Populate tasks.tags with their names
   results = await projectModel.populate(results, {
     path: "tasks.tags", // Correct path for the nested populate
@@ -491,6 +500,10 @@ const getAllDocsProject = catchAsync(async (req, res, next) => {
   });
 });
 const getProjectTagProgress = catchAsync(async (req, res, next) => {
+  let err_1 = "No Project was found!";
+  if (req.query.lang == "ar") {
+    err_1 = "المشروع غير موجود";
+  }
   let results = await projectModel.aggregate([
     {
       $match: { _id: new mongoose.Types.ObjectId(req.params.id) }, // Match the specific project by its ID
@@ -551,7 +564,11 @@ const getProjectTagProgress = catchAsync(async (req, res, next) => {
       },
     },
   ]);
-
+  if (!results) {
+    return res.status(404).json({
+      message: err_1,
+    });
+  }
   res.json({
     message: "Done",
     results,
@@ -612,28 +629,42 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
   //   }
   // });
   groupAdmins = {
-    owner: results.owner,
+    owner: results.owner || null,
     consultant: results.consultant || null,
     contractor: results.contractor || null,
   };
   let list = [
-    groupAdmins.owner,
-    groupAdmins.consultant,
-    groupAdmins.contractor,
+    groupAdmins.owner?._id || null,
+    groupAdmins.consultant?._id || null,
+    groupAdmins.contractor?._id || null,
   ];
   let ownerTeam = [];
   let consultantTeam = [];
   let constractorTeam = [];
   let groupedMembers = members;
-  let memberss = members.reduce((acc, member) => {
-    if (member.role == "owner" && !list.includes(member._id)) {
+
+  list = list.filter(Boolean); // Removes null or undefined values  
+  let memberss = members.forEach((member) => {
+    if (
+      member.role === "owner" &&
+      member._id &&
+      !list.some((id) => id.toString() === member._id.toString())
+    ) {
       ownerTeam.push(member);
-    } else if (member.role == "consultant" && !list.includes(member._id)) {
+    } else if (
+      member.role === "consultant" &&
+      member._id &&
+      !list.some((id) => id.toString() === member._id.toString())
+    ) {
       consultantTeam.push(member);
-    } else if (member.role == "contractor" && !list.includes(member._id)) {
+    } else if (
+      member.role === "contractor" &&
+      member._id &&
+      !list.some((id) => id.toString() === member._id.toString())
+    ) {
       constractorTeam.push(member);
     }
-  }, []);
+  });
 
   res.json({
     message: "Done",

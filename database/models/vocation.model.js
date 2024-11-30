@@ -2,22 +2,26 @@ import mongoose from "mongoose";
 
 const vocationSchema = mongoose.Schema(
   {
-    name: {
+    nameEN: {
       type: String,
-      unique: [true, "Name must be unique."],
+      required: true,
+    },
+    nameAR: {
+      type: String,
       required: true,
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
-      required: true,
+      // required: true,
     },
   },
   { timestamps: true }
 );
 
 vocationSchema.pre(/^find/, function () {
-  this.populate("name");
+  this.populate("nameEn");
+  this.populate("nameAR");
 });
 
 export const vocationModel = mongoose.model("vocation", vocationSchema);

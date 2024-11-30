@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { taskModel } from "./tasks.model.js";
 import { requsetModel } from "./request.model.js";
+import axios from 'axios';
 
 const projectSchema = mongoose.Schema(
   {
@@ -158,8 +159,7 @@ const projectSchema = mongoose.Schema(
       { type: mongoose.Schema.Types.ObjectId, ref: "user", default: [] },
     ],
     tags: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref: "tag",
+      type: Array,
       default: [],
     },
     isSelected: {
@@ -176,7 +176,7 @@ const projectSchema = mongoose.Schema(
   { timestamps: true }
 );
 
-projectSchema.post("find", async function (docs) {
+projectSchema.post("find", async function (docs , next) {
   for (let project of docs) {
     const tasks = await taskModel.find({ project: project._id });
     const validTasks = tasks.filter((task) => task.type === "toq");
@@ -186,6 +186,22 @@ projectSchema.post("find", async function (docs) {
     );
     const taskCount = validTasks.length;
     project.progress = taskCount > 0 ? totalProgress / taskCount : 0;
+    try {
+    const apiUrl = `https://api.request-sa.com/api/v1/project/tags/progress/${project._id}`; // Replace with your API endpoint
+    const { data } = await axios.get(apiUrl, {
+      params: {
+        lang: 'en', // Add query parameters if needed
+      },
+    });
+    if (data && data.results) {
+      project.tags = data.results;
+    }
+    next();
+
+  } catch (error) {
+    console.log('Proceeding without tag progress due to API error:', error.message);
+    next(); // Proceed even if the API call fails
+  }
   }
 });
 
@@ -219,7 +235,6 @@ projectSchema.post(/^find/, async function (docs, next) {
 projectSchema.pre("findOneAndUpdate", async function (next) {
   const update = this.getUpdate();
 
-  // Check if the dueDate needs to update the status
   if (
     update.dueDate &&
     new Date(update.dueDate) < new Date() &&
@@ -245,25 +260,6 @@ projectSchema.pre("findOneAndUpdate", async function (next) {
 
   next();
 });
-
-// projectSchema.pre('find', async function (next) {
-//   const query = this.getQuery();
-//   if (query.team) {
-//     const team = await teamModel.findOne({ _id: query.team });
-//     if (team) {
-//       const newMembers = team.members.filter((item) => !query.members.includes(item));
-//       query.members = [...query.members, ...newMembers];
-//       this.setQuery(query);
-//       await this.save();
-//     }
-//   }
-
-//   next();
-// });
-
-// projectSchema.pre(/^find/, function () {
-//   this.populate('members','owner','consultant','contractor','tasks');
-// })
 
 projectSchema.pre(
   /^delete/,
