@@ -537,6 +537,7 @@ const getProjectTagProgress = catchAsync(async (req, res, next) => {
       $group: {
         _id: "$tagDetails._id", // Group by tag ID
         tagName: { $first: "$tagDetails.name" }, // Get the tag name
+        colorCode: { $first: "$tagDetails.colorCode" }, // Get the color code
         count: { $sum: 1 }, // Count occurrences of each tag
         totalTags: { $sum: 1 }, // Count total occurrences of tags across tasks
       },
@@ -545,7 +546,12 @@ const getProjectTagProgress = catchAsync(async (req, res, next) => {
       $group: {
         _id: null,
         tagCounts: {
-          $push: { tagId: "$_id", tagName: "$tagName", count: "$count" },
+          $push: { 
+            tagId: "$_id", 
+            tagName: "$tagName", 
+            colorCode: "$colorCode", 
+            count: "$count" 
+          },
         },
         totalTags: { $sum: "$totalTags" }, // Calculate the total number of tags
       },
@@ -557,6 +563,7 @@ const getProjectTagProgress = catchAsync(async (req, res, next) => {
       $project: {
         tagId: "$tagCounts.tagId",
         tagName: "$tagCounts.tagName",
+        colorCode: "$tagCounts.colorCode",
         count: "$tagCounts.count",
         percentage: {
           $multiply: [{ $divide: ["$tagCounts.count", "$totalTags"] }, 100],
