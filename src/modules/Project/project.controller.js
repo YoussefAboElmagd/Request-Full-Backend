@@ -475,7 +475,7 @@ const getAllDocsProject = catchAsync(async (req, res, next) => {
     },
   ]);
 
-    if (!results) {
+  if (!results) {
     return res.status(404).json({
       message: err_1,
     });
@@ -504,6 +504,8 @@ const getProjectTagProgress = catchAsync(async (req, res, next) => {
   if (req.query.lang == "ar") {
     err_1 = "المشروع غير موجود";
   }
+  const taskCount =
+    (await taskModel.countDocuments({ project: req.params.id })) || 1;
   let results = await projectModel.aggregate([
     {
       $match: { _id: new mongoose.Types.ObjectId(req.params.id) }, // Match the specific project by its ID
@@ -546,11 +548,11 @@ const getProjectTagProgress = catchAsync(async (req, res, next) => {
       $group: {
         _id: null,
         tagCounts: {
-          $push: { 
-            tagId: "$_id", 
-            tagName: "$tagName", 
-            colorCode: "$colorCode", 
-            count: "$count" 
+          $push: {
+            tagId: "$_id",
+            tagName: "$tagName",
+            colorCode: "$colorCode",
+            count: "$count",
           },
         },
         totalTags: { $sum: "$totalTags" }, // Calculate the total number of tags
@@ -566,7 +568,7 @@ const getProjectTagProgress = catchAsync(async (req, res, next) => {
         colorCode: "$tagCounts.colorCode",
         count: "$tagCounts.count",
         percentage: {
-          $multiply: [{ $divide: ["$tagCounts.count", "$totalTags"] }, 100],
+          $multiply: [{ $divide: ["$tagCounts.count", taskCount] }, 100],
         },
       },
     },
@@ -650,7 +652,7 @@ const getAllMembersProject = catchAsync(async (req, res, next) => {
   let constractorTeam = [];
   let groupedMembers = members;
 
-  list = list.filter(Boolean); // Removes null or undefined values  
+  list = list.filter(Boolean); // Removes null or undefined values
   let memberss = members.forEach((member) => {
     if (
       member.role === "owner" &&
