@@ -3,16 +3,16 @@ import { sio } from "../../../server.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const getAllNotification = catchAsync(async (req, res, next) => {
-  let { id } = req.params; // User or receiver ID
+  let { id } = req.params;
   const DaysAgo = new Date();
-  let day = Number(req.query.days) || 7; // Default to 7 days if no `days` query is provided
+  let day = Number(req.query.days) || 7;
   DaysAgo.setDate(DaysAgo.getDate() - day);
   let results = await notificationModel
     .find({
-      receivers: { $in: [id] }, // Check if the `id` exists in the `receivers` array
-      createdAt: { $gte: DaysAgo }, // Notifications created within the specified time frame
+      receivers: { $in: [id] }, 
+      createdAt: { $gte: DaysAgo },
     })
-    .sort({ $natural: -1 }); // Sort results by natural order (most recent first)
+    .sort({ $natural: -1 });
 
   res.json({ message: "Done", results });
 });
