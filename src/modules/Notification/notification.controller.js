@@ -5,7 +5,8 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 const getAllNotification = catchAsync(async (req, res, next) => {
   let { id } = req.params;
   const DaysAgo = new Date();
-  DaysAgo.setDate(DaysAgo.getDate() - Number(req.query.days));
+  let day = (Number(req.query.days)) ||1
+  DaysAgo.setDate(DaysAgo.getDate() - day);
   let results = await notificationModel.find({
     receiver: id,
     createdAt: { $gte: DaysAgo } 
@@ -16,7 +17,7 @@ const getAllNotification = catchAsync(async (req, res, next) => {
 
 const createNotification = catchAsync(async (req, res, next) => {
   req.body.model = "66ba0122ff7376971c929636";
-
+  
   const newNotif = new notificationModel(req.body);
   const savedNotif = await newNotif.save();
   let message = req.body.content;

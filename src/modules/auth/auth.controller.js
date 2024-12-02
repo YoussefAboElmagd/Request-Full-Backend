@@ -47,15 +47,15 @@ export const signUp = catchAsync(async (req, res, next) => {
     edit:true,
     delete:true
   }
-  if(req.body.role == "66d33a4b4ad80e468f231f83"){
-    req.body.vocation = "674b1195256d98c8c3a1ef8e"
-  }
-  if(req.body.role == "66d33e7a4ad80e468f231f8d"){
-    req.body.vocation = "674b119c256d98c8c3a1ef90"
-  }
-  if(req.body.role == "66d33ec44ad80e468f231f91"){
-    req.body.vocation = "674b11bd256d98c8c3a1ef92"
-  }
+  const roleToVocationMap = {
+    "66d33a4b4ad80e468f231f83": "674b1195256d98c8c3a1ef8e",
+    "66d33e7a4ad80e468f231f8d": "674b119c256d98c8c3a1ef90",
+    "66d33ec44ad80e468f231f91": "674b11bd256d98c8c3a1ef92",
+  };
+  
+  if (roleToVocationMap[req.body.role]) {
+    req.body.vocation = roleToVocationMap[req.body.role];
+  }  
   req.body.dateOfBirth = new Date("1950/01/02");
   // req.body.profilePic = "https://api.request-sa.com/profilePic/profile.png";
   req.body.verificationCode = generateUniqueId({
