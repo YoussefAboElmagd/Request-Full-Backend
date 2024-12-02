@@ -3,16 +3,16 @@ import { sio } from "../../../server.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const getAllNotification = catchAsync(async (req, res, next) => {
-  let { id } = req.params;
+  let { id } = req.params; // User or receiver ID
   const DaysAgo = new Date();
-  let day = Number(req.query.days) || 7;
+  let day = Number(req.query.days) || 7; // Default to 7 days if no `days` query is provided
   DaysAgo.setDate(DaysAgo.getDate() - day);
   let results = await notificationModel
     .find({
-      receivers: id,
-      createdAt: { $gte: DaysAgo },
+      receivers: { $in: [id] }, // Check if the `id` exists in the `receivers` array
+      createdAt: { $gte: DaysAgo }, // Notifications created within the specified time frame
     })
-    .sort({ $natural: -1 });
+    .sort({ $natural: -1 }); // Sort results by natural order (most recent first)
 
   res.json({ message: "Done", results });
 });
@@ -22,14 +22,14 @@ const createNotification = catchAsync(async (req, res, next) => {
 
   const newNotif = new notificationModel(req.body);
   const savedNotif = await newNotif.save();
-  let message = req.body.content;
+  let message = req.body.message;
   let title = req.body.title;
 
   if (!Array.isArray(req.body.receivers)) {
     req.body.receivers = [req.body.receivers];
   }
   let receivers = req.body.receivers;
-  sio.emit(`notification_`, { message }, { title },{receivers});
+  sio.emit(`notification_`, { message }, { title }, { receivers });
 
   res.status(201).json({
     message: "notification created successfully!",
