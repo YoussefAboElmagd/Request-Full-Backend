@@ -5,19 +5,21 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 const getAllNotification = catchAsync(async (req, res, next) => {
   let { id } = req.params;
   const DaysAgo = new Date();
-  let day = (Number(req.query.days)) ||1
+  let day = Number(req.query.days) || 7;
   DaysAgo.setDate(DaysAgo.getDate() - day);
-  let results = await notificationModel.find({
-    receiver: id,
-    createdAt: { $gte: DaysAgo } 
-  }).sort({ $natural: -1 });
+  let results = await notificationModel
+    .find({
+      receiver: id,
+      createdAt: { $gte: DaysAgo },
+    })
+    .sort({ $natural: -1 });
 
   res.json({ message: "Done", results });
 });
 
 const createNotification = catchAsync(async (req, res, next) => {
   req.body.model = "66ba0122ff7376971c929636";
-  
+
   const newNotif = new notificationModel(req.body);
   const savedNotif = await newNotif.save();
   let message = req.body.content;
@@ -32,9 +34,9 @@ const createNotification = catchAsync(async (req, res, next) => {
 
 const deleteNotification = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  let err_1 = "Couldn't Delete!  not found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يمكن المسح!  غير موجود"
+  let err_1 = "Couldn't Delete!  not found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يمكن المسح!  غير موجود";
   }
   const deletedNotification = await notificationModel.findByIdAndDelete(id);
 
@@ -46,9 +48,9 @@ const deleteNotification = catchAsync(async (req, res, next) => {
 });
 const clearNotification = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let err_1 = "Couldn't Delete!  not found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يمكن المسح!  غير موجود"
+  let err_1 = "Couldn't Delete!  not found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يمكن المسح!  غير موجود";
   }
   let all = await notificationModel.deleteMany({ receiver: id });
 

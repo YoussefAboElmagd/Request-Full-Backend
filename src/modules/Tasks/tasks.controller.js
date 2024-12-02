@@ -463,7 +463,7 @@ const updateTask = catchAsync(async (req, res, next) => {
   const userId = req.query.id;
   const updatedFields = req.body; // Assume updates come from request body
 
-  const { documents, assignees, notes, ...otherUpdatedFields } = updatedFields;
+  const { documents, assignees, notes, attachments, ...otherUpdatedFields } = updatedFields;
 
   let err_1 = "Task not found!";
   let err_2 = "User not found!";
@@ -473,18 +473,19 @@ const updateTask = catchAsync(async (req, res, next) => {
   }
 
   try {
-    if (req.body.assignees) {
-      if (!Array.isArray(req.body.assignees)) {
-        req.body.assignees = [req.body.assignees];
-      }
-    }
+    // if (req.body.assignees) {
+    //   if (!Array.isArray(req.body.assignees)) {
+    //     req.body.assignees = [req.body.assignees];
+    //   }
+    // }
     const updatedTask = await taskModel.findByIdAndUpdate(
       id,
       {
         $push: {
-          documents: { $each: documents || [] },
-          assignees: { $each: assignees || [] },
-          notes: { $each: notes || [] },
+          documents: { $each: Array.isArray(documents) ? documents : [] },
+          assignees: { $each: Array.isArray(assignees) ? assignees : [] },
+          notes: { $each: Array.isArray(notes) ? notes : [] },
+          attachments: { $each: Array.isArray(attachments) ? attachments : [] },
           // approvalOfSchemesModel: { $each: approvalOfSchemesModel || [] },
           // workRequestModel: { $each: workRequestModel || [] },
           // requestForMaterialAndEquipmentInspection: {

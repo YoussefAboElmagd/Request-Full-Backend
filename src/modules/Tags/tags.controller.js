@@ -53,10 +53,8 @@ const getAllTagsByUser = catchAsync(async (req, res, next) => {
 const getAllTagsByProject = catchAsync(async (req, res, next) => {
   let { id } = req.params;
   let err_2 = "project not found!"
-  let err_1 = "go to consultant to create tags"
   if(req.query.lang == "ar"){
     err_2 = "المشروع غير موجود"
-    err_1 = "اذهب إلى المستشار لإنشاء علامات"
   }
   let results = await projectModel.findById(id);
   if (!results) {
@@ -66,7 +64,7 @@ const getAllTagsByProject = catchAsync(async (req, res, next) => {
     let tags = await tagsModel.find({ createdBy: results.consultant._id });
     tags && res.json({ message: "Done", tags });
   } else {
-    res.json({ message: err_1 });
+    res.json({ results: [] });
   }
 });
 

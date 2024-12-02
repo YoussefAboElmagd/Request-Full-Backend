@@ -48,6 +48,10 @@ const taskSchema = mongoose.Schema(
       type: [mongoose.Schema.Types.ObjectId],
       ref: "document",
     },
+    attachments: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "document",
+    },
     parentTask: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "task",
