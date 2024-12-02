@@ -9,7 +9,7 @@ const getAllNotification = catchAsync(async (req, res, next) => {
   DaysAgo.setDate(DaysAgo.getDate() - day);
   let results = await notificationModel
     .find({
-      receiver: id,
+      receivers: id,
       createdAt: { $gte: DaysAgo },
     })
     .sort({ $natural: -1 });
