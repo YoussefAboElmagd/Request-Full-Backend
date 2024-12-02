@@ -563,6 +563,7 @@ const generateChangeLogs = (updatedFields, userName) => {
     notes: "Task Notes",
     assignees: "Task Assignees",
     documents: "Task Documents",
+    attachments: "Task Attachments",
     // approvalOfSchemesModel: "Approval Of Schemes Model",
     // workRequestModel: "Work Request Model",
     // requestForMaterialAndEquipmentInspection:
@@ -604,6 +605,7 @@ const generateChangeLogsArabic = (updatedFields, userName) => {
     notes: "ملاحظات المهمة",
     assignees: "المكلفون",
     documents: "مستندات المهمة",
+    attachments: "ملفات المهمة",
     // approvalOfSchemesModel: "نموذج الموافقة على المخططات",
     // workRequestModel: "نموذج طلب العمل",
     // requestForMaterialAndEquipmentInspection: " طلب استمارة المراجعة",
@@ -622,7 +624,7 @@ const updateTask2 = catchAsync(async (req, res, next) => {
   if (req.query.lang == "ar") {
     err_1 = "المهمة غير موجودة";
   }
-  let { documents, assignees, notes } = req.body;
+  let { documents, assignees, notes , attachments } = req.body;
   let updatedTask = await taskModel.findByIdAndUpdate(
     id,
 
@@ -631,6 +633,7 @@ const updateTask2 = catchAsync(async (req, res, next) => {
         documents,
         assignees,
         notes,
+        attachments,
         // approvalOfSchemesModel,
         // workRequestModel,
         // requestForMaterialAndEquipmentInspection,
@@ -695,6 +698,14 @@ const updateTask2 = catchAsync(async (req, res, next) => {
       req.body.documents = [req.body.documents];
     }
     removeFiles("documents", req.body.documents);
+  }
+  if (req.body.attachments) {
+    changes_en.push(`${user.name} Deleted Task Attachment`);
+    changes_ar.push(`${user.name} حذف ملف المهمة`);
+    if (!Array.isArray(req.body.attachments)) {
+      req.body.attachments = [req.body.attachments];
+    }
+    removeFiles("documents", req.body.attachments);
   }
   let newTaskLog = await taskLogModel.findOneAndUpdate(
     { taskId: id },
