@@ -215,7 +215,7 @@ requsetSchema.pre("save", async function (next) {
   if (this.isNew) {
     await populateOwnerConsultantContractor(this);
     let user = await userModel.findById(this.createdBy);
-    this.submitedBy = user.signature;
+    this.submitedBy =`https://api.request-sa.com/${user.signature}`;
     if (this.createdBy.toString() == this.owner._id.toString()) {
       this.ownerStatus = "approved";
     } else if (this.createdBy.toString() == this.contractor._id.toString()) {
@@ -264,14 +264,14 @@ requsetSchema.pre("findOneAndUpdate", async function (next) {
     if (!user) {
       return new AppError("User not found", 404);
     }
-    this.setUpdate({ ...update, notedBy: user.signature });
+    this.setUpdate({ ...update, notedBy:`https://api.request-sa.com/${user.signature}`});
   }
   if (update.secondUpdatedBy) {
     let user = await userModel.findById(update.secondUpdatedBy);
     if (!user) {
       return new AppError("User not found", 404);
     }
-    this.setUpdate({ ...update, reviewedBy: user.signature });
+    this.setUpdate({ ...update, reviewedBy:`https://api.request-sa.com/${user.signature}`});
   }
 
   next();
