@@ -75,9 +75,11 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
   let invitations = Array.isArray(req.body) ? req.body : [req.body];
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
   let err_2 = "This Email is not valid";
+  let err_1 = "Project not found!";
   let message = "Invite has been sent!";
   if (req.query.lang == "ar") {
     err_2 = "هذا البريد الالكتروني غير صحيح";
+    err_1 = "المشروع غير موجود";
     message = "تم إرسال الدعوة  ";
   }
   for (let invitation of invitations) {
@@ -95,6 +97,9 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
       let project = await projectModel
         .findOne({ _id: invitation.project })
         .select("name");
+        if(!project){
+          return res.status(404).json({ message: err_1 });
+        }
       let addedInvitations = new invitationModel(invitation);
       let savedData = await addedInvitations.save();
 
