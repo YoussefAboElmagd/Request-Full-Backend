@@ -20,7 +20,8 @@ const updateprofilePic = catchAsync(async (req, res, next) => {
   if (!check) {
     return res.status(404).json({ message: err_1 });
   }
-  const profilePic = photoUpload(req, "profilePic", "profilePic");
+  let profilePic = photoUpload(req, "profilePic", "profilePic");
+  profilePic = profilePic.replace(`https://api.request-sa.com/`, "");
 
   let updatedProfile = await userModel.findByIdAndUpdate(
     id,
@@ -195,9 +196,19 @@ const updateCollection = catchAsync(async (req, res, next) => {
   const electronicStamp = photoUpload(req, "electronicStamp", "company");
   const signature = photoUpload(req, "signature", "company");
 
-  if (signature) updates.signature = signature;
-  if (companyLogo) updates.companyLogo = companyLogo;
-  if (electronicStamp) updates.electronicStamp = electronicStamp;
+  if (signature) {
+    signature = signature.replace(`https://api.request-sa.com/`, "");
+    updates.signature = signature;
+  }
+  if (companyLogo)
+    {
+      companyLogo = companyLogo.replace(`https://api.request-sa.com/`, "");
+      updates.companyLogo = companyLogo;
+    }
+  if (electronicStamp) {
+    electronicStamp = electronicStamp.replace(`https://api.request-sa.com/`, "");
+    updates.electronicStamp = electronicStamp;
+  }
   if (req.body.companyName) {
     updates.companyName = req.body.companyName;
   }

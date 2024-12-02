@@ -8,6 +8,7 @@ requestRouter.get("/", requestController.getAllRequest);
 requestRouter.get("/:id", requestController.getRequestById);
 requestRouter.get("/user/:id", requestController.getAllRequestByUser);
 requestRouter.get("/project/:id", requestController.getAllRequestByProject);
+requestRouter.get("/company/:id", requestController.getAllCompanysInProject);
 requestRouter.get("/task/:id", requestController.getAllRequestByTask);
 requestRouter.put("/:id", requestController.updateRequest);
 requestRouter.delete("/:id", requestController.deleteRequest);

@@ -6,7 +6,8 @@ import { photoUpload } from "../../utils/removeFiles.js";
 
 const createDocs = catchAsync(async (req, res, next) => {
 
-  const document = photoUpload(req, "document", "documents");
+  let document = photoUpload(req, "document", "documents");
+  document = document.replace(`https://api.request-sa.com/`, "");
 
   req.body.model = "66ba00e94554c396c5dd3e47";
 

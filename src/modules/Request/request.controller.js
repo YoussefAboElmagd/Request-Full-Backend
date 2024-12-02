@@ -103,6 +103,19 @@ const getAllRequestByProject = catchAsync(async (req, res, next) => {
   !results && next(new AppError(err_2, 404));
   results && res.json({ message: "Done", results });
 });
+const getAllCompanysInProject = catchAsync(async (req, res, next) => {
+  let { id } = req.params;
+  let err_2 = "Project not found!"
+  if(req.query.lang == "ar"){
+    err_2 = "المشروع غير موجود"
+  }
+  let results = await projectModel.findById(id).populate("owner").populate("contractor").populate("consultant");
+  !results && next(new AppError(err_2, 404));
+  let ownerCompany = results.owner.companyLogo || null
+  let contractorCompany = results.contractor.companyLogo || null
+  let consultantCompany = results.consultant.companyLogo || null
+  results && res.json({ message: "Done", ownerCompany, contractorCompany, consultantCompany });
+});
 const getAllRequestByTask = catchAsync(async (req, res, next) => {
   let { id } = req.params;
   let err_2 = "Task not found!"
@@ -155,4 +168,5 @@ export {
   getAllRequestByProject,
   getAllRequestByTask,
   getRequestById,
+  getAllCompanysInProject,
 };

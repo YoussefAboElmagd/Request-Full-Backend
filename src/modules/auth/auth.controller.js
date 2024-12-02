@@ -57,7 +57,6 @@ export const signUp = catchAsync(async (req, res, next) => {
     req.body.vocation = roleToVocationMap[req.body.role];
   }  
   req.body.dateOfBirth = new Date("1950/01/02");
-  // req.body.profilePic = "https://api.request-sa.com/profilePic/profile.png";
   req.body.verificationCode = generateUniqueId({
     length: 4,
     useLetters: false,

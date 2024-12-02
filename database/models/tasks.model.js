@@ -259,12 +259,12 @@ taskSchema.pre("findOneAndUpdate", async function (next) {
   const project = await projectModel.findById(taskToUpdate.project);
   let dueDate = new Date(project.dueDate).toISOString().split("T")[0];
   let sDate = new Date(project.sDate).toISOString().split("T")[0];
-  const queryData = this.getOptions().context?.query; // Access the query data
+  const queryData = this.getOptions().context?.query ; // Access the query data
   let err_date_1 = "Start date must be less than due date";
   let err_date_2 = `Due date of task must be less than or equal to ${dueDate} (due date of project) `;
   let err_date_3 = `Start date of task must be less than or equal to ${sDate} (Start date of project) `;
   let err_date_4 = `Start date of task must be less than or equal to ${dueDate} ( End date of project) `;
-  if (queryData.lang == "ar") {
+  if (queryData?.lang == "ar") {
     err_date_1 = "تاريخ البدء يجب ان يكون اقل من تاريخ الانتهاء";
     err_date_2 = `تاريخ الانتهاء يجب ان يكون اقل من او يساوي ${dueDate} (تاريخ انتهاء المشروع) `;
     err_date_3 = `تاريخ البدء يجب ان يكون اقل من او يساوي ${sDate} (تاريخ بدء المشروع) `;
