@@ -198,29 +198,37 @@ const requsetSchema = mongoose.Schema(
 async function populateOwnerConsultantContractor(doc) {
   if (doc.project) {
     const project = await mongoose
-      .model('project')
+      .model("project")
       .findById(doc.project)
-      .select('owner consultant contractor').populate('owner consultant contractor');
+      .select("owner consultant contractor")
+      .populate("owner consultant contractor");
 
     if (project) {
-      doc.owner = project.owner || null ;
-      doc.consultant = project.consultant|| null ;
-      doc.contractor = project.contractor || null ;
+      doc.owner = project.owner || null;
+      doc.consultant = project.consultant || null;
+      doc.contractor = project.contractor || null;
     }
   }
 }
 
-requsetSchema.pre('save', async function (next) {
+requsetSchema.pre("save", async function (next) {
   if (this.isNew) {
     await populateOwnerConsultantContractor(this);
     let user = await userModel.findById(this.createdBy);
     this.submitedBy = user.signature;
+    if (this.createdBy.toString() == this.owner._id.toString()) {
+      this.ownerStatus = "approved";
+    } else if (this.createdBy.toString() == this.contractor._id.toString()) {
+      this.contractorStatus = "approved";
+    } else if (this.createdBy.toString() == this.consultant._id.toString()) {
+      this.consultantStatus = "approved";
+    }
   }
   next();
 });
 
 requsetSchema.post(/^find/, async function (docs) {
-  if (!Array.isArray(docs)) docs = [docs]; 
+  if (!Array.isArray(docs)) docs = [docs];
   for (const doc of docs) {
     await populateOwnerConsultantContractor(doc);
   }
@@ -228,28 +236,39 @@ requsetSchema.post(/^find/, async function (docs) {
 
 requsetSchema.pre("findOneAndUpdate", async function (next) {
   const update = this.getUpdate();
-  if(update.ownerStatus || update.contractorStatus || update.consultantStatus){
+  if (
+    update.ownerStatus ||
+    update.contractorStatus ||
+    update.consultantStatus
+  ) {
     if (
-      (update.ownerStatus === "rejected" && update.contractorStatus === "rejected")||(update.ownerStatus === "rejected" && update.consultantStatus === "rejected")||(update.contractorStatus === "rejected" && update.consultantStatus === "rejected")
+      (update.ownerStatus === "rejected" &&
+        update.contractorStatus === "rejected") ||
+      (update.ownerStatus === "rejected" &&
+        update.consultantStatus === "rejected") ||
+      (update.contractorStatus === "rejected" &&
+        update.consultantStatus === "rejected")
     ) {
       this.setUpdate({ ...update, status: "rejected" });
     }
     if (
-      update.ownerStatus === "approved" && update.contractorStatus === "approved" && update.consultantStatus === "approved"
+      update.ownerStatus === "approved" &&
+      update.contractorStatus === "approved" &&
+      update.consultantStatus === "approved"
     ) {
       this.setUpdate({ ...update, status: "approved" });
     }
   }
-  if(update.firstUpdatedBy){
+  if (update.firstUpdatedBy) {
     let user = await userModel.findById(update.firstUpdatedBy);
-    if(!user){
+    if (!user) {
       return new AppError("User not found", 404);
     }
     this.setUpdate({ ...update, notedBy: user.signature });
   }
-  if(update.secondUpdatedBy){
+  if (update.secondUpdatedBy) {
     let user = await userModel.findById(update.secondUpdatedBy);
-    if(!user){
+    if (!user) {
       return new AppError("User not found", 404);
     }
     this.setUpdate({ ...update, reviewedBy: user.signature });
