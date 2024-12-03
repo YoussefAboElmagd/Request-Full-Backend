@@ -9,6 +9,7 @@ import moment from "moment";
 import { userModel } from "../../../database/models/user.model.js";
 import { taskLogModel } from "../../../database/models/tasksLog.model.js";
 import { removeFiles } from "../../utils/removeFiles.js";
+import { sendNotification } from "../../utils/sendNotification.js";
 
 const createTask = catchAsync(async (req, res, next) => {
   let tasks = Array.isArray(req.body) ? req.body : [req.body];
