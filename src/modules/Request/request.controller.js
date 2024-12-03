@@ -3,6 +3,7 @@ import { requsetModel } from "../../../database/models/request.model.js";
 import ApiFeature from "../../utils/apiFeature.js";
 import AppError from "../../utils/appError.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
+import { sendNotification } from "../../utils/sendNotification.js";
 
 const createRequest = catchAsync(async (req, res, next) => {
   req.body.model = "66ba010fecc8dae4bda821c9";
@@ -17,28 +18,31 @@ const createRequest = catchAsync(async (req, res, next) => {
     err_date1 = `تاريخ الانتهاء يجب ان يكون اقل من او يساوي ${dueDate} (تاريخ انتهاء المشروع) `
     err_date2 = `تاريخ البدء يجب ان يكون اقل من او يساوي ${sDate} (تاريخ بدء المشروع) `
   }
-
+  
   if (!project) {
     return res.status(404).json({ message: err_1 });
   }
-
+  
   if (new Date(req.body.date) > new Date(project.dueDate)) {
     return res
-      .status(404)
-      .json({
-        message: err_date1,
-      });
+    .status(404)
+    .json({
+      message: err_date1,
+    });
   }
   if (new Date(req.body.date) < new Date(project.sDate)) {
     return res
-      .status(404)
-      .json({
-        message:err_date2,
-      });
+    .status(404)
+    .json({
+      message:err_date2,
+    });
   }
   const newData = new requsetModel(req.body);
   const savedData = await newData.save();
-
+  let message_en = " New Model has been created !"
+  let message_ar = " تم انشاء نموذج جديد !"
+  const recivers=[project.owner?._id,project.contractor?._id,project.consultant?._id]
+  sendNotification(message_en,message_ar,"success",recivers)
   res.status(201).json({
     message: "Request created successfully!",
     savedData,
@@ -138,6 +142,34 @@ const updateRequest = catchAsync(async (req, res, next) => {
   if (!updatedRequest) {
     return res.status(404).json({ message: err_1 });
   }
+  const recivers=[updatedRequest.owner?._id,updatedRequest.contractor?._id,updatedRequest.consultant?._id]
+  const statuses = {
+    ownerStatus: {
+      approvedMessage: {
+        en: "Owner has been approved for the Model!",
+        ar: "تمت موافقة المالك على النموذج!",
+      },
+    },
+    contractorStatus: {
+      approvedMessage: {
+        en: "Contractor has been approved for the Model!",
+        ar: "تمت موافقة المقاول على النموذج!",
+      },
+    },
+    consultantStatus: {
+      approvedMessage: {
+        en: "Consultant has been approved for the Model!",
+        ar: "تمت موافقة الأستشاري على النموذج!",
+      },
+    },
+  };
+  
+  Object.keys(statuses).forEach((statusKey) => {
+    if (req.body[statusKey] === "approved") {
+      const { en: message_en, ar: message_ar } = statuses[statusKey].approvedMessage;
+      sendNotification(message_en, message_ar, "success", recivers);
+    }
+  });
   res.status(200).json({
     message: "Request updated successfully!",
     updatedRequest,
@@ -153,6 +185,9 @@ const deleteRequest = catchAsync(async (req, res, next) => {
   if (!deleteRequest) {
     return res.status(404).json({ message: err_1 });
   }
+  // let message_en = "Model has been deleted !"
+  // let message_ar = "تم حذف النموذج !"
+  // sendNotification(message_en,message_ar,"warning",project.members)
   res.status(200).json({
     message: "Request Deleted successfully!",
     deleteRequest,

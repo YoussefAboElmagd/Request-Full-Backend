@@ -2,25 +2,26 @@ import mongoose from "mongoose";
 
 const notificationSchema = mongoose.Schema(
   {
-    title: {
+    type: {
       type: String,
+      enum: ["success", "warning", ],
       required: true,
     },
     message: {
-      type: String,
-      required: true,
+        message_en: { type: String , },
+        message_ar: { type: String , },
     },
     receivers: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "user",
       required: true,
     },
-    model: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "model",
-      immutable: true,
-      required: true,
-    },
+    // model: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "model",
+    //   immutable: true,
+    //   required: true,
+    // },
   },
   { timestamps: true }
 );

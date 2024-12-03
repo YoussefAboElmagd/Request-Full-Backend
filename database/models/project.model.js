@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { taskModel } from "./tasks.model.js";
-import { requsetModel } from "./request.model.js";
+import { requsetModel, Sequence } from "./request.model.js";
 import axios from 'axios';
 
 const projectSchema = mongoose.Schema(
@@ -269,6 +269,7 @@ projectSchema.pre(
     if (doc) {
       await taskModel.deleteMany({ project: doc._id });
       await requsetModel.deleteMany({ project: doc._id });
+      await Sequence.findOneAndDelete({ project: doc._id });
     }
   }
 );

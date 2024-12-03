@@ -18,18 +18,18 @@ const getAllNotification = catchAsync(async (req, res, next) => {
 });
 
 const createNotification = catchAsync(async (req, res, next) => {
-  req.body.model = "66ba0122ff7376971c929636";
+  // req.body.model = "66ba0122ff7376971c929636";
 
   const newNotif = new notificationModel(req.body);
   const savedNotif = await newNotif.save();
   let message = req.body.message;
-  let title = req.body.title;
+  let type = req.body.type;
 
   if (!Array.isArray(req.body.receivers)) {
     req.body.receivers = [req.body.receivers];
   }
   let receivers = req.body.receivers;
-  sio.emit(`notification_`, { message }, { title }, { receivers });
+  sio.emit(`notification_`, { message }, { type }, { receivers });
 
   res.status(201).json({
     message: "notification created successfully!",

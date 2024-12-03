@@ -90,7 +90,7 @@ export const signUp = catchAsync(async (req, res, next) => {
   res.json({ message: "added", token, results, savedTeam });
 });
 
-// export const signIn = catchAsync(async (req, res, next) => {
+// export const signInWithPhone = catchAsync(async (req, res, next) => {
 //   // let phoneFormat = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/; //+XX XXXXX XXXXX
 //   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
 //   if (
@@ -216,7 +216,7 @@ export const forgetPassword = catchAsync(async (req, res, next) => {
       length: 4,
       useLetters: false,
     });
-    text = text + `${userData.verificationCode}` 
+    text +=  `${userData.verificationCode}` 
     sendEmail(userData.email, text);
     await userData.save();
     let verificationCode = userData.verificationCode;
@@ -285,7 +285,6 @@ export const allowTo = (...roles) => {
 
 export const signUpWithGoogle = catchAsync(async (req, res, next) => {
   let text = `Email Verification Code: `
-  let { email, name, role } = req.body;
   let userData = await userModel.findOne({ email: req.body.email });
   if (!userData) {
     userData = new userModel(req.body);
@@ -293,7 +292,7 @@ export const signUpWithGoogle = catchAsync(async (req, res, next) => {
       length: 4,
       useLetters: false,
     });
-    text = text + `${userData.verificationCode}` 
+    text += `${userData.verificationCode}` 
 
     sendEmail(userData.email, text);
     await userData.save();

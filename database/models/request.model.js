@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { userModel } from "./user.model.js";
 import AppError from "../../src/utils/appError.js";
+import { sendNotification } from "../../src/utils/sendNotification.js";
 
 const requsetSchema = mongoose.Schema(
   {
@@ -233,19 +234,33 @@ async function populateOwnerConsultantContractor(doc) {
     }
   }
 }
+const sequenceSchema = mongoose.Schema({
+  project: { type: String, required: true, unique: true },
+  seq: { type: Number, default: 0 },
+});
+
+export const Sequence = mongoose.model("sequence", sequenceSchema);
 
 requsetSchema.pre("save", async function (next) {
   if (this.isNew) {
     await populateOwnerConsultantContractor(this);
     let user = await userModel.findById(this.createdBy);
     this.submitedBy =`https://api.request-sa.com/${user.signature}`;
-    if (this.createdBy.toString() == this.owner._id.toString()) {
+    if (this.createdBy.toString() == this.owner?._id.toString()) {
       this.ownerStatus = "approved";
-    } else if (this.createdBy.toString() == this.contractor._id.toString()) {
+    } else if (this.createdBy.toString() == this.contractor?._id.toString()) {
       this.contractorStatus = "approved";
-    } else if (this.createdBy.toString() == this.consultant._id.toString()) {
+    } else if (this.createdBy.toString() == this.consultant?._id.toString()) {
       this.consultantStatus = "approved";
+    } else{
+      return next(new AppError("Unauthorized user", 401));
     }
+    const sequence = await Sequence.findOneAndUpdate(
+      { project: this.project },
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true }
+    );
+    this.refNo = sequence.seq; 
   }
   next();
 });
@@ -264,6 +279,8 @@ requsetSchema.pre("findOneAndUpdate", async function (next) {
     update.contractorStatus ||
     update.consultantStatus
   ) {
+    const model = await mongoose.model("requset").findOne(this.getQuery());
+    const recivers=[model.owner?._id,model.contractor?._id,model.consultant?._id]
     if (
       (update.ownerStatus === "rejected" &&
         update.contractorStatus === "rejected") ||
@@ -272,6 +289,9 @@ requsetSchema.pre("findOneAndUpdate", async function (next) {
       (update.contractorStatus === "rejected" &&
         update.consultantStatus === "rejected")
     ) {
+      let message_en = "The Model has been rejected !"
+      let message_ar = "النموذج تم رفضه !"
+      sendNotification(message_en,message_ar,"warning",recivers)
       this.setUpdate({ ...update, status: "rejected" });
     }
     if (
@@ -279,6 +299,9 @@ requsetSchema.pre("findOneAndUpdate", async function (next) {
       update.contractorStatus === "approved" &&
       update.consultantStatus === "approved"
     ) {
+      let message_en = "The Model has been approved !"
+      let message_ar = "النموذج تم الموافقة عليه ! "
+      sendNotification(message_en,message_ar,"warning",recivers)
       this.setUpdate({ ...update, status: "approved" });
     }
   }
