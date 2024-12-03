@@ -9,6 +9,7 @@ import cron from "node-cron";
 import { invitationModel } from "../../../database/models/invitation.model.js";
 import { userTypeModel } from "../../../database/models/userType.model.js";
 import { projectModel } from "../../../database/models/project.model.js";
+import { sendNotification } from "../../utils/sendNotification.js";
 
 const updateprofilePic = catchAsync(async (req, res, next) => {
   let { id } = req.params;
@@ -47,7 +48,7 @@ const postMessage = catchAsync(async (req, res, next) => {
     message = "تم إرسال الرسالة إلى المسؤول";
   }
   !user && res.status(404).json({ message: "couldn't post! user not found!" });
-  contactUs(user.name, user.email, req.body.message);
+  contactUs(user.name, user.email, req.body.message,user._id);
   res.json({ message: message, user });
 });
 const getInTouch = catchAsync(async (req, res, next) => {
@@ -64,7 +65,7 @@ const getInTouch = catchAsync(async (req, res, next) => {
     return res.status(409).json({ message: err_1 });
   }
   if (req.body.email !== "" && req.body.email.match(emailFormat)) {
-    contactUs2(req.body.name, req.body.email, req.body.phone, req.body.message);
+    contactUs2(req.body.name, req.body.email, req.body.phone, req.body.message,req.user._id);
     res.json({ message: message });
   } else {
     return res.status(409).json({ message: err_2 });
@@ -118,7 +119,7 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
         );
         let message_en = `You have been invited to join ${project.name} as ${roleName.jobTitle}`
         let message_ar = `لقد تم دعوتك للانضمام إلى ${project.name} ك ${roleName.jobTitle}`
-        sendNotification(message_en,message_ar,"warning",isFound._id)
+        sendNotification(message_en,message_ar,"warning",isFound._id,invitation)
       }
     } catch (error) {
       return res

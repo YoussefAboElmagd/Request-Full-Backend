@@ -2,7 +2,7 @@ import { notificationModel } from "../../database/models/notification.model.js";
 import { sio } from "../../server.js";
 
 
-export const sendNotification =  async (message_en, message_ar, type , receivers) => {
+export const sendNotification =  async (message_en, message_ar, type , receivers, invitation) => {
 try {
     if (!Array.isArray(receivers)) {
         receivers = [receivers];
@@ -14,9 +14,23 @@ try {
     let message = {};
     message.message_en = message_en;
     message.message_ar = message_ar;
-    const newNotif = new notificationModel({ message, type, receivers });
+    let icon = type;
+    if(type == "warning"){
+        icon = "image/warning.png";
+    }
+    if(type == "success"){
+        icon = "image/success.png";
+    }
+    if(type == "support"){
+        icon = "image/support.png";
+    }
+    const newNotif = new notificationModel({ message, icon, receivers });
     const savedNotif = await newNotif.save();
-    sio.emit(`notification_`, { message }, { type }, { receivers });
+    if(invitation){
+        sio.emit(`notification_`, { message }, { icon }, { receivers },{ invitation });
+    }else{
+        sio.emit(`notification_`, { message }, { icon }, { receivers });
+    }
 }catch (error) {
     console.log(error,"error in sending notification");
 }

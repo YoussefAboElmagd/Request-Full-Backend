@@ -6,8 +6,8 @@ import { sendNotification } from "../../src/utils/sendNotification.js";
 const requsetSchema = mongoose.Schema(
   {
     refNo: {
-      type: String,
-      required: true,
+      type: Number,
+      // required: true,
     },
     title: {
       type: String,

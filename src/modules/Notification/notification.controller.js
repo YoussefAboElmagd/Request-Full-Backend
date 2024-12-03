@@ -14,19 +14,6 @@ const getAllNotification = catchAsync(async (req, res, next) => {
       createdAt: { $gte: DaysAgo },
     })
     .sort({ $natural: -1 });
-  // if (results.length > 0) {
-  //   results.forEach((update) => {
-  //     if (update.message.message_ar !== undefined) {
-  //       update.message = update.message.message_ar;
-  //     }
-  //     else if (update.message.message_en !== undefined) {
-  //       update.message = update.message.message_en;
-  //     }
-  //     delete update.message.message_ar;
-  //     delete update.message.message_en;
-  //   });
-  // }
-
   res.json({ message: "Done", results });
 });
 
@@ -36,13 +23,13 @@ const createNotification = catchAsync(async (req, res, next) => {
   const newNotif = new notificationModel(req.body);
   const savedNotif = await newNotif.save();
   let message = req.body.message;
-  let type = req.body.type;
+  let icon = req.body.icon;
 
   if (!Array.isArray(req.body.receivers)) {
     req.body.receivers = [req.body.receivers];
   }
   let receivers = req.body.receivers;
-  sio.emit(`notification_`, { message }, { type }, { receivers });
+  sio.emit(`notification_`, { message }, { icon }, { receivers });
 
   res.status(201).json({
     message: "notification created successfully!",
