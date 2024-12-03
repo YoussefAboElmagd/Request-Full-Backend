@@ -11,6 +11,9 @@ const notificationSchema = mongoose.Schema(
         message_en: { type: String , },
         message_ar: { type: String , },
     },
+    messages: {
+        type: String 
+    },
     receivers: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "user",

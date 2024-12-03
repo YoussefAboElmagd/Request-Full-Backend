@@ -5,22 +5,22 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 const getAllTaskLogByTask = catchAsync(async (req, res, next) => {
   let err_1 = "Task not found!"
   let ApiFeat = null
+  if(req.query.lang == "ar"){
+  ApiFeat = new ApiFeature(
+    taskLogModel.find({ taskId: req.params.id }).sort({ $natural: -1 }).select("updates.changes_ar updates.date"),
+    req.query
+  )
+    .sort()
+    .search();
+  err_1 = "المهمة غير موجودة"
+}else{
   ApiFeat = new ApiFeature(
     taskLogModel.find({ taskId: req.params.id }).sort({ $natural: -1 }).select("updates.changes_en updates.date"),
     req.query
   )
     .sort()
     .search();
-    if(req.query.lang == "ar"){
-    ApiFeat = new ApiFeature(
-      taskLogModel.find({ taskId: req.params.id }).sort({ $natural: -1 }).select("updates.changes_ar updates.date"),
-      req.query
-    )
-      .sort()
-      .search();
-    err_1 = "المهمة غير موجودة"
-  }
-
+}
   let results = await ApiFeat.mongooseQuery;
   results = JSON.stringify(results);
   results = JSON.parse(results);

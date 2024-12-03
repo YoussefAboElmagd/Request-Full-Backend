@@ -4,15 +4,40 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const getAllNotification = catchAsync(async (req, res, next) => {
   let { id } = req.params;
+  let results = null;
   const DaysAgo = new Date();
   let day = Number(req.query.days) || 7;
   DaysAgo.setDate(DaysAgo.getDate() - day);
-  let results = await notificationModel
-    .find({
-      receivers: { $in: [id] }, 
-      createdAt: { $gte: DaysAgo },
-    })
-    .sort({ $natural: -1 });
+  if (req.query.lang == "ar") {
+    results = await notificationModel
+      .find({
+        receivers: { $in: [id] },
+        createdAt: { $gte: DaysAgo },
+      })
+      .sort({ $natural: -1 })
+      .select("message.message_ar type createdAt receivers");
+  }else{
+    results = await notificationModel
+      .find({
+        receivers: { $in: [id] },
+        createdAt: { $gte: DaysAgo },
+      })
+      .sort({ $natural: -1 })
+      .select("message.message_en type createdAt receivers");
+  }
+    if (results.length > 0) {
+      results.forEach((update) => {
+        if (update.message.message_ar !== undefined) {
+          update.messages = update.message.message_ar;
+        }
+    
+        if (update.message.message_en !== undefined) {
+          update.messages = update.message.message_en;
+        }
+    
+        delete update.message
+      });
+    }
 
   res.json({ message: "Done", results });
 });
@@ -57,7 +82,7 @@ const clearNotification = catchAsync(async (req, res, next) => {
   if (req.query.lang == "ar") {
     err_1 = "لا يمكن المسح!  غير موجود";
   }
-  let all = await notificationModel.deleteMany({ receiver: id });
+  let all = await notificationModel.deleteMany({ receivers: { $in: [id] } });
 
   if (!all) {
     return res.status(404).json({ message: err_1 });
