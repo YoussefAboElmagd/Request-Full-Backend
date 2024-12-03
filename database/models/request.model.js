@@ -117,6 +117,21 @@ const requsetSchema = mongoose.Schema(
       default: null,
       // required: true,
     },
+    ownerCompanyLogo: {
+      type: String,
+      default: null,
+      // required: true,
+    },
+    consultantCompanyLogo: {
+      type: String,
+      default: null,
+      // required: true,
+    },
+    contractorCompanyLogo: {
+      type: String,
+      default: null,
+      // required: true,
+    },
     model: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "model",
@@ -143,6 +158,11 @@ const requsetSchema = mongoose.Schema(
       //required : true
     },
     cell: {
+      type: Number,
+      default: null,
+      //required : true
+    },
+    quantity: {
       type: Number,
       default: null,
       //required : true
@@ -207,6 +227,9 @@ async function populateOwnerConsultantContractor(doc) {
       doc.owner = project.owner || null;
       doc.consultant = project.consultant || null;
       doc.contractor = project.contractor || null;
+      doc.ownerCompanyLogo =`https://api.request-sa.com/${project.ownerCompanyLogo}`|| null;
+      doc.consultantCompanyLogo =`https://api.request-sa.com/${project.consultantCompanyLogo}`|| null;
+      doc.contractorCompanyLogo =`https://api.request-sa.com/${project.contractorCompanyLogo}`|| null;
     }
   }
 }
