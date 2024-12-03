@@ -89,7 +89,6 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
         .status(409)
         .json({ message: `${invitation.email}  ${err_2}.` });
     }
-
     try {
       let isFound = await userModel.findOne({ email: invitation.email });
       let roleName = await userTypeModel
@@ -104,13 +103,6 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
       let addedInvitations = new invitationModel(invitation);
       let savedData = await addedInvitations.save();
 
-      if (isFound) {
-        await invitationModel.findByIdAndUpdate(
-          savedData._id,
-          { isSignUp: true },
-          { new: true }
-        );
-      }
       sendInvite(
         invitation,
         project.name,
@@ -118,6 +110,16 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
         savedData._id,
         link
       );
+      if (isFound) {
+        await invitationModel.findByIdAndUpdate(
+          savedData._id,
+          { isSignUp: true },
+          { new: true }
+        );
+        let message_en = `You have been invited to join ${project.name} as ${roleName.jobTitle}`
+        let message_ar = `لقد تم دعوتك للانضمام إلى ${project.name} ك ${roleName.jobTitle}`
+        sendNotification(message_en,message_ar,"warning",isFound._id)
+      }
     } catch (error) {
       return res
         .status(500)

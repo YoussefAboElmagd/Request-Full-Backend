@@ -470,7 +470,7 @@ const updateTask = catchAsync(async (req, res, next) => {
 
   let err_1 = "Task not found!";
   let err_2 = "User not found!";
-  if (req.query.lang === "ar") {
+  if (req.query.lang == "ar") {
     err_1 = "المهمة غير موجودة";
     err_2 = "المستخدم غير موجود";
   }

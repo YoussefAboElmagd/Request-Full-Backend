@@ -15,7 +15,7 @@ const getAllNotification = catchAsync(async (req, res, next) => {
         createdAt: { $gte: DaysAgo },
       })
       .sort({ $natural: -1 })
-      .select("message.message_ar type createdAt receivers");
+      .select("message.message_ar type createdAt receivers").lean();
   }else{
     results = await notificationModel
       .find({
@@ -23,21 +23,21 @@ const getAllNotification = catchAsync(async (req, res, next) => {
         createdAt: { $gte: DaysAgo },
       })
       .sort({ $natural: -1 })
-      .select("message.message_en type createdAt receivers");
+      .select("message.message_en type createdAt receivers")
+      .lean();
   }
-    if (results.length > 0) {
-      results.forEach((update) => {
-        if (update.message.message_ar !== undefined) {
-          update.messages = update.message.message_ar;
-        }
-    
-        if (update.message.message_en !== undefined) {
-          update.messages = update.message.message_en;
-        }
-    
-        delete update.message
-      });
-    }
+  if (results.length > 0) {
+    results.forEach((update) => {
+      if (update.message.message_ar !== undefined) {
+        update.message = update.message.message_ar;
+      }
+      else if (update.message.message_en !== undefined) {
+        update.message = update.message.message_en;
+      }
+      delete update.message.message_ar;
+      delete update.message.message_en;
+    });
+  }
 
   res.json({ message: "Done", results });
 });
