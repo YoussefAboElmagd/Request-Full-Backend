@@ -8,23 +8,12 @@ const getAllNotification = catchAsync(async (req, res, next) => {
   const DaysAgo = new Date();
   let day = Number(req.query.days) || 7;
   DaysAgo.setDate(DaysAgo.getDate() - day);
-  if (req.query.lang == "ar") {
-    results = await notificationModel
-      .find({
-        receivers: { $in: [id] },
-        createdAt: { $gte: DaysAgo },
-      })
-      .sort({ $natural: -1 })
-      .select("message.message_ar type createdAt receivers");
-  } else {
-    results = await notificationModel
-      .find({
-        receivers: { $in: [id] },
-        createdAt: { $gte: DaysAgo },
-      })
-      .sort({ $natural: -1 })
-      .select("message.message_en type createdAt receivers");
-  }
+  results = await notificationModel
+    .find({
+      receivers: { $in: [id] },
+      createdAt: { $gte: DaysAgo },
+    })
+    .sort({ $natural: -1 });
   // if (results.length > 0) {
   //   results.forEach((update) => {
   //     if (update.message.message_ar !== undefined) {
