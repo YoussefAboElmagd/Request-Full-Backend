@@ -191,10 +191,10 @@ const updateCollection = catchAsync(async (req, res, next) => {
   if (!check) {
     return res.status(404).json({ message: err_1 });
   }
-  const updates = {};
-  const companyLogo = photoUpload(req, "companyLogo", "company");
-  const electronicStamp = photoUpload(req, "electronicStamp", "company");
-  const signature = photoUpload(req, "signature", "company");
+  let updates = {};
+  let companyLogo = photoUpload(req, "companyLogo", "company");
+  let electronicStamp = photoUpload(req, "electronicStamp", "company");
+  let signature = photoUpload(req, "signature", "company");
 
   if (signature) {
     signature = signature.replace(`https://api.request-sa.com/`, "");
