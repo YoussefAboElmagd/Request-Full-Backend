@@ -6,6 +6,7 @@ import AppError from "../../utils/appError.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import { taskModel } from "../../../database/models/tasks.model.js";
 import bcrypt from "bcrypt";
+import { sendNotification } from "../../utils/sendNotification.js";
 
 const createProject = catchAsync(async (req, res, next) => {
   req.body.model = "66ba015a73f994dd94dbc1e9";
@@ -1105,6 +1106,28 @@ const updateProject = catchAsync(async (req, res, next) => {
 
   if (!updatedProject) {
     return res.status(404).json({ message: err_1 });
+  }
+  if(req.body.isAproved == true){
+    message_en = ` The project ${updatedProject.name} has been approved !`
+    message_ar = ` تم الموافقة عليه المشروع ${updatedProject.name} !`
+    sendNotification(message_en,message_ar,"warning",updatedProject.members)
+  }
+  if (req.body.projectPriority) {
+    if(req.body.projectPriority == "high"){
+      message_en = ` The Project \' ${updatedProject.name}\' has been Highly Prioritized !`
+      message_ar = ` تم تصنيف المشروع \'${updatedProject.name}\' ذات أولوية عالية !`
+      sendNotification(message_en,message_ar,"warning",updatedProject.members)
+    }
+    if(req.body.projectPriority == "medium"){
+      message_en = ` The Project \' ${updatedProject.name} \' has been Medium Prioritized !`
+      message_ar = ` تم تصنيف المشروع \' ${updatedProject.name} \' ذات أولوية متوسطة !`
+      sendNotification(message_en,message_ar,"warning",updatedProject.members)
+    }
+    if(req.body.projectPriority == "low"){
+      message_en = ` The Project \' ${updatedProject.name}\' has been Low Prioritized !`
+      message_ar = ` تم تصنيف المشروع \' ${updatedProject.name} \' ذات أولوية منخفضة !`
+      sendNotification(message_en,message_ar,"warning",updatedProject.members)
+    }
   }
   res.status(200).json({
     message: "project updated successfully!",

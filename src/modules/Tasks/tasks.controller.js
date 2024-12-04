@@ -52,7 +52,9 @@ const createTask = catchAsync(async (req, res, next) => {
     }
     let message_en = ` New Task has been created on Project \' ${project.name} '\ !`
     let message_ar = ` تم انشاء مهمة جديدة في المشروع \' ${project.name} '\ !`
-    const recivers=[project.owner?._id,project.contractor?._id,project.consultant?._id]
+    
+    let recivers=[project.owner?._id,project.contractor?._id,project.consultant?._id]
+    recivers = recivers.concat(task.assignees)
     sendNotification(message_en,message_ar,"success",recivers)
     let dueDate = new Date(project.dueDate).toISOString().split("T")[0];
     let sDate = new Date(project.sDate).toISOString().split("T")[0];
