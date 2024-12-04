@@ -30,7 +30,16 @@ const notificationSchema = mongoose.Schema(
   },
   { timestamps: true }
 );
-
+notificationSchema.pre('save', async function (next) {
+  try {
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 91);
+    const result = await this.constructor.deleteMany({ createdAt: { $lt: ninetyDaysAgo } });
+    next(); // Proceed to save the new document
+  } catch (err) {
+    next(err); // Pass the error to the next middleware
+  }
+});
 export const notificationModel = mongoose.model(
   "notitication",
   notificationSchema
