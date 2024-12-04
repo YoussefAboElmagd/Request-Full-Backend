@@ -24,12 +24,15 @@ try {
     if(type == "support"){
         icon = "image/support.png";
     }
-    const newNotif = new notificationModel({ message, icon, receivers });
-    const savedNotif = await newNotif.save();
-    if(invitation){
-        sio.emit(`notification_`, { message }, { icon }, { receivers },{ invitation });
-    }else{
-        sio.emit(`notification_`, { message }, { icon }, { receivers });
+    for (let index = 0; index < receivers.length; index++) {
+        let receiver = receivers[index];
+        const newNotif = new notificationModel({ message, icon, receiver });
+        const savedNotif = await newNotif.save();
+        if(invitation){
+            sio.emit(`notification_`, { message }, { icon }, { receiver },{ invitation });
+        }else{
+            sio.emit(`notification_`, { message }, { icon }, { receiver });
+        }
     }
 }catch (error) {
     console.log(error,"error in sending notification");

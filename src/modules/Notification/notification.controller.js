@@ -10,7 +10,7 @@ const getAllNotification = catchAsync(async (req, res, next) => {
   DaysAgo.setDate(DaysAgo.getDate() - day);
   results = await notificationModel
     .find({
-      receivers: { $in: [id] },
+      receiver: { $eq: id},
       createdAt: { $gte: DaysAgo },
     })
     .sort({ $natural: -1 });
@@ -20,8 +20,6 @@ const getAllNotification = catchAsync(async (req, res, next) => {
 const createNotification = catchAsync(async (req, res, next) => {
   // req.body.model = "66ba0122ff7376971c929636";
 
-  const newNotif = new notificationModel(req.body);
-  const savedNotif = await newNotif.save();
   let message = req.body.message;
   let icon = req.body.icon;
 
@@ -29,7 +27,16 @@ const createNotification = catchAsync(async (req, res, next) => {
     req.body.receivers = [req.body.receivers];
   }
   let receivers = req.body.receivers;
-  sio.emit(`notification_`, { message }, { icon }, { receivers });
+  let savedNotif = null;
+
+  for (let index = 0; index < receivers.length; index++) {
+    console.log(receivers[index]);
+
+    let receiver = receivers[index];
+    const newNotif = new notificationModel({ message, icon, receiver });
+    savedNotif = await newNotif.save();
+    sio.emit(`notification_`, { message }, { icon }, { receiver });
+  }
 
   res.status(201).json({
     message: "notification created successfully!",
@@ -37,6 +44,30 @@ const createNotification = catchAsync(async (req, res, next) => {
   });
 });
 
+const updateNotification = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  let err_1 = "Couldn't update!  not found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يمكن التعديل!  غير موجود";
+  }
+  let { isRead } = req.body;
+  const updatedNotification = await notificationModel.findByIdAndUpdate(
+    id,
+    { isRead },
+    { new: true }
+  );
+
+  if (!updatedNotification) {
+    return res.status(404).json({ message: err_1 });
+  }
+
+  res
+    .status(200)
+    .json({
+      message: "notification updated successfully!",
+      updatedNotification,
+    });
+});
 const deleteNotification = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   let err_1 = "Couldn't Delete!  not found!";
@@ -71,4 +102,5 @@ export {
   deleteNotification,
   getAllNotification,
   clearNotification,
+  updateNotification,
 };

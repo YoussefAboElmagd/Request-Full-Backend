@@ -11,9 +11,14 @@ const notificationSchema = mongoose.Schema(
         message_en: { type: String , },
         message_ar: { type: String , },
     },
-    receivers: {
-      type: [mongoose.Schema.Types.ObjectId],
+    receiver: {
+      type: mongoose.Schema.Types.ObjectId,
       ref: "user",
+      required: true,
+    },
+    isRead:{
+      type: Boolean,
+      default: false,
       required: true,
     },
     // model: {

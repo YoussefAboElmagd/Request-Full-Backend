@@ -5,6 +5,7 @@ const notiticationRouter = express.Router();
 
 notiticationRouter.get("/:id", notiticationController.getAllNotification);
 notiticationRouter.post("/", notiticationController.createNotification);
+notiticationRouter.put("/:id", notiticationController.updateNotification);
 notiticationRouter.delete(
   "/one/:id",
   notiticationController.deleteNotification
