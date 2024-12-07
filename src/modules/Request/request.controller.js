@@ -10,39 +10,39 @@ const createRequest = catchAsync(async (req, res, next) => {
   const project = await projectModel.findById(req.body.project);
   let dueDate = new Date(project.dueDate).toISOString().split("T")[0];
   let sDate = new Date(project.sDate).toISOString().split("T")[0];
-  let err_1 = "Project not found!"
-  let err_date1 = `Due date of model must be less than or equal to ${dueDate} (due date of project) `
-  let err_date2 = `Start date of model must be less than or equal to ${sDate} (Start date of project) `
-  if(req.query.lang == "ar"){
-    err_1 = "المشروع غير موجود"
-    err_date1 = `تاريخ الانتهاء يجب ان يكون اقل من او يساوي ${dueDate} (تاريخ انتهاء المشروع) `
-    err_date2 = `تاريخ البدء يجب ان يكون اقل من او يساوي ${sDate} (تاريخ بدء المشروع) `
+  let err_1 = "Project not found!";
+  let err_date1 = `Due date of model must be less than or equal to ${dueDate} (due date of project) `;
+  let err_date2 = `Start date of model must be less than or equal to ${sDate} (Start date of project) `;
+  if (req.query.lang == "ar") {
+    err_1 = "المشروع غير موجود";
+    err_date1 = `تاريخ الانتهاء يجب ان يكون اقل من او يساوي ${dueDate} (تاريخ انتهاء المشروع) `;
+    err_date2 = `تاريخ البدء يجب ان يكون اقل من او يساوي ${sDate} (تاريخ بدء المشروع) `;
   }
-  
+
   if (!project) {
     return res.status(404).json({ message: err_1 });
   }
-  
+
   if (new Date(req.body.date) > new Date(project.dueDate)) {
-    return res
-    .status(404)
-    .json({
+    return res.status(404).json({
       message: err_date1,
     });
   }
   if (new Date(req.body.date) < new Date(project.sDate)) {
-    return res
-    .status(404)
-    .json({
-      message:err_date2,
+    return res.status(404).json({
+      message: err_date2,
     });
   }
   const newData = new requsetModel(req.body);
   const savedData = await newData.save();
-  let message_en = " New Model has been created !"
-  let message_ar = " تم انشاء نموذج جديد !"
-  const recivers=[project.owner?._id,project.contractor?._id,project.consultant?._id]
-  sendNotification(message_en,message_ar,"success",recivers)
+  let message_en = " New Model has been created !";
+  let message_ar = " تم انشاء نموذج جديد !";
+  const receivers = [
+    project.owner?._id,
+    project.contractor?._id,
+    project.consultant?._id,
+  ];
+  sendNotification(message_en, message_ar, "success", receivers);
   res.status(201).json({
     message: "Request created successfully!",
     savedData,
@@ -51,9 +51,9 @@ const createRequest = catchAsync(async (req, res, next) => {
 
 const getAllRequest = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(requsetModel.find(), req.query).search();
-  let err_1 = "No Model was found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يوجد نماذج"
+  let err_1 = "No Model was found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يوجد نماذج";
   }
   let results = await ApiFeat.mongooseQuery;
   results = JSON.stringify(results);
@@ -69,10 +69,18 @@ const getAllRequest = catchAsync(async (req, res, next) => {
   });
 });
 const getRequestById = catchAsync(async (req, res, next) => {
-  let ApiFeat = new ApiFeature(requsetModel.findById(req.params.id).populate("project").populate("owner").populate("contractor").populate("consultant"), req.query).search();
-  let err_1 = "No Model was found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يوجد نماذج"
+  let ApiFeat = new ApiFeature(
+    requsetModel
+      .findById(req.params.id)
+      .populate("project")
+      .populate("owner")
+      .populate("contractor")
+      .populate("consultant"),
+    req.query
+  ).search();
+  let err_1 = "No Model was found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يوجد نماذج";
   }
   let results = await ApiFeat.mongooseQuery;
   results = JSON.stringify(results);
@@ -89,9 +97,9 @@ const getRequestById = catchAsync(async (req, res, next) => {
 });
 const getAllRequestByUser = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let err_2 = "User not found!"
-  if(req.query.lang == "ar"){
-    err_2 = "المستخدم غير موجود"
+  let err_2 = "User not found!";
+  if (req.query.lang == "ar") {
+    err_2 = "المستخدم غير موجود";
   }
   let results = await requsetModel.find({ createdBy: id });
   !results && next(new AppError(err_2, 404));
@@ -99,9 +107,9 @@ const getAllRequestByUser = catchAsync(async (req, res, next) => {
 });
 const getAllRequestByProject = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let err_2 = "Project not found!"
-  if(req.query.lang == "ar"){
-    err_2 = "المشروع غير موجود"
+  let err_2 = "Project not found!";
+  if (req.query.lang == "ar") {
+    err_2 = "المشروع غير موجود";
   }
   let results = await requsetModel.find({ project: id });
   !results && next(new AppError(err_2, 404));
@@ -109,22 +117,32 @@ const getAllRequestByProject = catchAsync(async (req, res, next) => {
 });
 const getAllCompanysInProject = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let err_2 = "Project not found!"
-  if(req.query.lang == "ar"){
-    err_2 = "المشروع غير موجود"
+  let err_2 = "Project not found!";
+  if (req.query.lang == "ar") {
+    err_2 = "المشروع غير موجود";
   }
-  let results = await projectModel.findById(id).populate("owner").populate("contractor").populate("consultant");
+  let results = await projectModel
+    .findById(id)
+    .populate("owner")
+    .populate("contractor")
+    .populate("consultant");
   !results && next(new AppError(err_2, 404));
-  let ownerCompany = results.owner.companyLogo || null
-  let contractorCompany = results.contractor.companyLogo || null
-  let consultantCompany = results.consultant.companyLogo || null
-  results && res.json({ message: "Done", ownerCompany, contractorCompany, consultantCompany });
+  let ownerCompany = results.owner.companyLogo || null;
+  let contractorCompany = results.contractor.companyLogo || null;
+  let consultantCompany = results.consultant.companyLogo || null;
+  results &&
+    res.json({
+      message: "Done",
+      ownerCompany,
+      contractorCompany,
+      consultantCompany,
+    });
 });
 const getAllRequestByTask = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let err_2 = "Task not found!"
-  if(req.query.lang == "ar"){
-    err_2 = "المهمة غير موجود"
+  let err_2 = "Task not found!";
+  if (req.query.lang == "ar") {
+    err_2 = "المهمة غير موجود";
   }
   let results = await requsetModel.find({ task: id });
   !results && next(new AppError(err_2, 404));
@@ -132,9 +150,9 @@ const getAllRequestByTask = catchAsync(async (req, res, next) => {
 });
 const updateRequest = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  let err_1 = "No Model was found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يوجد نماذج"
+  let err_1 = "No Model was found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يوجد نماذج";
   }
   const updatedRequest = await requsetModel.findByIdAndUpdate(id, req.body, {
     new: true,
@@ -142,7 +160,11 @@ const updateRequest = catchAsync(async (req, res, next) => {
   if (!updatedRequest) {
     return res.status(404).json({ message: err_1 });
   }
-  const recivers=[updatedRequest.owner?._id,updatedRequest.contractor?._id,updatedRequest.consultant?._id]
+  const receivers = [
+    updatedRequest.owner?._id,
+    updatedRequest.contractor?._id,
+    updatedRequest.consultant?._id,
+  ];
   const statuses = {
     ownerStatus: {
       approvedMessage: {
@@ -163,11 +185,12 @@ const updateRequest = catchAsync(async (req, res, next) => {
       },
     },
   };
-  
+
   Object.keys(statuses).forEach((statusKey) => {
     if (req.body[statusKey] === "approved") {
-      const { en: message_en, ar: message_ar } = statuses[statusKey].approvedMessage;
-      sendNotification(message_en, message_ar, "success", recivers);
+      const { en: message_en, ar: message_ar } =
+        statuses[statusKey].approvedMessage;
+      sendNotification(message_en, message_ar, "success", receivers);
     }
   });
   res.status(200).json({
@@ -177,11 +200,11 @@ const updateRequest = catchAsync(async (req, res, next) => {
 });
 const deleteRequest = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  let err_1 = "No Model was found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يوجد نماذج"
+  let err_1 = "No Model was found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يوجد نماذج";
   }
-  const deleteRequest = await requsetModel.deleteOne({_id:id});
+  const deleteRequest = await requsetModel.deleteOne({ _id: id });
   if (!deleteRequest) {
     return res.status(404).json({ message: err_1 });
   }
