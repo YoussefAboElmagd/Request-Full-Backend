@@ -30,8 +30,6 @@ const createNotification = catchAsync(async (req, res, next) => {
   let savedNotif = null;
 
   for (let index = 0; index < receivers.length; index++) {
-    console.log(receivers[index]);
-
     let receiver = receivers[index];
     const newNotif = new notificationModel({ message, icon, receiver });
     savedNotif = await newNotif.save();
@@ -54,6 +52,32 @@ const updateNotification = catchAsync(async (req, res, next) => {
   const updatedNotification = await notificationModel.findByIdAndUpdate(
     id,
     { isRead },
+    { new: true }
+  );
+
+  if (!updatedNotification) {
+    return res.status(404).json({ message: err_1 });
+  }
+
+  res
+    .status(200)
+    .json({
+      message: "notification updated successfully!",
+      updatedNotification,
+    });
+});
+const updateAllNotification = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  let err_1 = "Couldn't update!  not found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يمكن التعديل!  غير موجود";
+  }
+  // if (!Array.isArray(req.body)) {
+  //   req.body = [req.body];
+  // }
+    const updatedNotification = await notificationModel.updateMany(
+    {receiver:id},
+    { isRead :true },
     { new: true }
   );
 
@@ -103,4 +127,5 @@ export {
   getAllNotification,
   clearNotification,
   updateNotification,
+  updateAllNotification,
 };
