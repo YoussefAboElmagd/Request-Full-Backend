@@ -7,6 +7,7 @@ try {
     if (!Array.isArray(receivers)) {
         receivers = [receivers];
     }
+    receivers = [...new Set(receivers.filter(Boolean).map(String))];
     function cleanList(arr) {  // to remove duplicates and undefined values
         return Array.from(new Set(arr)).filter(item => item !== undefined);
     }
