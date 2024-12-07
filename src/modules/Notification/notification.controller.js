@@ -1,4 +1,5 @@
 import { notificationModel } from "../../../database/models/notification.model.js";
+import { userModel } from "../../../database/models/user.model.js";
 import { sio } from "../../../server.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
@@ -71,8 +72,14 @@ const updateNotification = catchAsync(async (req, res, next) => {
 const updateAllNotification = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   let err_1 = "Couldn't update!  not found!";
+  let err_2 = "Couldn't update! user not found!";
   if (req.query.lang == "ar") {
     err_1 = "لا يمكن التعديل!  غير موجود";
+    err_2 = "لا يمكن التعديل! المستخدم غير موجود";
+  }
+  let check = await userModel.findById(id);
+  if (!check) {
+    return res.status(404).json({ message: err_2 });
   }
   // if (!Array.isArray(req.body)) {
   //   req.body = [req.body];
