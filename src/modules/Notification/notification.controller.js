@@ -33,7 +33,9 @@ const createNotification = catchAsync(async (req, res, next) => {
     let receiver = receivers[index];
     const newNotif = new notificationModel({ message, icon, receiver });
     savedNotif = await newNotif.save();
-    sio.emit(`notification_`, { message }, { icon }, { receiver });
+    console.log(savedNotif.createdAt);
+    let createdAt = savedNotif.createdAt;
+    sio.emit(`notification_`, { message }, { icon }, { receiver },{createdAt});
   }
 
   res.status(201).json({

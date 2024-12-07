@@ -28,10 +28,12 @@ try {
         let receiver = receivers[index];
         const newNotif = new notificationModel({ message, icon, receiver });
         const savedNotif = await newNotif.save();
+        let createdAt = savedNotif.createdAt;
+
         if(invitation){
-            sio.emit(`notification_`, { message }, { icon }, { receiver },{ invitation });
+            sio.emit(`notification_`, { message }, { icon }, { receiver },{ createdAt },{ invitation });
         }else{
-            sio.emit(`notification_`, { message }, { icon }, { receiver });
+            sio.emit(`notification_`, { message }, { icon }, { receiver },{ createdAt });
         }
     }
 }catch (error) {
