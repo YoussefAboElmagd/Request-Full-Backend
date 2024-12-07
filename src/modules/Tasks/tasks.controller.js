@@ -59,7 +59,6 @@ const createTask = catchAsync(async (req, res, next) => {
       project.consultant?._id,
       ...(Array.isArray(task.assignees) ? task.assignees : [task.assignees]), // Flatten task.assignees
     ];
-    receivers = [...new Set(receivers.filter(Boolean).map(String))];
     sendNotification(message_en, message_ar, "success", receivers);
     let dueDate = new Date(project.dueDate).toISOString().split("T")[0];
     let sDate = new Date(project.sDate).toISOString().split("T")[0];
