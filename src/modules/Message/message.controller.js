@@ -2,8 +2,8 @@ import { messageModel } from "../../../database/models/message.model.js";
 import { sio } from "../../../server.js";
 import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
-import path from "path";
-import fsExtra from "fs-extra";
+import { userModel } from "../../../database/models/user.model.js";
+import { photoUpload } from "../../utils/removeFiles.js";
 
 const createmessage = catchAsync(async (req, res, next) => {
   function formatAMPM(date) {
@@ -23,21 +23,24 @@ const createmessage = catchAsync(async (req, res, next) => {
   let sender = req.body.sender;
   let receiver = req.body.receiver;
   let project = req.body.project;
-  let senderName = req.body.senderName;
+
+  let senderName = await userModel.findById(sender).select("name");
+  senderName = senderName.name;
+
   let docs = [];
-  let voiceNotes = [];
+  let voiceNote = [];
   if (req.body.docs) {
     docs = req.body.docs;
   }
-  if (req.body.voiceNotes) {
-    voiceNotes = req.body.voiceNotes;
+  if (req.body.voiceNote) {
+    voiceNote = req.body.voiceNote;
   }
-  req.body.model = "66ba00faf820163904164a43";
+  // req.body.model = "66ba00faf820163904164a43";
 
   const newmessage = new messageModel(req.body);
   const savedmessage = await newmessage.save();
 
-  if(req.body.group !== null){
+  if (savedmessage.group !== null) {
     sio.emit(
       `message_${sender}_${project}_${req.body.group}`,
       { createdAt },
@@ -47,9 +50,9 @@ const createmessage = catchAsync(async (req, res, next) => {
       { receiver },
       { project },
       { docs },
-      { voiceNotes }
+      { voiceNote }
     );
-  }else{
+  } else {
     sio.emit(
       `message_${sender}_${receiver}_${project}`,
       { createdAt },
@@ -59,7 +62,7 @@ const createmessage = catchAsync(async (req, res, next) => {
       { receiver },
       { project },
       { docs },
-      { voiceNotes }
+      { voiceNote }
     );
   }
 
@@ -69,46 +72,20 @@ const createmessage = catchAsync(async (req, res, next) => {
   });
 });
 const addPhotos = catchAsync(async (req, res, next) => {
-  let docs = "";
-  req.body.docs =
-    req.files.docs &&
-    req.files.docs.map(
-      (file) =>
-        `http://localhost:8000/image/${file.filename.split(" ").join("")}`
-    );
-
-  const directoryPathh = path.join(docs, "uploads/image");
-
-  fsExtra.readdir(directoryPathh, (err, files) => {
-    if (err) {
-      return console.error("Unable to scan directory: " + err);
-    }
-
-    files.forEach((file) => {
-      const oldPath = path.join(directoryPathh, file);
-      const newPath = path.join(directoryPathh, file.replace(/\s+/g, ""));
-
-      fsExtra.rename(oldPath, newPath, (err) => {
-        if (err) {
-          console.error("Error renaming file: ", err);
-        }
-      });
-    });
-  });
-
-  if (req.body.docs !== "") {
-    docs = req.body.docs;
-  }
-
+  let docs = photoUpload(req, "docs", "chat");
+  let voiceNote = photoUpload(req, "voiceNote", "chat");
+  docs = docs.replace(`https://api.request-sa.com/`, "");
+  voiceNote = voiceNote.replace(`https://api.request-sa.com/`, "");
   res.status(200).json({
     message: "Photos created successfully!",
     docs,
+    voiceNote,
   });
 });
 
-const getAllmessageByTask = catchAsync(async (req, res, next) => {
+const getAllmessageByProject = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
-    messageModel.find({ taskId: req.params.id }),
+    messageModel.find({ project: req.params.id }),
     req.query
   );
   // .sort({ $natural: -1 })  for latest message
@@ -130,4 +107,4 @@ const getAllmessageByTask = catchAsync(async (req, res, next) => {
   });
 });
 
-export { createmessage, addPhotos, getAllmessageByTask };
+export { createmessage, addPhotos, getAllmessageByProject };

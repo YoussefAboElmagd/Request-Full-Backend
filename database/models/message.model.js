@@ -29,7 +29,7 @@ const messageSchema = mongoose.Schema(
     docs: {
       type: [String],
     },
-    voiceNotes: {
+    voiceNote: {
       type: [String],
     },
     sender: {
@@ -42,16 +42,16 @@ const messageSchema = mongoose.Schema(
       ref: "groupChat",
       default: null,
     },
-    senderName: {
-      type: String,
-      required: true,
-    },
-    model: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "model",
-      immutable: true,
-      required: true,
-    },
+    // senderName: {
+    //   type: String,
+    //   required: true,
+    // },
+    // model: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "model",
+    //   immutable: true,
+    //   required: true,
+    // },
   },
   { timestamps: true }
 );

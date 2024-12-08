@@ -5,12 +5,12 @@ import { fileSizeLimitErrorHandler, uploadMixFile } from "../../utils/middleWare
 const messageRouter = express.Router();
 
 messageRouter.post("/", messageController.createmessage);
-messageRouter.get("/:id", messageController.getAllmessageByTask);
+messageRouter.get("/:id", messageController.getAllmessageByProject);
 
 messageRouter.post(
   "/images",
-  uploadMixFile("image", [
-    { name: "docs" },
+  uploadMixFile("chat", [
+    { name: "docs" },{ name: "voiceNote" },
   ]),fileSizeLimitErrorHandler,
   messageController.addPhotos
 );

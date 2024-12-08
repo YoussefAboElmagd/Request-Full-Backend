@@ -111,7 +111,5 @@ export const photoUpload = (req, fieldName, uploadDirectory) => {
     }
   }
 
-  console.log(fileUrl);
-
   return fileUrl;
 };
