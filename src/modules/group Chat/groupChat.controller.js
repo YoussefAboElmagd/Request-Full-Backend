@@ -1,14 +1,15 @@
 import { groupChatModel } from "../../../database/models/groupChat.js";
+import { projectModel } from "../../../database/models/project.model.js";
 import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 
 const createGroupChat = catchAsync(async (req, res, next) => {
   const newData = new groupChatModel(req.body);
-  const savedData = await newData;
-  savedData.users.push(savedData.createdBy);
-  savedData.users = savedData.users.filter(
-    (item, index) => savedData.users.indexOf(item) === index
+  newData.users.push(newData.createdBy);
+  newData.users = newData.users.filter(
+    (item, index) => newData.users.indexOf(item) === index
   );
+  const savedData = await newData.save();
   res.status(201).json({
     message: "GroupChat created successfully!",
     savedData,
@@ -20,6 +21,32 @@ const getAllGroupChat = catchAsync(async (req, res, next) => {
   let results = await ApiFeat.mongooseQuery;
   results = JSON.stringify(results);
   results = JSON.parse(results);
+  if (!ApiFeat || !results) {
+    return res.status(404).json({
+      message: "No GroupChat was found!",
+    });
+  }
+  res.json({
+    message: "Done",
+    results,
+  });
+});
+const getAllChatsForUserByproject = catchAsync(async (req, res, next) => {
+  let project = await projectModel.findById(req.params.id).populate("members");
+  if (!project) {
+    return res.status(404).json({
+      message: "Project not found!",
+    });
+  }
+  project = project.members;
+  let ApiFeat = new ApiFeature(
+    groupChatModel.find({$and:[{ users: { $in: req.user._id } }, { project: req.params.id }]}),
+    req.query
+  ).search();
+  let results = await ApiFeat.mongooseQuery;
+  results = JSON.stringify(results);
+  results = JSON.parse(results);
+  results = results.concat(project);
   if (!ApiFeat || !results) {
     return res.status(404).json({
       message: "No GroupChat was found!",
@@ -96,4 +123,5 @@ export {
   updateGroupChat,
   deleteGroupChat,
   updateGroupChat2,
+  getAllChatsForUserByproject,
 };

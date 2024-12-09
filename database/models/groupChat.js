@@ -27,7 +27,9 @@ const groupChatSchema = mongoose.Schema(
   { timestamps: true }
 );
 
-
+groupChatSchema.pre(/^find/, function () {
+  this.populate("users");
+})
 
 export const groupChatModel = mongoose.model("groupChat", groupChatSchema);
 
