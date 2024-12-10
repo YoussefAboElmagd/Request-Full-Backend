@@ -4,6 +4,7 @@ import ApiFeature from "../../utils/apiFeature.js";
 import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import { userModel } from "../../../database/models/user.model.js";
 import { photoUpload } from "../../utils/removeFiles.js";
+import { projectModel } from "../../../database/models/project.model.js";
 
 const createmessage = catchAsync(async (req, res, next) => {
   function formatAMPM(date) {
@@ -83,9 +84,20 @@ const addPhotos = catchAsync(async (req, res, next) => {
   });
 });
 
-const getAllmessageByProject = catchAsync(async (req, res, next) => {
+const getAllMessageByTwoUsers = catchAsync(async (req, res, next) => {
+  let err_1 = "No Data was found!"
+  let err_2 = "sender or receiver not found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يوجد بيانات"
+    err_2 = "المرسل او المستلم غير موجود"
+  }
+  if(!req.query.sender || !req.query.receiver){
+    return res.status(404).json({
+      message: err_2,
+    })
+  }
   let ApiFeat = new ApiFeature(
-    messageModel.find({ project: req.params.id }),
+    messageModel.find({ $and: [{ project: req.params.id },{$or:[{sender: req.query.sender},{receiver: req.query.receiver},]},{$or:[{sender: req.query.receiver},{receiver: req.query.sender},]},{group: null}] }),
     req.query
   );
   // .sort({ $natural: -1 })  for latest message
@@ -96,7 +108,7 @@ const getAllmessageByProject = catchAsync(async (req, res, next) => {
   results = JSON.parse(results);
   if (!ApiFeat || !results) {
     return res.status(404).json({
-      message: "No message was found!",
+      message: err_1,
     });
   }
   res.json({
@@ -107,4 +119,41 @@ const getAllmessageByProject = catchAsync(async (req, res, next) => {
   });
 });
 
-export { createmessage, addPhotos, getAllmessageByProject };
+const getAllProjectByUser = catchAsync(async (req, res, next) => {
+  let ApiFeat = null;
+  let err_1 = "No Project was found!";
+  let err_2 = "User not found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يوجد مشاريع";
+    err_2 = "المستخدم غير موجود";
+  }
+  let check = await userModel.findById(req.params.id);
+  !check && next(new AppError(err_2, 404));
+    ApiFeat = new ApiFeature(
+      projectModel
+        .find({ members: { $in: req.params.id } })
+        .sort({ $natural: -1 })
+        .select("members name isSelected")
+        .populate("members"),
+      req.query
+    )
+      .sort()
+      .search();
+  
+
+  let results = await ApiFeat.mongooseQuery;
+  results = JSON.stringify(results);
+  results = JSON.parse(results);
+  if (!ApiFeat || !results) {
+    return res.status(404).json({
+      message: err_1,
+    });
+  }
+
+  res.json({
+    message: "Done",
+    results,
+  });
+  });
+
+export { createmessage, addPhotos, getAllMessageByTwoUsers ,getAllProjectByUser};

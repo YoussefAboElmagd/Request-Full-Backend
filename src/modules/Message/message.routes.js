@@ -5,7 +5,8 @@ import { fileSizeLimitErrorHandler, uploadMixFile } from "../../utils/middleWare
 const messageRouter = express.Router();
 
 messageRouter.post("/", messageController.createmessage);
-messageRouter.get("/:id", messageController.getAllmessageByProject);
+messageRouter.get("/:id", messageController.getAllMessageByTwoUsers);
+messageRouter.get("/user/:id", messageController.getAllProjectByUser);
 
 messageRouter.post(
   "/images",
