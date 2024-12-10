@@ -4,7 +4,6 @@ const groupChatSchema = mongoose.Schema(
   {
     name: {
       type: String,
-      unique: [true, "Name must be unique."],
       required: true,
     },
     users:{
@@ -22,6 +21,10 @@ const groupChatSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       required: true,
+    },
+    isGroup: {
+      type: Boolean,
+      default: true,
     },
   },
   { timestamps: true }
