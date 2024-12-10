@@ -5,6 +5,8 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import { userModel } from "../../../database/models/user.model.js";
 import { photoUpload } from "../../utils/removeFiles.js";
 import { projectModel } from "../../../database/models/project.model.js";
+import { groupChatModel } from "../../../database/models/groupChat.js";
+import AppError from "../../utils/appError.js";
 
 const createmessage = catchAsync(async (req, res, next) => {
   function formatAMPM(date) {
@@ -119,41 +121,74 @@ const getAllMessageByTwoUsers = catchAsync(async (req, res, next) => {
   });
 });
 
-const getAllProjectByUser = catchAsync(async (req, res, next) => {
-  let ApiFeat = null;
-  let err_1 = "No Project was found!";
+const getAllGroupsByUserProjects = catchAsync(async (req, res, next) => {
+  let err_1 = "No groups were found!";
   let err_2 = "User not found!";
   if (req.query.lang == "ar") {
-    err_1 = "لا يوجد مشاريع";
+    err_1 = "لا يوجد مجموعات";
     err_2 = "المستخدم غير موجود";
   }
-  let check = await userModel.findById(req.params.id);
-  !check && next(new AppError(err_2, 404));
-    ApiFeat = new ApiFeature(
-      projectModel
-        .find({ members: { $in: req.params.id } })
-        .sort({ $natural: -1 })
-        .select("members name isSelected")
-        .populate("members"),
-      req.query
-    )
-      .sort()
-      .search();
-  
 
-  let results = await ApiFeat.mongooseQuery;
-  results = JSON.stringify(results);
-  results = JSON.parse(results);
-  if (!ApiFeat || !results) {
+  // Check if user exists
+  const user = await userModel.findById(req.params.id);
+  if (!user) return next(new AppError(err_2, 404));
+
+  // Find all projects the user is a member of
+  const projects = await projectModel
+    .find({ members: { $in: req.params.id } })
+    .select("_id name members") // Fetch project ID, name, and members
+    .populate("members", "name email"); // Populate project members' details
+
+  if (!projects.length) {
     return res.status(404).json({
       message: err_1,
     });
   }
 
+  // Extract project IDs
+  const projectIds = projects.map(project => project._id);
+
+  // Find all group chats linked to these projects
+  const groupChats = await groupChatModel
+    .find({ $and: [{ users: { $in: req.user._id } }, { project: { $in: projectIds } }] })
+    .populate("users", "name email"); // Populate user details in the chat group
+
+  if (!groupChats.length) {
+    return res.status(404).json({
+      message: err_1,
+    });
+  }
+
+  // Combine project members and group chat users into one list
+  const results = projects.map(project => {
+    const relatedGroupChats = groupChats.filter(
+      groupChat => groupChat.project.toString() === project._id.toString()
+    );
+
+    // Extract all users from members and group chats
+    // const groupChatUsers = relatedGroupChats.flatMap(groupChat => groupChat.users);
+
+    // Merge members and groupChat users into a single unique list
+    const combinedUsers = [
+      ...project.members,
+      ...relatedGroupChats
+    ];
+
+    return {
+      ...project.toObject(), // Convert project to plain object
+      combinedList: combinedUsers, // Unified list of members and group chat users
+    };
+  });
+
+  // Respond with the combined results
   res.json({
     message: "Done",
     results,
   });
-  });
+});
 
-export { createmessage, addPhotos, getAllMessageByTwoUsers ,getAllProjectByUser};
+
+
+
+
+export { createmessage, addPhotos, getAllMessageByTwoUsers ,getAllGroupsByUserProjects};
