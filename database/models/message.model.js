@@ -17,6 +17,11 @@ const messageSchema = mongoose.Schema(
       default: " ",
       required: true,
     },
+    type: {
+      type: String,
+      enum:["text","doc","voiceNote"],
+      required: true,
+    },
     isSender: {
       type: Boolean,
       default: false,
