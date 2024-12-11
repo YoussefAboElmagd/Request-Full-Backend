@@ -12,7 +12,7 @@ dashboardRouter.get("/country/", dashboardController.getTopCountries);
 dashboardRouter.get("/weekly/", dashboardController.weeklyActivity);
 dashboardRouter.get("/weekly/user/:id", dashboardController.weeklyActivityByUser);
 dashboardRouter.get("/ratio/",protectRoutes,allowTo("admin"), dashboardController.getUserRatioPieChart);
-dashboardRouter.get("/ratio/",protectRoutes,allowTo("admin"), dashboardController.getTagsRatio);
+dashboardRouter.get("/ratio/tags/",protectRoutes,allowTo("admin"), dashboardController.getTagsRatio);
 dashboardRouter.get("/models/", dashboardController.getMostModels);
 // dashboardRouter.put("/:id", dashboardController.updateDashboard);
 

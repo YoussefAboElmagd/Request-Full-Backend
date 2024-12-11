@@ -99,7 +99,7 @@ const getAllMessageByTwoUsers = catchAsync(async (req, res, next) => {
     })
   }
   let ApiFeat = new ApiFeature(
-    messageModel.find({ $and: [{ project: req.params.id },{$or:[{sender: req.query.sender},{receiver: req.query.receiver},{sender: req.query.receiver},{receiver: req.query.sender}]},{group: null}] }),
+    messageModel.find({ $and: [{ project: req.params.id },{$or:[({sender: req.query.sender},{receiver: req.query.receiver}),({sender: req.query.receiver},{receiver: req.query.sender})]},{group: null}] }),
     req.query
   );
   // .sort({ $natural: -1 })  for latest message
