@@ -120,6 +120,40 @@ const getAllMessageByTwoUsers = catchAsync(async (req, res, next) => {
     results,
   });
 });
+const getAllMessageByGroup = catchAsync(async (req, res, next) => {
+  let err_1 = "No Data was found!"
+  let err_2 = "group not found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يوجد بيانات"
+    err_2 = "المجموعة غير موجودة"
+  }
+  if(!req.query.group){
+    return res.status(404).json({
+      message: err_2,
+    })
+  }
+  let ApiFeat = new ApiFeature(
+    messageModel.find({ $and: [{ project: req.params.id },{group: req.query.group}] }),
+    req.query
+  );
+  // .sort({ $natural: -1 })  for latest message
+  // .pagination()
+
+  let results = await ApiFeat.mongooseQuery;
+  results = JSON.stringify(results);
+  results = JSON.parse(results);
+  if (!ApiFeat || !results) {
+    return res.status(404).json({
+      message: err_1,
+    });
+  }
+  res.json({
+    message: "Done",
+    // page: ApiFeat.page,
+    // count: await messageModel.countDocuments({ taskId: req.params.id }),
+    results,
+  });
+});
 
 const getAllGroupsByUserProjects = catchAsync(async (req, res, next) => {
   let err_1 = "No groups were found!";
@@ -165,10 +199,6 @@ const getAllGroupsByUserProjects = catchAsync(async (req, res, next) => {
       groupChat => groupChat.project.toString() === project._id.toString()
     );
 
-    // Extract all users from members and group chats
-    // const groupChatUsers = relatedGroupChats.flatMap(groupChat => groupChat.users);
-
-    // Merge members and groupChat users into a single unique list
     const combinedUsers = [
       ...project.members,
       ...relatedGroupChats
@@ -191,4 +221,4 @@ const getAllGroupsByUserProjects = catchAsync(async (req, res, next) => {
 
 
 
-export { createmessage, addPhotos, getAllMessageByTwoUsers ,getAllGroupsByUserProjects};
+export { createmessage, addPhotos, getAllMessageByTwoUsers ,getAllGroupsByUserProjects,getAllMessageByGroup};

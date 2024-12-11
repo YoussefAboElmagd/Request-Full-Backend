@@ -8,6 +8,7 @@ const messageRouter = express.Router();
 messageRouter.post("/", messageController.createmessage);
 messageRouter.get("/:id", messageController.getAllMessageByTwoUsers);
 messageRouter.get("/user/:id",protectRoutes, messageController.getAllGroupsByUserProjects);
+messageRouter.get("/group/:id", messageController.getAllMessageByGroup);
 
 messageRouter.post(
   "/images",
