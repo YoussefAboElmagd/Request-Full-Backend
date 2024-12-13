@@ -87,34 +87,53 @@ const addPhotos = catchAsync(async (req, res, next) => {
 });
 
 const getAllMessageByTwoUsers = catchAsync(async (req, res, next) => {
-  let err_1 = "No Data was found!"
-  let err_2 = "sender or receiver not found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يوجد بيانات"
-    err_2 = "المرسل او المستلم غير موجود"
+  let err_1 = "No Data was found!";
+  let err_2 = "sender or receiver not found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يوجد بيانات";
+    err_2 = "المرسل او المستلم غير موجود";
   }
-  if(!req.query.sender || !req.query.receiver){
+  if (!req.query.sender || !req.query.receiver) {
     return res.status(404).json({
       message: err_2,
-    })
+    });
   }
+  const { page = 1, limit = 20 } = req.query; // Pagination params with defaults
+
+  const pageNumber = parseInt(page, 10);
+  const pageSize = parseInt(limit, 10);
   let ApiFeat = new ApiFeature(
-    messageModel.find({
-      $and: [
-        { project: req.params.id },
-        { group: null },
-        {
-          $or: [
-            { sender: req.query.sender, receiver: req.query.receiver },
-            { sender: req.query.receiver, receiver: req.query.sender }
-          ]
-        }
-      ]
-    }),
+    messageModel
+      .find({
+        $and: [
+          { project: req.params.id },
+          { group: null },
+          {
+            $or: [
+              { sender: req.query.sender, receiver: req.query.receiver },
+              { sender: req.query.receiver, receiver: req.query.sender },
+            ],
+          },
+        ],
+      })
+      .sort({ $natural: -1 })
+      .skip((pageNumber - 1) * pageSize)
+      .limit(pageSize),
     req.query
   );
-  // .sort({ $natural: -1 })  for latest message
   // .pagination()
+  const totalMessages = await messageModel.countDocuments({
+    $and: [
+      { project: req.params.id },
+      { group: null },
+      {
+        $or: [
+          { sender: req.query.sender, receiver: req.query.receiver },
+          { sender: req.query.receiver, receiver: req.query.sender },
+        ],
+      },
+    ],
+  });
 
   let results = await ApiFeat.mongooseQuery;
   results = JSON.stringify(results);
@@ -126,29 +145,35 @@ const getAllMessageByTwoUsers = catchAsync(async (req, res, next) => {
   }
   res.json({
     message: "Done",
-    // page: ApiFeat.page,
-    // count: await messageModel.countDocuments({ taskId: req.params.id }),
+    page: pageNumber,
     results,
+    totalMessages,
   });
 });
 const getAllMessageByGroup = catchAsync(async (req, res, next) => {
-  let err_1 = "No Data was found!"
-  let err_2 = "group not found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يوجد بيانات"
-    err_2 = "المجموعة غير موجودة"
+  let err_1 = "No Data was found!";
+  let err_2 = "group not found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يوجد بيانات";
+    err_2 = "المجموعة غير موجودة";
   }
-  if(!req.query.group){
+  if (!req.query.group) {
     return res.status(404).json({
       message: err_2,
-    })
+    });
   }
+  const { page = 1, limit = 20 } = req.query; // Pagination params with defaults
+
+  const pageNumber = parseInt(page, 10);
+  const pageSize = parseInt(limit, 10);
   let ApiFeat = new ApiFeature(
-    messageModel.find({ $and: [{ project: req.params.id },{group: req.query.group}] }),
+    messageModel
+      .find({ $and: [{ project: req.params.id }, { group: req.query.group }] })
+      .sort({ $natural: -1 })
+      .skip((pageNumber - 1) * pageSize)
+      .limit(pageSize),
     req.query
   );
-  // .sort({ $natural: -1 })  for latest message
-  // .pagination()
 
   let results = await ApiFeat.mongooseQuery;
   results = JSON.stringify(results);
@@ -158,11 +183,14 @@ const getAllMessageByGroup = catchAsync(async (req, res, next) => {
       message: err_1,
     });
   }
+  const totalMessages = await messageModel.countDocuments({
+    $and: [{ project: req.params.id }, { group: req.query.group }],
+  });
   res.json({
     message: "Done",
-    // page: ApiFeat.page,
-    // count: await messageModel.countDocuments({ taskId: req.params.id }),
+    page: pageNumber,
     results,
+    totalMessages,
   });
 });
 
@@ -191,11 +219,16 @@ const getAllGroupsByUserProjects = catchAsync(async (req, res, next) => {
   }
 
   // Extract project IDs
-  const projectIds = projects.map(project => project._id);
+  const projectIds = projects.map((project) => project._id);
 
   // Find all group chats linked to these projects
   const groupChats = await groupChatModel
-    .find({ $and: [{ users: { $in: req.user._id } }, { project: { $in: projectIds } }] })
+    .find({
+      $and: [
+        { users: { $in: req.user._id } },
+        { project: { $in: projectIds } },
+      ],
+    })
     .populate("users", "name email"); // Populate user details in the chat group
 
   if (!groupChats.length) {
@@ -205,15 +238,12 @@ const getAllGroupsByUserProjects = catchAsync(async (req, res, next) => {
   }
 
   // Combine project members and group chat users into one list
-  const results = projects.map(project => {
+  const results = projects.map((project) => {
     const relatedGroupChats = groupChats.filter(
-      groupChat => groupChat.project.toString() === project._id.toString()
+      (groupChat) => groupChat.project.toString() === project._id.toString()
     );
 
-    const combinedUsers = [
-      ...project.members,
-      ...relatedGroupChats
-    ];
+    const combinedUsers = [...project.members, ...relatedGroupChats];
 
     return {
       ...project.toObject(), // Convert project to plain object
@@ -228,8 +258,10 @@ const getAllGroupsByUserProjects = catchAsync(async (req, res, next) => {
   });
 });
 
-
-
-
-
-export { createmessage, addPhotos, getAllMessageByTwoUsers ,getAllGroupsByUserProjects,getAllMessageByGroup};
+export {
+  createmessage,
+  addPhotos,
+  getAllMessageByTwoUsers,
+  getAllGroupsByUserProjects,
+  getAllMessageByGroup,
+};

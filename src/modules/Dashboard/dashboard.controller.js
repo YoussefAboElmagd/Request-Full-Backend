@@ -125,12 +125,12 @@ const getMostModels = catchAsync(async (req, res, next) => {
     err_1 = "لا يوجد بيانات"
   }
   const totalProjects = await projectModel.countDocuments();
-  const totalRequestForDocumentSubmittalApproval = await projectModel.countDocuments({requestForDocumentSubmittalApproval: true});
-  const totalRequestForApprovalOfMaterials = await projectModel.countDocuments({requestForApprovalOfMaterials: true});
-  const totalWorkRequest = await projectModel.countDocuments({workRequest: true});
-  const totalTableOfQuantities = await projectModel.countDocuments({tableOfQuantities: true});
-  const totalRequestForInspectionForm = await projectModel.countDocuments({requestForInspectionForm: true});
-  const totalApprovalOfSchemes = await projectModel.countDocuments({approvalOfSchemes: true});
+  const totalRequestForDocumentSubmittalApproval = await requsetModel.countDocuments({type:"requestForDocumentSubmittalApproval"});
+  const totalRequestForApprovalOfMaterials = await requsetModel.countDocuments({type:"requestForApprovalOfMaterials"});
+  const totalWorkRequest = await requsetModel.countDocuments({type:"workRequest"});
+  const totalTableOfQuantities = await requsetModel.countDocuments({type:"tableOfQuantities"});
+  const totalRequestForInspectionForm = await requsetModel.countDocuments({type:"requestForInspectionForm"});
+  const totalApprovalOfSchemes = await requsetModel.countDocuments({type:"approvalOfSchemes"});
 
   let results = {
     totalRequestForDocumentSubmittalApproval:{
@@ -170,23 +170,6 @@ const getMostModels = catchAsync(async (req, res, next) => {
   });
 });
 
-const updateDashboard = catchAsync(async (req, res, next) => {
-  const { id } = req.params;
-  let err_1 = "No Data was found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يوجد بيانات"
-  }
-  const updatedDashboard = await DashboardCodeModel.findByIdAndUpdate(id, req.body, {
-    new: true,
-  });
-  if (!updatedDashboard) {
-    return res.status(404).json({ message: err_1});
-  }
-  res.status(200).json({
-    message: "Dashboard updated successfully!",
-    updatedDashboard,
-  });
-});
 const getActiveProjects= catchAsync(async (req, res, next) => {
   let err_1 = "No Project was found!"
   if(req.query.lang == "ar"){
@@ -644,6 +627,6 @@ const weeklyActivity = await taskModel.aggregate([
   });
 });
 
-export {  updateDashboard,getTopCountries ,getUserRatioPieChart ,getActiveProjects,getProjectPerformance ,getActiveProjectsByUser,getProjectPerformanceByUser,
+export {  getTopCountries ,getUserRatioPieChart ,getActiveProjects,getProjectPerformance ,getActiveProjectsByUser,getProjectPerformanceByUser,
   weeklyActivity ,weeklyActivityByUser ,getTagsRatio ,getMostModels
   };

@@ -25,36 +25,36 @@ const projectSchema = mongoose.Schema(
       default: "medium",
       required: true,
     },
-    requestForDocumentSubmittalApproval: {
-      type: Boolean,
-      default: false,
-      required: true,
-    },
-    requestForApprovalOfMaterials: {
-      type: Boolean,
-      default: false,
-      required: true,
-    },
-    workRequest: {
-      type: Boolean,
-      default: false,
-      required: true,
-    },
-    tableOfQuantities: {
-      type: Boolean,
-      default: false,
-      required: true,
-    },
-    requestForInspectionForm: {
-      type: Boolean,
-      default: false,
-      required: true,
-    },
-    approvalOfSchemes: {
-      type: Boolean,
-      default: false,
-      required: true,
-    },
+    // requestForDocumentSubmittalApproval: {
+    //   type: Boolean,
+    //   default: false,
+    //   required: true,
+    // },
+    // requestForApprovalOfMaterials: {
+    //   type: Boolean,
+    //   default: false,
+    //   required: true,
+    // },
+    // workRequest: {
+    //   type: Boolean,
+    //   default: false,
+    //   required: true,
+    // },
+    // tableOfQuantities: {
+    //   type: Boolean,
+    //   default: false,
+    //   required: true,
+    // },
+    // requestForInspectionForm: {
+    //   type: Boolean,
+    //   default: false,
+    //   required: true,
+    // },
+    // approvalOfSchemes: {
+    //   type: Boolean,
+    //   default: false,
+    //   required: true,
+    // },
     // requestForDrawingSubmittalApproval: {
     //   type: [mongoose.Schema.Types.ObjectId],
     //   ref: "request",
