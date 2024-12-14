@@ -116,7 +116,7 @@ const getAllMessageByTwoUsers = catchAsync(async (req, res, next) => {
           },
         ],
       })
-      .sort({ $natural: -1 })
+      // .sort({ $natural: -1 })
       .skip((pageNumber - 1) * pageSize)
       .limit(pageSize),
     req.query
@@ -169,7 +169,7 @@ const getAllMessageByGroup = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
     messageModel
       .find({ $and: [{ project: req.params.id }, { group: req.query.group }] })
-      .sort({ $natural: -1 })
+      // .sort({ $natural: -1 })
       .skip((pageNumber - 1) * pageSize)
       .limit(pageSize),
     req.query
