@@ -42,7 +42,7 @@ const createmessage = catchAsync(async (req, res, next) => {
 
   const newmessage = new messageModel(req.body);
   const savedmessage = await newmessage.save();
-
+  let id = savedmessage._id;
   if (savedmessage.group !== null) {
     sio.emit(`message_${sender}_${project}_${req.body.group}`, {
       createdAt,
@@ -51,6 +51,7 @@ const createmessage = catchAsync(async (req, res, next) => {
       receiver,
       docs,
       voiceNote,
+      id,
     });
   } else {
     sio.emit(`message_${sender}_${project}_${receiver}`, {
@@ -59,6 +60,7 @@ const createmessage = catchAsync(async (req, res, next) => {
       senderName,
       docs,
       voiceNote,
+      id,
     });
   }
 
