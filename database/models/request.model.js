@@ -16,12 +16,12 @@ const requsetSchema = mongoose.Schema(
     type: {
       type: String,
       enum: [
-        "requestForDocumentSubmittalApproval",
-        "requestForApprovalOfMaterials",
+        "requestForDrawingSubmittal",
+        "requestForMaterialAndEquipment",
         "workRequest",
-        "tableOfQuantities",
-        "requestForInspectionForm",
-        "approvalOfSchemes",
+        "tableOfQuantity",
+        "requestForDocumentSubmittal",
+        "requestForInspaction",
       ],
       required: true,
     },
