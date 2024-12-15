@@ -26,9 +26,11 @@ const createmessage = catchAsync(async (req, res, next) => {
   let sender = req.body.sender;
   let receiver = req.body.receiver;
   let project = req.body.project;
+  let type = req.body.type;
 
-  let senderName = await userModel.findById(sender).select("name");
-  senderName = senderName.name;
+  let user = await userModel.findById(sender).select("name");
+  let senderName = user.name;
+  let profilePic = user.profilePic;
 
   let docs = [];
   let voiceNote = [];
@@ -47,6 +49,9 @@ const createmessage = catchAsync(async (req, res, next) => {
     sio.emit(`message_${sender}_${project}_${req.body.group}`, {
       createdAt,
       content,
+      type,
+      sender,
+      profilePic,
       senderName,
       receiver,
       docs,
@@ -57,6 +62,9 @@ const createmessage = catchAsync(async (req, res, next) => {
     sio.emit(`message_${sender}_${project}_${receiver}`, {
       createdAt,
       content,
+      type,
+      sender,
+      profilePic,
       senderName,
       docs,
       voiceNote,

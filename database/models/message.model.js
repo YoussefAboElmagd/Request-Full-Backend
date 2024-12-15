@@ -61,4 +61,10 @@ const messageSchema = mongoose.Schema(
   { timestamps: true }
 );
 
+messageSchema.pre(/^find/, function () {
+    this.populate("sender");
+    this.populate("receiver");
+    this.populate("group");
+})
+
 export const messageModel = mongoose.model("message", messageSchema);
