@@ -10,7 +10,7 @@ const messageSchema = mongoose.Schema(
     receiver: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
-      required: true,
+      // required: true,
     },
     content: {
       type: String,
@@ -62,8 +62,8 @@ const messageSchema = mongoose.Schema(
 );
 
 messageSchema.pre(/^find/, function () {
-    this.populate("sender");
-    this.populate("receiver");
+    // this.populate("sender");
+    // this.populate("receiver");
     this.populate("group");
 })
 

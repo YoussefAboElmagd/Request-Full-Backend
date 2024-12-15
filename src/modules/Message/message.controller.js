@@ -174,7 +174,7 @@ const getAllMessageByGroup = catchAsync(async (req, res, next) => {
       .find({ $and: [{ project: req.params.id }, { group: req.query.group }] })
       .sort({ $natural: -1 })
       .skip((pageNumber - 1) * pageSize)
-      .limit(pageSize),
+      .limit(pageSize).populate("sender", "profilePic name"),
     req.query
   );
 
