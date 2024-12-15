@@ -125,12 +125,12 @@ const getMostModels = catchAsync(async (req, res, next) => {
     err_1 = "لا يوجد بيانات"
   }
   const totalProjects = await projectModel.countDocuments();
-  const totalRequestForDocumentSubmittalApproval = await requsetModel.countDocuments({type:"requestForDocumentSubmittalApproval"});
-  const totalRequestForApprovalOfMaterials = await requsetModel.countDocuments({type:"requestForApprovalOfMaterials"});
+  const totalRequestForDocumentSubmittalApproval = await requsetModel.countDocuments({type:"requestForDocumentSubmittal"});
+  const totalRequestForMaterialAndEquipment = await requsetModel.countDocuments({type:"requestForMaterialAndEquipment"});
   const totalWorkRequest = await requsetModel.countDocuments({type:"workRequest"});
-  const totalTableOfQuantities = await requsetModel.countDocuments({type:"tableOfQuantities"});
-  const totalRequestForInspectionForm = await requsetModel.countDocuments({type:"requestForInspectionForm"});
-  const totalApprovalOfSchemes = await requsetModel.countDocuments({type:"approvalOfSchemes"});
+  const totalTableOfQuantities = await requsetModel.countDocuments({type:"tableOfQuantity"});
+  const totalRequestForInspectionForm = await requsetModel.countDocuments({type:"requestForInspaction"});
+  const totalRequestForDrawingSubmittal = await requsetModel.countDocuments({type:"requestForDrawingSubmittal"});
 
   let results = {
     totalRequestForDocumentSubmittalApproval:{
@@ -138,8 +138,8 @@ const getMostModels = catchAsync(async (req, res, next) => {
       percentage: (totalRequestForDocumentSubmittalApproval/totalProjects)*100
     },
     totalRequestForApprovalOfMaterials: {
-      count: totalRequestForApprovalOfMaterials,
-      percentage: (totalRequestForApprovalOfMaterials/totalProjects)*100
+      count: totalRequestForMaterialAndEquipment,
+      percentage: (totalRequestForMaterialAndEquipment/totalProjects)*100
     },
     totalWorkRequest: {
       count: totalWorkRequest,
@@ -154,8 +154,8 @@ const getMostModels = catchAsync(async (req, res, next) => {
       percentage: (totalRequestForInspectionForm/totalProjects)*100
     },
     totalApprovalOfSchemes: {
-      count: totalApprovalOfSchemes,
-      percentage: (totalApprovalOfSchemes/totalProjects)*100
+      count: totalRequestForDrawingSubmittal,
+      percentage: (totalRequestForDrawingSubmittal/totalProjects)*100
     },
 
   }
