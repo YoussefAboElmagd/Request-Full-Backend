@@ -39,23 +39,27 @@ const createmessage = catchAsync(async (req, res, next) => {
     voiceNote = req.body.voiceNote;
   }
   // req.body.model = "66ba00faf820163904164a43";
-  console.log(content,'content');
-  console.log(sender,'sender');
-  console.log(receiver,'receiver');
-  console.log(project,'project');
-  console.log(senderName,'sendername');
-  console.log(docs,'content');
-  console.log(voiceNote,'content');
-  
+
   const newmessage = new messageModel(req.body);
   const savedmessage = await newmessage.save();
 
   if (savedmessage.group !== null) {
-    sio.emit(
-      `message_${sender}_${project}_${req.body.group}`,{ createdAt },{ content },{ senderName },{ receiver },{ docs },{ voiceNote });
+    sio.emit(`message_${sender}_${project}_${req.body.group}`, {
+      createdAt,
+      content,
+      senderName,
+      receiver,
+      docs,
+      voiceNote,
+    });
   } else {
-    sio.emit(
-      `message_${sender}_${project}_${receiver}`,{ createdAt },{ content },{ senderName },{ docs },{ voiceNote });
+    sio.emit(`message_${sender}_${project}_${receiver}`, {
+      createdAt,
+      content,
+      senderName,
+      docs,
+      voiceNote,
+    });
   }
 
   res.status(201).json({
