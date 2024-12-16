@@ -15,7 +15,7 @@ const messageSchema = mongoose.Schema(
     },
     content: {
       type: String,
-      default: " ",
+      default: null,
       required: true,
     },
     type: {
@@ -33,7 +33,7 @@ const messageSchema = mongoose.Schema(
       default: "",
     },
     docs: {
-      type: [String],
+      type: String,
     },
     voiceNote: {
       type: [String],

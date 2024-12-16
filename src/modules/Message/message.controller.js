@@ -32,7 +32,7 @@ const createmessage = catchAsync(async (req, res, next) => {
   let senderName = user.name;
   let profilePic = user.profilePic;
 
-  let docs = [];
+  let docs = null;
   let voiceNote = [];
   if (req.body.docs) {
     docs = req.body.docs;
