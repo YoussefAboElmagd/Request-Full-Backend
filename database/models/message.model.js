@@ -16,7 +16,7 @@ const messageSchema = mongoose.Schema(
     content: {
       type: String,
       default: null,
-      required: true,
+      // required: true,
     },
     type: {
       type: String,
