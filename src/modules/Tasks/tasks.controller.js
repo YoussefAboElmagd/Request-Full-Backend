@@ -170,12 +170,41 @@ const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
   if (req.query.lang == "ar") {
     err_1 = "لا يوجد مهام";
   }
-  let ApiFeat = new ApiFeature(
-    taskModel.find().populate("project").sort({ $natural: -1 }),
-    req.query
-  )
-    .sort()
-    .search();
+  let ApiFeat = null
+  
+  if (req.query.filterValue == "Approved" || req.query.filterValue == undefined) {
+    ApiFeat = new ApiFeature(
+      taskModel.find({isAproved: true}).populate("project").sort({ $natural: -1 }),
+      req.query
+    )
+      .sort()
+      .search();
+  } else if (req.query.filterValue == "Waiting") {
+    ApiFeat = new ApiFeature(
+      taskModel
+        .find({ taskStatus: "waiting" })
+        .populate("project")
+        .sort({ $natural: -1 }),
+      req.query
+    )
+  } else if (req.query.filterValue == "Finished") {
+    ApiFeat = new ApiFeature(
+      taskModel
+        .find({ taskStatus: "completed" })
+        .populate("project")
+        .sort({ $natural: -1 }),
+      req.query
+    )
+  } else if (req.query.filterValue == "Delayed") {
+    ApiFeat = new ApiFeature(
+      taskModel
+        .find({ taskStatus: "delayed" })
+        .populate("project")
+        .sort({ $natural: -1 }),
+      req.query
+    )
+  }
+
   let results = await ApiFeat.mongooseQuery;
   results = JSON.stringify(results);
   results = JSON.parse(results);
@@ -184,29 +213,29 @@ const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
       message: "No Task was found!",
     });
   }
-  let { filterType, filterValue } = req.query;
-  if (filterType && filterValue) {
-    results = results.filter(function (item) {
-      if (filterType == "title") {
-        return item.title.toLowerCase().includes(filterValue.toLowerCase());
-      }
-      if (filterType == "taskStatus") {
-        return item.taskStatus
-          .toLowerCase()
-          .includes(filterValue.toLowerCase());
-      }
-      if (filterType == "taskPriority") {
-        return item.taskPriority
-          .toLowerCase()
-          .includes(filterValue.toLowerCase());
-      }
-      if (filterType == "project") {
-        return item.project.name
-          .toLowerCase()
-          .includes(filterValue.toLowerCase());
-      }
-    });
-  }
+  // let { filterType, filterValue } = req.query;
+  // if (filterType && filterValue) {
+  //   results = results.filter(function (item) {
+  //     if (filterType == "title") {
+  //       return item.title.toLowerCase().includes(filterValue.toLowerCase());
+  //     }
+  //     if (filterType == "taskStatus") {
+  //       return item.taskStatus
+  //         .toLowerCase()
+  //         .includes(filterValue.toLowerCase());
+  //     }
+  //     if (filterType == "taskPriority") {
+  //       return item.taskPriority
+  //         .toLowerCase()
+  //         .includes(filterValue.toLowerCase());
+  //     }
+  //     if (filterType == "project") {
+  //       return item.project.name
+  //         .toLowerCase()
+  //         .includes(filterValue.toLowerCase());
+  //     }
+  //   });
+  // }
 
   res.json({
     message: "Done",

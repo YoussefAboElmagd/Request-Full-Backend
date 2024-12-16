@@ -227,7 +227,7 @@ const updateCollection = catchAsync(async (req, res, next) => {
 
 const getAllUsersByAdmin = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(
-    userModel.find().limit(5).sort({ $natural: -1 }),
+    userModel.find().limit(10),
     req.query
   ).search();
   let message = "No users was found! add a new user to get started!";
@@ -242,7 +242,30 @@ const getAllUsersByAdmin = catchAsync(async (req, res, next) => {
   }
   res.json({
     message: "Done",
-    count: await userModel.countDocuments(),
+    countAllUsers: await userModel.countDocuments(),
+    countOwners: await userModel.countDocuments({ role: "66d33a4b4ad80e468f231f83" }),
+    countContractors: await userModel.countDocuments({ role: "66d33ec44ad80e468f231f91" }),
+    countConsultant: await userModel.countDocuments({ role: "66d33e7a4ad80e468f231f8d" }),
+    results,
+  });
+});
+const getAllNewUsers = catchAsync(async (req, res, next) => {
+  let ApiFeat = new ApiFeature(
+    userModel.find().limit(10).sort({ $natural: -1 }),
+    req.query
+  ).search();
+  let message = "No users was found! add a new user to get started!";
+  if (req.query.lang == "ar") {
+    message = "لا يوجد مستخدمين! أضف مستخدم جديد للبدء!";
+  }
+  let results = await ApiFeat.mongooseQuery;
+  if (!results) {
+    return res.status(404).json({
+      message: "No users was found! add a new user to get started!",
+    });
+  }
+  res.json({
+    message: "Done",
     results,
   });
 });
@@ -575,4 +598,5 @@ export {
   updateInvite,
   getUserForInvite,
   deleteInvite,
+  getAllNewUsers,
 };

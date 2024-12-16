@@ -257,6 +257,15 @@ const sequenceSchema = mongoose.Schema({
 export const Sequence = mongoose.model("sequence", sequenceSchema);
 
 requsetSchema.pre("save", async function (next) {
+  await populateOwnerConsultantContractor(this);
+  message_en = `There are new Models to be approved`;
+  message_ar = `هناك نماذج جديدة للموافقة عليها`;
+  let receivers = [this.owner?._id, this.contractor?._id, this.consultant?._id];
+  sendNotification(message_en, message_ar, "warning", receivers);
+
+  next();
+});
+requsetSchema.pre("save", async function (next) {
   if (this.isNew) {
     await populateOwnerConsultantContractor(this);
     let user = await userModel.findById(this.createdBy);
