@@ -170,11 +170,17 @@ const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
   if (req.query.lang == "ar") {
     err_1 = "لا يوجد مهام";
   }
-  let ApiFeat = null
-  
-  if (req.query.filterValue == "Approved" || req.query.filterValue == undefined) {
+  let ApiFeat = null;
+
+  if (
+    req.query.filterValue == "Approved" ||
+    req.query.filterValue == undefined
+  ) {
     ApiFeat = new ApiFeature(
-      taskModel.find({isAproved: true}).populate("project").sort({ $natural: -1 }),
+      taskModel
+        .find({ isAproved: true })
+        .populate("project")
+        .sort({ $natural: -1 }),
       req.query
     )
       .sort()
@@ -186,7 +192,7 @@ const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
         .populate("project")
         .sort({ $natural: -1 }),
       req.query
-    )
+    );
   } else if (req.query.filterValue == "Finished") {
     ApiFeat = new ApiFeature(
       taskModel
@@ -194,7 +200,7 @@ const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
         .populate("project")
         .sort({ $natural: -1 }),
       req.query
-    )
+    );
   } else if (req.query.filterValue == "Delayed") {
     ApiFeat = new ApiFeature(
       taskModel
@@ -202,7 +208,7 @@ const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
         .populate("project")
         .sort({ $natural: -1 }),
       req.query
-    )
+    );
   }
 
   let results = await ApiFeat.mongooseQuery;

@@ -140,17 +140,17 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    tags:{
+    tags: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "tag",
       default: null,
       // required: true,
     },
-    access:{
-      create: { type: Boolean, default: false, },
-      read: { type: Boolean, default: false, },
-      edit: { type: Boolean, default: false, },
-      delete: { type: Boolean, default: false, },
+    access: {
+      create: { type: Boolean, default: false },
+      read: { type: Boolean, default: false },
+      edit: { type: Boolean, default: false },
+      delete: { type: Boolean, default: false },
     },
     userType: {
       type: String,
@@ -187,14 +187,13 @@ userSchema.pre("findOneAndUpdate", function () {
     );
   }
 });
-userSchema.pre("findOneAndUpdate",async function () {
-  
-  if(this._update.name){
+userSchema.pre("findOneAndUpdate", async function () {
+  if (this._update.name) {
     await messageModel.updateMany(
       { sender: this._update._id },
       { $set: { senderName: this._update.name } },
       { new: true }
-    )
+    );
   }
 });
 userSchema.pre(/^delete/, { document: false, query: true }, async function () {
@@ -203,7 +202,7 @@ userSchema.pre(/^delete/, { document: false, query: true }, async function () {
     await tagsModel.deleteMany({ createdBy: doc._id });
     await teamModel.deleteMany({ createdBy: doc._id });
     await projectModel.deleteMany({ createdBy: doc._id });
-    await projectModel.updateMany({ $pull: { members: doc._id }});
+    await projectModel.updateMany({ $pull: { members: doc._id } });
     doc.profilePic && removeFile("profilePic", doc.profilePic);
     doc.companyLogo && removeFile("company", doc.companyLogo);
     doc.electronicStamp && removeFile("company", doc.electronicStamp);
