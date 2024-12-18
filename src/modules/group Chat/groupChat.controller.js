@@ -32,11 +32,14 @@ const getAllGroupChat = catchAsync(async (req, res, next) => {
   });
 });
 const getGroupChatById = catchAsync(async (req, res, next) => {
-  let err_1 = "No GroupChat was found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يوجد مجموعة"
+  let err_1 = "No GroupChat was found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يوجد مجموعة";
   }
-  let ApiFeat = new ApiFeature(groupChatModel.findById(req.params.id), req.query).search();
+  let ApiFeat = new ApiFeature(
+    groupChatModel.findById(req.params.id),
+    req.query
+  ).search();
   let results = await ApiFeat.mongooseQuery;
   results = JSON.stringify(results);
   results = JSON.parse(results);
@@ -45,6 +48,45 @@ const getGroupChatById = catchAsync(async (req, res, next) => {
       message: err_1,
     });
   }
+  res.json({
+    message: "Done",
+    results,
+  });
+});
+const getUsersToAdd = catchAsync(async (req, res, next) => {
+  let err_1 = "No GroupChat was found!";
+  let err_2 = "No Project  was found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يوجد مجموعة";
+    err_2 = "لا يوجد مشروع";
+  }
+  let members = await projectModel
+    .findById(req.params.projectId)
+    .select("members");
+
+  if (!members) {
+    return res.status(404).json({
+      message: err_2,
+    });
+  }
+  members = members.members;
+  let ApiFeat = new ApiFeature(
+    groupChatModel.findById(req.params.id).select("users"),
+    req.query
+  ).search();
+  let results = await ApiFeat.mongooseQuery;
+  results = JSON.stringify(results);
+  results = JSON.parse(results);
+  if (!ApiFeat || !results) {
+    return res.status(404).json({
+      message: err_1,
+    });
+  }
+  let resultIds = results.users.map((user) => user._id.toString());
+
+  results = members.filter(
+    (member) => !resultIds.includes(member._id.toString())
+  );
   res.json({
     message: "Done",
     results,
@@ -59,7 +101,9 @@ const getAllChatsForUserByproject = catchAsync(async (req, res, next) => {
   }
   project = project.members;
   let ApiFeat = new ApiFeature(
-    groupChatModel.find({$and:[{ users: { $in: req.user._id } }, { project: req.params.id }]}),
+    groupChatModel.find({
+      $and: [{ users: { $in: req.user._id } }, { project: req.params.id }],
+    }),
     req.query
   ).search();
   let results = await ApiFeat.mongooseQuery;
@@ -144,4 +188,5 @@ export {
   updateGroupChat2,
   getAllChatsForUserByproject,
   getGroupChatById,
+  getUsersToAdd,
 };
