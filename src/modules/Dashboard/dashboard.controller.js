@@ -8,28 +8,28 @@ import { tagsModel } from "../../../database/models/tags.model.js";
 import { requsetModel } from "../../../database/models/request.model.js";
 
 const getTopCountries = catchAsync(async (req, res, next) => {
-  let err_1 = "No Data was found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يوجد بيانات"
+  let err_1 = "No Data was found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يوجد بيانات";
   }
   let results = await userModel.aggregate([
     {
       $group: {
-        _id: "$country",  // Assuming your user model has a 'country' field
-        userCount: { $sum: 1 }  // Count the number of users per country
-      }
+        _id: "$country", // Assuming your user model has a 'country' field
+        userCount: { $sum: 1 }, // Count the number of users per country
+      },
     },
     {
-      $sort: { userCount: -1 }  // Sort by user count in descending order
+      $sort: { userCount: -1 }, // Sort by user count in descending order
     },
     {
-      $limit: 10  // Limit the result to the top 10
-    }
+      $limit: 10, // Limit the result to the top 10
+    },
   ]);
-  if(!results){
+  if (!results) {
     return res.status(404).json({
       message: err_1,
-    })
+    });
   }
   res.json({
     message: "Done",
@@ -38,16 +38,16 @@ const getTopCountries = catchAsync(async (req, res, next) => {
 });
 const getUserRatioPieChart = catchAsync(async (req, res, next) => {
   const totalUsers = await userModel.countDocuments();
-  let err_1 = "No Data was found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يوجد بيانات"
+  let err_1 = "No Data was found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يوجد بيانات";
   }
   let results = await userModel.aggregate([
     {
       $group: {
         _id: "$role",
-        count: { $sum: 1 }  
-      }
+        count: { $sum: 1 },
+      },
     },
     {
       $project: {
@@ -55,23 +55,23 @@ const getUserRatioPieChart = catchAsync(async (req, res, next) => {
         count: 1,
         name: 1,
         percentage: {
-          $multiply: [{ $divide: ["$count", totalUsers] }, 100]
-        }
-      }
+          $multiply: [{ $divide: ["$count", totalUsers] }, 100],
+        },
+      },
     },
     {
-      $sort: { count: -1 } 
+      $sort: { count: -1 },
     },
   ]);
-  results= await userModel.populate(results, {
+  results = await userModel.populate(results, {
     path: "_id",
     model: "userType",
-    select: "jobTitle", 
+    select: "jobTitle",
   });
-  if(!results){
+  if (!results) {
     return res.status(404).json({
       message: err_1,
-    })
+    });
   }
   res.json({
     message: "Done",
@@ -80,39 +80,39 @@ const getUserRatioPieChart = catchAsync(async (req, res, next) => {
 });
 const getTagsRatio = catchAsync(async (req, res, next) => {
   const totalTags = await tagsModel.countDocuments();
-  let err_1 = "No Data was found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يوجد بيانات"
+  let err_1 = "No Data was found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يوجد بيانات";
   }
   let results = await userModel.aggregate([
     {
       $group: {
         _id: "$tags",
-        count: { $sum: 1 }  
-      }
+        count: { $sum: 1 },
+      },
     },
     {
       $project: {
         _id: 1,
         count: 1,
         percentage: {
-          $multiply: [{ $divide: ["$count", totalTags] }, 100] 
-        }
-      }
+          $multiply: [{ $divide: ["$count", totalTags] }, 100],
+        },
+      },
     },
     {
-      $sort: { count: -1 } 
+      $sort: { count: -1 },
     },
   ]);
-  if(!results){
+  if (!results) {
     return res.status(404).json({
       message: err_1,
-    })
+    });
   }
-  results= await tagsModel.populate(results, {
+  results = await tagsModel.populate(results, {
     path: "_id",
     model: "tag",
-    select: "name", 
+    select: "name",
   });
   res.json({
     message: "Done",
@@ -120,49 +120,60 @@ const getTagsRatio = catchAsync(async (req, res, next) => {
   });
 });
 const getMostModels = catchAsync(async (req, res, next) => {
-  let err_1 = "No Data was found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يوجد بيانات"
+  let err_1 = "No Data was found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يوجد بيانات";
   }
   const totalProjects = await projectModel.countDocuments();
-  const totalRequestForDocumentSubmittalApproval = await requsetModel.countDocuments({type:"requestForDocumentSubmittal"});
-  const totalRequestForMaterialAndEquipment = await requsetModel.countDocuments({type:"requestForMaterialAndEquipment"});
-  const totalWorkRequest = await requsetModel.countDocuments({type:"workRequest"});
-  const totalTableOfQuantities = await requsetModel.countDocuments({type:"tableOfQuantity"});
-  const totalRequestForInspectionForm = await requsetModel.countDocuments({type:"requestForInspaction"});
-  const totalRequestForDrawingSubmittal = await requsetModel.countDocuments({type:"requestForDrawingSubmittal"});
+  const totalRequestForDocumentSubmittalApproval =
+    await requsetModel.countDocuments({ type: "requestForDocumentSubmittal" });
+  const totalRequestForMaterialAndEquipment = await requsetModel.countDocuments(
+    { type: "requestForMaterialAndEquipment" }
+  );
+  const totalWorkRequest = await requsetModel.countDocuments({
+    type: "workRequest",
+  });
+  const totalTableOfQuantities = await requsetModel.countDocuments({
+    type: "tableOfQuantity",
+  });
+  const totalRequestForInspectionForm = await requsetModel.countDocuments({
+    type: "requestForInspaction",
+  });
+  const totalRequestForDrawingSubmittal = await requsetModel.countDocuments({
+    type: "requestForDrawingSubmittal",
+  });
 
   let results = {
-    totalRequestForDocumentSubmittalApproval:{
+    totalRequestForDocumentSubmittalApproval: {
       count: totalRequestForDocumentSubmittalApproval,
-      percentage: (totalRequestForDocumentSubmittalApproval/totalProjects)*100
+      percentage:
+        (totalRequestForDocumentSubmittalApproval / totalProjects) * 100,
     },
     totalRequestForApprovalOfMaterials: {
       count: totalRequestForMaterialAndEquipment,
-      percentage: (totalRequestForMaterialAndEquipment/totalProjects)*100
+      percentage: (totalRequestForMaterialAndEquipment / totalProjects) * 100,
     },
     totalWorkRequest: {
       count: totalWorkRequest,
-      percentage: (totalWorkRequest/totalProjects)*100
+      percentage: (totalWorkRequest / totalProjects) * 100,
     },
     totalTableOfQuantities: {
       count: totalTableOfQuantities,
-      percentage: (totalTableOfQuantities/totalProjects)*100
+      percentage: (totalTableOfQuantities / totalProjects) * 100,
     },
     totalRequestForInspectionForm: {
       count: totalRequestForInspectionForm,
-      percentage: (totalRequestForInspectionForm/totalProjects)*100
+      percentage: (totalRequestForInspectionForm / totalProjects) * 100,
     },
     totalApprovalOfSchemes: {
       count: totalRequestForDrawingSubmittal,
-      percentage: (totalRequestForDrawingSubmittal/totalProjects)*100
+      percentage: (totalRequestForDrawingSubmittal / totalProjects) * 100,
     },
-
-  }
-  if(!results){
+  };
+  if (!results) {
     return res.status(404).json({
       message: err_1,
-    })
+    });
   }
   res.json({
     message: "Done",
@@ -170,23 +181,23 @@ const getMostModels = catchAsync(async (req, res, next) => {
   });
 });
 
-const getActiveProjects= catchAsync(async (req, res, next) => {
-  let err_1 = "No Project was found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يوجد مشاريع"
+const getActiveProjects = catchAsync(async (req, res, next) => {
+  let err_1 = "No Project was found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يوجد مشاريع";
   }
   let ApiFeat = new ApiFeature(
     projectModel.aggregate([
       {
-        $match: { status: "working" }
+        $match: { status: "working" },
       },
       {
         $lookup: {
           from: "users", // Assuming the 'members' refer to the user model
           localField: "members",
           foreignField: "_id",
-          as: "members"
-        }
+          as: "members",
+        },
       },
       {
         $project: {
@@ -194,12 +205,12 @@ const getActiveProjects= catchAsync(async (req, res, next) => {
           members: {
             _id: 1,
             name: 1,
-            profilePic: 1
+            profilePic: 1,
           },
           progress: 1,
-          tasksCount: { $size: "$tasks" } // Count the number of tasks
-        }
-      }
+          tasksCount: { $size: "$tasks" }, // Count the number of tasks
+        },
+      },
     ]),
     req.query
   )
@@ -219,31 +230,30 @@ const getActiveProjects= catchAsync(async (req, res, next) => {
     results,
   });
 });
-const getActiveProjectsByUser= catchAsync(async (req, res, next) => {
-  let id =new mongoose.Types.ObjectId(req.params.id)
-  let err_1 = "No Project was found!"
-  let err_2 = "User not found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يوجد مشاريع"
-    err_2 = "المستخدم غير موجود"
+const getActiveProjectsByUser = catchAsync(async (req, res, next) => {
+  let id = new mongoose.Types.ObjectId(req.params.id);
+  let err_1 = "No Project was found!";
+  let err_2 = "User not found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يوجد مشاريع";
+    err_2 = "المستخدم غير موجود";
   }
-let check = await userModel.findById(id);
-if (!check) { 
-  return res.status(404).json({ message: err_2 });
-}
+  let check = await userModel.findById(id);
+  if (!check) {
+    return res.status(404).json({ message: err_2 });
+  }
   let ApiFeat = new ApiFeature(
     projectModel.aggregate([
       {
-        $match: 
-          { $and: [{ members:  id  }, { status: "working" }] } 
+        $match: { $and: [{ members: id }, { status: "working" }] },
       },
       {
         $lookup: {
           from: "users", // Assuming the 'members' refer to the user model
           localField: "members",
           foreignField: "_id",
-          as: "members"
-        }
+          as: "members",
+        },
       },
       {
         $project: {
@@ -251,12 +261,12 @@ if (!check) {
           members: {
             _id: 1,
             name: 1,
-            profilePic: 1
+            profilePic: 1,
           },
           progress: 1,
-          tasksCount: { $size: "$tasks" } // Count the number of tasks
-        }
-      }
+          tasksCount: { $size: "$tasks" }, // Count the number of tasks
+        },
+      },
     ]),
     req.query
   )
@@ -279,9 +289,9 @@ if (!check) {
 
 const getProjectPerformance = catchAsync(async (req, res, next) => {
   let totalProjects = await projectModel.countDocuments(); // Get the total number of projects
-  let err_1 = "No Data was found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يوجد بيانات"
+  let err_1 = "No Data was found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يوجد بيانات";
   }
   let results = await projectModel.aggregate([
     {
@@ -290,16 +300,16 @@ const getProjectPerformance = catchAsync(async (req, res, next) => {
           $cond: {
             if: { $in: ["$status", ["delayed", "waiting"]] }, // Combine "delayed" and "waiting" into "behind"
             then: "behind",
-            else: "$status"
-          }
-        }
-      }
+            else: "$status",
+          },
+        },
+      },
     },
     {
       $group: {
-        _id: "$statusCategory", 
-        count: { $sum: 1 }      
-      }
+        _id: "$statusCategory",
+        count: { $sum: 1 },
+      },
     },
     {
       $facet: {
@@ -309,21 +319,21 @@ const getProjectPerformance = catchAsync(async (req, res, next) => {
               _id: 1,
               count: 1,
               percentage: {
-                $multiply: [{ $divide: ["$count", totalProjects] }, 100]
-              }
-            }
-          }
+                $multiply: [{ $divide: ["$count", totalProjects] }, 100],
+              },
+            },
+          },
         ],
         allStatuses: [
           {
             $project: {
               _id: {
-                $literal: ["working", "completed", "behind"]
-              }
-            }
-          }
-        ]
-      }
+                $literal: ["working", "completed", "behind"],
+              },
+            },
+          },
+        ],
+      },
     },
     {
       $project: {
@@ -333,30 +343,33 @@ const getProjectPerformance = catchAsync(async (req, res, next) => {
             {
               $map: {
                 input: {
-                  $setDifference: [{ $arrayElemAt: ["$allStatuses._id", 0] }, "$results._id"]
+                  $setDifference: [
+                    { $arrayElemAt: ["$allStatuses._id", 0] },
+                    "$results._id",
+                  ],
                 },
                 as: "missingStatus",
-                in: { _id: "$$missingStatus", count: 0, percentage: 0 }
-              }
-            }
-          ]
-        }
-      }
+                in: { _id: "$$missingStatus", count: 0, percentage: 0 },
+              },
+            },
+          ],
+        },
+      },
     },
     {
-      $unwind: "$results"
+      $unwind: "$results",
     },
     {
-      $replaceRoot: { newRoot: "$results" }
+      $replaceRoot: { newRoot: "$results" },
     },
     {
-      $sort: { count: -1 } // Sort by count, descending
-    }
+      $sort: { count: -1 }, // Sort by count, descending
+    },
   ]);
-  if(!results){
+  if (!results) {
     return res.status(404).json({
       message: err_1,
-    })
+    });
   }
   res.json({
     message: "Done",
@@ -365,21 +378,20 @@ const getProjectPerformance = catchAsync(async (req, res, next) => {
 });
 const getProjectPerformanceByUser = catchAsync(async (req, res, next) => {
   let totalProjects = await projectModel.countDocuments(); // Get the total number of projects
-  let id =new mongoose.Types.ObjectId(req.params.id)
-  let err_1 = "No Project was found!"
-  let err_2 = "User not found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يوجد مشاريع"
-    err_2 = "المستخدم غير موجود"
+  let id = new mongoose.Types.ObjectId(req.params.id);
+  let err_1 = "No Project was found!";
+  let err_2 = "User not found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يوجد مشاريع";
+    err_2 = "المستخدم غير موجود";
   }
-let check = await userModel.findById(id);
-if (!check) { 
-  return res.status(404).json({ message: err_2 });
-}
+  let check = await userModel.findById(id);
+  if (!check) {
+    return res.status(404).json({ message: err_2 });
+  }
   let results = await projectModel.aggregate([
     {
-      $match: 
-      { members:  id  }
+      $match: { members: id },
     },
     {
       $addFields: {
@@ -387,16 +399,16 @@ if (!check) {
           $cond: {
             if: { $in: ["$status", ["delayed", "waiting"]] }, // Combine "delayed" and "waiting" into "behind"
             then: "behind",
-            else: "$status"
-          }
-        }
-      }
+            else: "$status",
+          },
+        },
+      },
     },
     {
       $group: {
-        _id: "$statusCategory", 
-        count: { $sum: 1 }      
-      }
+        _id: "$statusCategory",
+        count: { $sum: 1 },
+      },
     },
     {
       $facet: {
@@ -406,21 +418,21 @@ if (!check) {
               _id: 1,
               count: 1,
               percentage: {
-                $multiply: [{ $divide: ["$count", totalProjects] }, 100]
-              }
-            }
-          }
+                $multiply: [{ $divide: ["$count", totalProjects] }, 100],
+              },
+            },
+          },
         ],
         allStatuses: [
           {
             $project: {
               _id: {
-                $literal: ["working", "completed", "behind"]
-              }
-            }
-          }
-        ]
-      }
+                $literal: ["working", "completed", "behind"],
+              },
+            },
+          },
+        ],
+      },
     },
     {
       $project: {
@@ -430,30 +442,33 @@ if (!check) {
             {
               $map: {
                 input: {
-                  $setDifference: [{ $arrayElemAt: ["$allStatuses._id", 0] }, "$results._id"]
+                  $setDifference: [
+                    { $arrayElemAt: ["$allStatuses._id", 0] },
+                    "$results._id",
+                  ],
                 },
                 as: "missingStatus",
-                in: { _id: "$$missingStatus", count: 0, percentage: 0 }
-              }
-            }
-          ]
-        }
-      }
+                in: { _id: "$$missingStatus", count: 0, percentage: 0 },
+              },
+            },
+          ],
+        },
+      },
     },
     {
-      $unwind: "$results"
+      $unwind: "$results",
     },
     {
-      $replaceRoot: { newRoot: "$results" }
+      $replaceRoot: { newRoot: "$results" },
     },
     {
-      $sort: { count: -1 } // Sort by count, descending
-    }
+      $sort: { count: -1 }, // Sort by count, descending
+    },
   ]);
-  if(!results){
+  if (!results) {
     return res.status(404).json({
       message: err_1,
-    })
+    });
   }
   res.json({
     message: "Done",
@@ -461,27 +476,27 @@ if (!check) {
   });
 });
 
-
 const weeklyActivity = catchAsync(async (req, res, next) => {
-  let err_1 = "No Data was found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يوجد بيانات"
+  let err_1 = "No Data was found!";
+  if (req.query.lang === "ar") {
+    err_1 = "لا يوجد بيانات";
   }
   const weeklyActivity = await taskModel.aggregate([
     {
       $match: {
-        // Get tasks created within the last 7 days
-        createdAt: { $gte: new Date(new Date().setDate(new Date().getDate() - 7)) }
-      }
+        createdAt: {
+          $gte: new Date(new Date().setDate(new Date().getDate() - 7)),
+        },
+      },
     },
     {
       $group: {
         _id: {
-          dayOfWeek: { $dayOfWeek: "$createdAt" }, // Group by day of the week (1 = Sunday, 7 = Saturday)
-          taskStatus: "$taskStatus" // Group by task status (delayed, working, completed)
+          dayOfWeek: { $dayOfWeek: "$createdAt" },
+          taskStatus: "$taskStatus",
         },
-        count: { $sum: 1 } // Count the number of tasks
-      }
+        count: { $sum: 1 },
+      },
     },
     {
       $group: {
@@ -489,16 +504,15 @@ const weeklyActivity = catchAsync(async (req, res, next) => {
         statuses: {
           $push: {
             taskStatus: "$_id.taskStatus",
-            count: "$count"
-          }
-        }
-      }
+            count: "$count",
+          },
+        },
+      },
     },
     {
-      $sort: { _id: 1 } 
-    }
+      $sort: { _id: 1 },
+    },
   ]);
-
   const daysOfWeek = [
     { dayOfWeek: 1, name: "Sunday" },
     { dayOfWeek: 2, name: "Monday" },
@@ -506,68 +520,80 @@ const weeklyActivity = catchAsync(async (req, res, next) => {
     { dayOfWeek: 4, name: "Wednesday" },
     { dayOfWeek: 5, name: "Thursday" },
     { dayOfWeek: 6, name: "Friday" },
-    { dayOfWeek: 7, name: "Saturday" }
+    { dayOfWeek: 7, name: "Saturday" },
   ];
 
-  let results = daysOfWeek.map(day => {
-    const activityForDay = weeklyActivity.find(activity => activity._id === day.dayOfWeek);
+  const results = daysOfWeek.map((day) => {
+    const activityForDay = weeklyActivity.find(
+      (activity) => activity._id === day.dayOfWeek
+    );
 
     const data = {
-      day: day.name,   // Day of the week (Sunday, Monday, etc.)
+      day: day.name,
       delayed: 0,
       working: 0,
-      completed: 0
+      completed: 0,
+      waiting: 0, // Include 'waiting' status
     };
 
     if (activityForDay) {
-      activityForDay.statuses.forEach(status => {
-        if (status.taskStatus === 'delayed') data.delayed = status.count;
-        if (status.taskStatus === 'working') data.working = status.count;
-        if (status.taskStatus === 'completed') data.completed = status.count;
+      activityForDay.statuses.forEach((status) => {
+        if (status.taskStatus === "delayed") data.delayed = status.count;
+        if (status.taskStatus === "working") data.working = status.count;
+        if (status.taskStatus === "completed") data.completed = status.count;
+        if (status.taskStatus === "waiting") data.waiting = status.count; // Add handling for 'waiting'
       });
     }
 
     return data;
   });
 
-  if (!results) {
+  if (!results || results.length === 0) {
     return res.status(404).json({
       message: err_1,
     });
   }
   res.json({
     message: "Done",
-    results
+    results,
   });
 });
+
 const weeklyActivityByUser = catchAsync(async (req, res, next) => {
-  let err_1 = "No Project was found!"
-  let err_2 = "User not found!"
-  if(req.query.lang == "ar"){
-    err_1 = "لا يوجد مشاريع"
-    err_2 = "المستخدم غير موجود"
+  let err_1 = "No Project was found!";
+  let err_2 = "User not found!";
+  if (req.query.lang == "ar") {
+    err_1 = "لا يوجد مشاريع";
+    err_2 = "المستخدم غير موجود";
   }
-  let id =new mongoose.Types.ObjectId(req.params.id)
-let check = await userModel.findById(id);
-if (!check) { 
-  return res.status(404).json({ message: err_2 });
-}
-const weeklyActivity = await taskModel.aggregate([
-  {
-    $match: {
-      $match: 
-      { $and: [{ members:  id  }, {createdAt: { $gte: new Date(new Date().setDate(new Date().getDate() - 7))} }] } 
-      
-    }
-  },
+  let id = new mongoose.Types.ObjectId(req.params.id);
+  let check = await userModel.findById(id);
+  if (!check) {
+    return res.status(404).json({ message: err_2 });
+  }
+  const weeklyActivity = await taskModel.aggregate([
+    {
+      $match: {
+        $match: {
+          $and: [
+            { members: id },
+            {
+              createdAt: {
+                $gte: new Date(new Date().setDate(new Date().getDate() - 7)),
+              },
+            },
+          ],
+        },
+      },
+    },
     {
       $group: {
         _id: {
-          dayOfWeek: { $dayOfWeek: "$createdAt" }, // Group by day of the week (1 = Sunday, 7 = Saturday)
-          taskStatus: "$taskStatus" // Group by task status (delayed, working, completed)
+          dayOfWeek: { $dayOfWeek: "$createdAt" },
+          taskStatus: "$taskStatus",
         },
-        count: { $sum: 1 } // Count the number of tasks
-      }
+        count: { $sum: 1 },
+      },
     },
     {
       $group: {
@@ -575,16 +601,15 @@ const weeklyActivity = await taskModel.aggregate([
         statuses: {
           $push: {
             taskStatus: "$_id.taskStatus",
-            count: "$count"
-          }
-        }
-      }
+            count: "$count",
+          },
+        },
+      },
     },
     {
-      $sort: { _id: 1 } 
-    }
+      $sort: { _id: 1 },
+    },
   ]);
-
   const daysOfWeek = [
     { dayOfWeek: 1, name: "Sunday" },
     { dayOfWeek: 2, name: "Monday" },
@@ -592,41 +617,54 @@ const weeklyActivity = await taskModel.aggregate([
     { dayOfWeek: 4, name: "Wednesday" },
     { dayOfWeek: 5, name: "Thursday" },
     { dayOfWeek: 6, name: "Friday" },
-    { dayOfWeek: 7, name: "Saturday" }
+    { dayOfWeek: 7, name: "Saturday" },
   ];
 
-  let results = daysOfWeek.map(day => {
-    const activityForDay = weeklyActivity.find(activity => activity._id === day.dayOfWeek);
+  const results = daysOfWeek.map((day) => {
+    const activityForDay = weeklyActivity.find(
+      (activity) => activity._id === day.dayOfWeek
+    );
 
     const data = {
-      day: day.name,   // Day of the week (Sunday, Monday, etc.)
+      day: day.name,
       delayed: 0,
       working: 0,
-      completed: 0
+      completed: 0,
+      waiting: 0, // Include 'waiting' status
     };
 
     if (activityForDay) {
-      activityForDay.statuses.forEach(status => {
-        if (status.taskStatus === 'delayed') data.delayed = status.count;
-        if (status.taskStatus === 'working') data.working = status.count;
-        if (status.taskStatus === 'completed') data.completed = status.count;
+      activityForDay.statuses.forEach((status) => {
+        if (status.taskStatus === "delayed") data.delayed = status.count;
+        if (status.taskStatus === "working") data.working = status.count;
+        if (status.taskStatus === "completed") data.completed = status.count;
+        if (status.taskStatus === "waiting") data.waiting = status.count; // Add handling for 'waiting'
       });
     }
 
     return data;
   });
 
-  if (!results) {
+  if (!results || results.length === 0) {
     return res.status(404).json({
       message: err_1,
     });
   }
   res.json({
     message: "Done",
-    results
+    results,
   });
 });
 
-export {  getTopCountries ,getUserRatioPieChart ,getActiveProjects,getProjectPerformance ,getActiveProjectsByUser,getProjectPerformanceByUser,
-  weeklyActivity ,weeklyActivityByUser ,getTagsRatio ,getMostModels
-  };
+export {
+  getTopCountries,
+  getUserRatioPieChart,
+  getActiveProjects,
+  getProjectPerformance,
+  getActiveProjectsByUser,
+  getProjectPerformanceByUser,
+  weeklyActivity,
+  weeklyActivityByUser,
+  getTagsRatio,
+  getMostModels,
+};

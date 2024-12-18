@@ -254,7 +254,7 @@ const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
 
   res.json({
     message: "Done",
-    count: await taskModel.countDocuments(),
+    // count: await taskModel.countDocuments(),
     results,
   });
 });
