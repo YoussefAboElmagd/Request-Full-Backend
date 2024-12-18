@@ -31,6 +31,25 @@ const getAllGroupChat = catchAsync(async (req, res, next) => {
     results,
   });
 });
+const getGroupChatById = catchAsync(async (req, res, next) => {
+  let err_1 = "No GroupChat was found!"
+  if(req.query.lang == "ar"){
+    err_1 = "لا يوجد مجموعة"
+  }
+  let ApiFeat = new ApiFeature(groupChatModel.findById(req.params.id), req.query).search();
+  let results = await ApiFeat.mongooseQuery;
+  results = JSON.stringify(results);
+  results = JSON.parse(results);
+  if (!ApiFeat || !results) {
+    return res.status(404).json({
+      message: err_1,
+    });
+  }
+  res.json({
+    message: "Done",
+    results,
+  });
+});
 const getAllChatsForUserByproject = catchAsync(async (req, res, next) => {
   let project = await projectModel.findById(req.params.id).populate("members");
   if (!project) {
@@ -124,4 +143,5 @@ export {
   deleteGroupChat,
   updateGroupChat2,
   getAllChatsForUserByproject,
+  getGroupChatById,
 };

@@ -173,8 +173,7 @@ const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
   let ApiFeat = null;
 
   if (
-    req.query.filterValue == "Approved" ||
-    req.query.filterValue == undefined
+    req.query.filterValue == "Approved"
   ) {
     ApiFeat = new ApiFeature(
       taskModel
@@ -209,6 +208,16 @@ const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
         .sort({ $natural: -1 }),
       req.query
     );
+  } else {
+    ApiFeat = new ApiFeature(
+      taskModel
+        .find()
+        .populate("project")
+        .sort({ $natural: -1 }),
+      req.query
+    )
+      .sort()
+      .search();
   }
 
   let results = await ApiFeat.mongooseQuery;
@@ -216,7 +225,7 @@ const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
   results = JSON.parse(results);
   if (!ApiFeat || !results) {
     return res.status(404).json({
-      message: "No Task was found!",
+      message: err_1,
     });
   }
   // let { filterType, filterValue } = req.query;

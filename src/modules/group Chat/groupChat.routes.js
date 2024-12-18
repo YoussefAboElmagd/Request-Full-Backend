@@ -6,6 +6,7 @@ const groupChatRouter = express.Router();
 
 groupChatRouter.post("/", groupChatController.createGroupChat);
 groupChatRouter.get("/", groupChatController.getAllGroupChat);
+groupChatRouter.get("/:id", groupChatController.getGroupChatById);
 groupChatRouter.get("/project/:id",protectRoutes, groupChatController.getAllChatsForUserByproject);
 groupChatRouter.put("/:id", groupChatController.updateGroupChat);
 groupChatRouter.put("/pull/:id", groupChatController.updateGroupChat2);

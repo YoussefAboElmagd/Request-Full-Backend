@@ -120,42 +120,6 @@ const taskSchema = mongoose.Schema(
       default: false,
       required: true,
     },
-    // requestForDrawingSubmittalApproval: {
-    //   type: [mongoose.Schema.Types.ObjectId],
-    //   ref: "request",
-    //   default: [],
-    //   // required: true,
-    // },
-    // requestForApprovalOfMaterialsModel: {
-    //   type: [mongoose.Schema.Types.ObjectId],
-    //   ref: "request",
-    //   default: [],
-    //   // required: true,
-    // },
-    // workRequestModel: {
-    //   type: [mongoose.Schema.Types.ObjectId],
-    //   ref: "request",
-    //   default: [],
-    //   // required: true,
-    // },
-    // tableOfQuantitiesModel: {
-    //   type: [mongoose.Schema.Types.ObjectId],
-    //   ref : "request",
-    //   default: [],
-    //   // required: true,
-    // },
-    // requestForMaterialAndEquipmentInspection: {
-    //   type: [mongoose.Schema.Types.ObjectId],
-    //   ref: "request",
-    //   default: [],
-    //   // required: true,
-    // },
-    // requestForDocumentsubmittalApproval: {
-    //   type: [mongoose.Schema.Types.ObjectId],
-    //   ref: "request",
-    //   default: [],
-    //   // required: true,
-    // },
     recurrenceInterval: { type: Number, default: 1 },
     recurrenceUnit: {
       type: String,
@@ -177,36 +141,6 @@ const taskSchema = mongoose.Schema(
       immutask: true,
       required: true,
     },
-    // requestForDocumentSubmittalApproval: {
-    //   type: Boolean,
-    //   default: false,
-    //   required: true,
-    // },
-    // requestForApprovalOfMaterials: {
-    //   type: Boolean,
-    //   default: false,
-    //   required: true,
-    // },
-    // workRequest: {
-    //   type: Boolean,
-    //   default: false,
-    //   required: true,
-    // },
-    // tableOfQuantities: {
-    //   type: Boolean,
-    //   default: false,
-    //   required: true,
-    // },
-    // requestForInspectionForm: {
-    //   type: Boolean,
-    //   default: false,
-    //   required: true,
-    // },
-    // approvalOfSchemes: {
-    //   type: Boolean,
-    //   default: false,
-    //   required: true,
-    // },
   },
   { timestamps: true }
 );
@@ -220,12 +154,8 @@ taskSchema.pre("save", async function (next) {
   ) {
     this.taskStatus = "delayed";
   }
-  next();
-});
-
-taskSchema.post(/^find/, function (documents, next) {
-  if (!Array.isArray(documents)) {
-    documents = [documents]; // Convert to array if it's a single document
+  if (this.type === "recurring" && (!this.recurrenceUnit || !this.recurrenceInterval)) {
+    return next(new Error("Recurring tasks must have a recurrence unit and interval!"));
   }
   next();
 });
@@ -259,7 +189,7 @@ taskSchema.pre("findOneAndUpdate", async function (next) {
   const project = await projectModel.findById(taskToUpdate.project);
   let dueDate = new Date(project.dueDate).toISOString().split("T")[0];
   let sDate = new Date(project.sDate).toISOString().split("T")[0];
-  const queryData = this.getOptions().context?.query ; // Access the query data
+  const queryData = this.getOptions().context?.query; // Access the query data
   let err_date_1 = "Start date must be less than due date";
   let err_date_2 = `Due date of task must be less than or equal to ${dueDate} (due date of project) `;
   let err_date_3 = `Start date of task must be less than or equal to ${sDate} (Start date of project) `;
@@ -379,3 +309,70 @@ taskSchema.pre(/^find/, function () {
   this.populate("parentTask");
 });
 export const taskModel = mongoose.model("task", taskSchema);
+
+// requestForDrawingSubmittalApproval: {
+//   type: [mongoose.Schema.Types.ObjectId],
+//   ref: "request",
+//   default: [],
+//   // required: true,
+// },
+// requestForApprovalOfMaterialsModel: {
+//   type: [mongoose.Schema.Types.ObjectId],
+//   ref: "request",
+//   default: [],
+//   // required: true,
+// },
+// workRequestModel: {
+//   type: [mongoose.Schema.Types.ObjectId],
+//   ref: "request",
+//   default: [],
+//   // required: true,
+// },
+// tableOfQuantitiesModel: {
+//   type: [mongoose.Schema.Types.ObjectId],
+//   ref : "request",
+//   default: [],
+//   // required: true,
+// },
+// requestForMaterialAndEquipmentInspection: {
+//   type: [mongoose.Schema.Types.ObjectId],
+//   ref: "request",
+//   default: [],
+//   // required: true,
+// },
+// requestForDocumentsubmittalApproval: {
+//   type: [mongoose.Schema.Types.ObjectId],
+//   ref: "request",
+//   default: [],
+//   // required: true,
+// },
+// requestForDocumentSubmittalApproval: {
+//   type: Boolean,
+//   default: false,
+//   required: true,
+// },
+// requestForApprovalOfMaterials: {
+//   type: Boolean,
+//   default: false,
+//   required: true,
+// },
+// workRequest: {
+//   type: Boolean,
+//   default: false,
+//   required: true,
+// },
+// tableOfQuantities: {
+//   type: Boolean,
+//   default: false,
+//   required: true,
+// },
+// requestForInspectionForm: {
+//   type: Boolean,
+//   default: false,
+//   required: true,
+// },
+// approvalOfSchemes: {
+//   type: Boolean,
+//   default: false,
+//   required: true,
+// },
