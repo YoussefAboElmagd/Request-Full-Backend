@@ -62,7 +62,7 @@ const getUsersToAdd = catchAsync(async (req, res, next) => {
   }
   let members = await projectModel
     .findById(req.params.projectId)
-    .select("members");
+    .select("members").populate("members");
 
   if (!members) {
     return res.status(404).json({
