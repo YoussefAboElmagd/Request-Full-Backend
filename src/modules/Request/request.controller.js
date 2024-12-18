@@ -41,7 +41,7 @@ const createRequest = catchAsync(async (req, res, next) => {
     project.owner?._id,
     project.contractor?._id,
     project.consultant?._id,
-  ];
+  ].filter((id) => id && id.toString() !== savedData.createdBy.toString());
   sendNotification(message_en, message_ar, "success", receivers);
   res.status(201).json({
     message: "Request created successfully!",
