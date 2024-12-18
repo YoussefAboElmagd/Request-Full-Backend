@@ -101,10 +101,10 @@ const getAllMessageByTwoUsers = catchAsync(async (req, res, next) => {
       message: err_2,
     });
   }
-  const { page = 1, limit = 20 } = req.query; // Pagination params with defaults
+  // const { page = 1, limit = 20 } = req.query; // Pagination params with defaults
 
-  const pageNumber = parseInt(page, 10);
-  const pageSize = parseInt(limit, 10);
+  // const pageNumber = parseInt(page, 10);
+  // const pageSize = parseInt(limit, 10);
   let ApiFeat = new ApiFeature(
     messageModel
       .find({
@@ -120,8 +120,9 @@ const getAllMessageByTwoUsers = catchAsync(async (req, res, next) => {
         ],
       })
       .sort({ $natural: -1 })
-      .skip((pageNumber - 1) * pageSize)
-      .limit(pageSize),
+      // .skip((pageNumber - 1) * pageSize)
+      // .limit(pageSize)
+      ,
     req.query
   );
   // .pagination()
@@ -148,7 +149,7 @@ const getAllMessageByTwoUsers = catchAsync(async (req, res, next) => {
   }
   res.json({
     message: "Done",
-    page: pageNumber,
+    // page: pageNumber,
     results,
     totalMessages,
   });
@@ -165,16 +166,16 @@ const getAllMessageByGroup = catchAsync(async (req, res, next) => {
       message: err_2,
     });
   }
-  const { page = 1, limit = 20 } = req.query; // Pagination params with defaults
+  // const { page = 1, limit = 20 } = req.query; // Pagination params with defaults
 
-  const pageNumber = parseInt(page, 10);
-  const pageSize = parseInt(limit, 10);
+  // const pageNumber = parseInt(page, 10);
+  // const pageSize = parseInt(limit, 10);
   let ApiFeat = new ApiFeature(
     messageModel
       .find({ $and: [{ project: req.params.id }, { group: req.query.group }] })
       .sort({ $natural: -1 })
-      .skip((pageNumber - 1) * pageSize)
-      .limit(pageSize)
+      // .skip((pageNumber - 1) * pageSize)
+      // .limit(pageSize)
       .populate("sender", "profilePic name"),
     req.query
   );
@@ -192,7 +193,7 @@ const getAllMessageByGroup = catchAsync(async (req, res, next) => {
   });
   res.json({
     message: "Done",
-    page: pageNumber,
+    // page: pageNumber,
     results,
     totalMessages,
   });
