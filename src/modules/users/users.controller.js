@@ -375,8 +375,7 @@ const getUserForInvite = catchAsync(async (req, res, next) => {
   }
   !results && next(new AppError(message, 404));
   if(results.email == data.email){
-    console.log(results, "res");
-    console.log(data, "data");
+
     results = { ...results._doc, ...data._doc };
     results && res.json({ message: "Done", results });
   }else{

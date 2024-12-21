@@ -38,22 +38,15 @@ export const sendNotification = async (
       let createdAt = savedNotif.createdAt;
 
       if (invitation) {
-        sio.emit(
-          `notification_`,
-          { message },
-          { icon },
-          { receiver },
-          { createdAt },
-          { invitation }
-        );
+        sio.emit(`notification_`, {
+          message,
+          icon,
+          receiver,
+          createdAt,
+          invitation,
+        });
       } else {
-        sio.emit(
-          `notification_`,
-          { message },
-          { icon },
-          { receiver },
-          { createdAt }
-        );
+        sio.emit(`notification_`, { message, icon, receiver, createdAt });
       }
     }
   } catch (error) {
