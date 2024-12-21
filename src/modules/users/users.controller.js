@@ -155,10 +155,7 @@ const updateInvite = catchAsync(async (req, res, next) => {
       if(check.role == "66d33e7a4ad80e468f231f8d" && project.consultant == null){ //consultant
         updates.consultant = foundUser._id
         updates.$push = { members: foundUser._id }
-      }else{
-        updates.$push = { members: foundUser._id }
-      }
-      if(check.role == "66d33ec44ad80e468f231f91" && project.contractor == null){ //contractor
+      }else if(check.role == "66d33ec44ad80e468f231f91" && project.contractor == null){ //contractor
         updates.contractor = foundUser._id
         updates.$push = { members: foundUser._id }
       }else{
@@ -360,14 +357,16 @@ const getUserForInvite = catchAsync(async (req, res, next) => {
   let { id } = req.params;
   let message = "User Not found";
   let message2 = "Invitation Not found";
+  let message3 = "Email Not Match";
   if (req.query.lang == "ar") {
     message = "المستخدم غير موجود";
     message2 = "الدعوة غير موجودة";
+    message3 = "البريد الالكتروني غير متطابق";
   }
   let results = await userModel.findById(id).select("name email");
   let data = await invitationModel
     .findById({ _id: req.query.id })
-    .select("role project projectName isSignUp comment")
+    .select("role project projectName isSignUp comment email")
     .populate("role");
   if (!data) {
     return res.status(404).json({
@@ -375,8 +374,16 @@ const getUserForInvite = catchAsync(async (req, res, next) => {
     });
   }
   !results && next(new AppError(message, 404));
-  results = { ...results._doc, ...data._doc };
-  results && res.json({ message: "Done", results });
+  if(results.email == data.email){
+    console.log(results, "res");
+    console.log(data, "data");
+    results = { ...results._doc, ...data._doc };
+    results && res.json({ message: "Done", results });
+  }else{
+    return res.status(404).json({
+      message: message3,
+    });
+  }
 });
 const getUserCompanyDetails = catchAsync(async (req, res, next) => {
   let { id } = req.params;
