@@ -241,11 +241,11 @@ async function populateOwnerConsultantContractor(doc) {
       doc.consultant = project.consultant || null;
       doc.contractor = project.contractor || null;
       doc.ownerCompanyLogo =
-        `https://api.request-sa.com/${project.ownerCompanyLogo}` || null;
+        `${project.ownerCompanyLogo}` || null;
       doc.consultantCompanyLogo =
-        `https://api.request-sa.com/${project.consultantCompanyLogo}` || null;
+        `${project.consultantCompanyLogo}` || null;
       doc.contractorCompanyLogo =
-        `https://api.request-sa.com/${project.contractorCompanyLogo}` || null;
+        `${project.contractorCompanyLogo}` || null;
     }
   }
 }
@@ -269,7 +269,7 @@ requsetSchema.pre("save", async function (next) {
   if (this.isNew) {
     await populateOwnerConsultantContractor(this);
     let user = await userModel.findById(this.createdBy);
-    this.submitedBy = `https://api.request-sa.com/${user.signature}`;
+    this.submitedBy = `${user.signature}`;
     if (this.createdBy.toString() == this.owner?._id.toString()) {
       this.ownerStatus = "approved";
     } else if (this.createdBy.toString() == this.contractor?._id.toString()) {
@@ -340,7 +340,7 @@ requsetSchema.pre("findOneAndUpdate", async function (next) {
     }
     this.setUpdate({
       ...update,
-      notedBy: `https://api.request-sa.com/${user.signature}`,
+      notedBy: `${user.signature}`,
     });
   }
   if (update.secondUpdatedBy) {
@@ -350,7 +350,7 @@ requsetSchema.pre("findOneAndUpdate", async function (next) {
     }
     this.setUpdate({
       ...update,
-      reviewedBy: `https://api.request-sa.com/${user.signature}`,
+      reviewedBy: `${user.signature}`,
     });
   }
 

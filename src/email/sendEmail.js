@@ -6,15 +6,24 @@ import { sendNotification } from "../utils/sendNotification.js";
 export async function sendEmail(email,text) {
   
   const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: 'smtp.hostinger.com',  // Hostinger SMTP server
+    port: 465,                   // Use 587 for TLS or 465 for SSL
+    secure: true,               // Set true for port 465
     auth: {
-      user: "abdelrahmanmohammed851@gmail.com",
-      pass: "ykejlphmzcmmwlgw",
+        user: 'support@request-sa.com', // Your Hostinger email address
+        pass: 'Request@2025',    // Your Hostinger email password
     },
-  });
+});
+  // const transporter = nodemailer.createTransport({
+  //   service: "gmail",
+  //   auth: {
+  //     user: "abdelrahmanmohammed851@gmail.com",
+  //     pass: "ykejlphmzcmmwlgw",
+  //   },
+  // });
 
   const info = await transporter.sendMail({
-    from: `Admin " <abdelrahmanmohammed851@gmail.com>`, // sender address
+    from: `Admin " <support@request-sa.com>`, // sender address
     to: `${email}`, // list of receivers
     subject: "Email Verification", // Subject line
     text: `${text}`, // plain text body
@@ -26,15 +35,17 @@ export async function sendInvite(recipient,projectName,roleName,id,link) {
   try {
 
   const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: 'smtp.hostinger.com',  // Hostinger SMTP server
+    port: 465,                   // Use 587 for TLS or 465 for SSL
+    secure: true,               // Set true for port 465
     auth: {
-      user: "abdelrahmanmohammed851@gmail.com",
-      pass: "ykejlphmzcmmwlgw",
+        user: 'support@request-sa.com', // Your Hostinger email address
+        pass: 'Request@2025',    // Your Hostinger email password
     },
   });
 
   const info = await transporter.sendMail({
-      from: `Admin " <abdelrahmanmohammed851@gmail.com>`,
+      from: `Admin " <support@request-sa.com>`,
       to: recipient.email, 
       subject: 'Invitation Email',
       text: `You have been invited to ${projectName} as ${roleName}.
@@ -50,16 +61,18 @@ export async function sendInvite(recipient,projectName,roleName,id,link) {
 
 export async function contactUs(name,email,message,id) {
   const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: 'smtp.hostinger.com',  // Hostinger SMTP server
+    port: 465,                   // Use 587 for TLS or 465 for SSL
+    secure: true,               // Set true for port 465
     auth: {
-      user: "abdelrahmanmohammed851@gmail.com",
-      pass: "ykejlphmzcmmwlgw",
+        user: 'support@request-sa.com', // Your Hostinger email address
+        pass: 'Request@2025',    // Your Hostinger email password
     },
   });
 
   const messageEmail = await transporter.sendMail({
-    from: `Help Center" <abdelrahmanmohammed851@gmail.com>`,
-    to: "abdelrahmanmohammed8511@gmail.com", 
+    from: `Help Center" <support@request-sa.com>`,
+    to: "support@request-sa.com", 
     subject: "contact us", 
     html: emailTemplate(name,email,message),
   });
@@ -71,15 +84,17 @@ export async function contactUs(name,email,message,id) {
 }
 export async function contactUs2(name,email,phone,message,id) {
   const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: 'smtp.hostinger.com',  // Hostinger SMTP server
+    port: 465,                   // Use 587 for TLS or 465 for SSL
+    secure: true,               // Set true for port 465
     auth: {
-      user: "abdelrahmanmohammed851@gmail.com",
-      pass: "ykejlphmzcmmwlgw",
+        user: 'support@request-sa.com', // Your Hostinger email address
+        pass: 'Request@2025',    // Your Hostinger email password
     },
   });
   const messageEmail = await transporter.sendMail({
-    from: `Help Center" <abdelrahmanmohammed851@gmail.com>`,
-    to: "abdelrahmanmohammed8511@gmail.com", 
+    from: `Help Center" <support@request-sa.com>`,
+    to: "support@request-sa.com", 
     subject: "contact us", 
     html: emailTemplate(name,email,phone,message),
   });
