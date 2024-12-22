@@ -217,7 +217,7 @@ const getAllGroupsByUserProjects = catchAsync(async (req, res, next) => {
     .select("_id name members") // Fetch project ID, name, and members
     .populate("members", "name email"); // Populate project members' details
 
-  if (!projects.length) {
+  if (!projects) {
     return res.status(404).json({
       message: err_1,
     });
@@ -236,7 +236,7 @@ const getAllGroupsByUserProjects = catchAsync(async (req, res, next) => {
     })
     .populate("users", "name email"); // Populate user details in the chat group
 
-  if (!groupChats.length) {
+  if (!groupChats) {
     return res.status(404).json({
       message: err_1,
     });
