@@ -5,6 +5,10 @@ import { taskModel } from "../../../database/models/tasks.model.js";
 import { photoUpload } from "../../utils/removeFiles.js";
 
 const createDocs = catchAsync(async (req, res, next) => {
+  let check = await taskModel.findById(req.body.task);
+  if (!check) { 
+    return res.status(404).json({ message: "Task not found!" });
+  }
 
   let document = photoUpload(req, "document", "documents");
   document = document.replace(`https://api.request-sa.com/`, "");
@@ -89,8 +93,9 @@ const deleteDocs = catchAsync(async (req, res, next) => {
   if(req.query.lang == "ar"){
     err_1 = "لا يمكن المسح!  غير موجود"
   }
-  const deleteDocs = await documentsModel.deleteOne({ _id: id });
-  if (!deleteDocs) {
+  const deleteDocss = await documentsModel.deleteOne({ _id: id });
+
+  if (deleteDocss.deletedCount === 0) {
     return res.status(404).json({ message: err_1 });
   }
   res.status(200).json({

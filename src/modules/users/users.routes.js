@@ -22,7 +22,7 @@ usersRouter.get("/companyDetails/:id", usersController.getUserCompanyDetails);
 usersRouter.get("/sub/:id", usersController.getSubscriptionPeriod);
 usersRouter.get("/invite/:id", usersController.getUserForInvite);
 
-// usersRouter.post("/contactUs/:id", usersController.postMessage);
+usersRouter.post("/contactUs/:id", usersController.postMessage);
 usersRouter.post("/getInTouch/",protectRoutes, usersController.getInTouch);
 usersRouter.post("/invite/", usersController.sendInviteToProject);
 usersRouter.put("/invite/:id", usersController.updateInvite);

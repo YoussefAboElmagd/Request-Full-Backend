@@ -18,10 +18,13 @@ projectRouter.get("/download/:tagId",projectController.getFilesForDownload);
 projectRouter.get("/tags/:id",projectController.getTagsByProject);
 projectRouter.get("/tags/progress/:id",projectController.getProjectTagProgress);
 projectRouter.get("/counts/:id",projectController.getCounts);
+
 projectRouter.post("/", projectController.createProject);
+
 projectRouter.put("/:id", projectController.updateProject);
 projectRouter.put("/member/:id", projectController.addMemberForProject);
 projectRouter.put("/pull/:id", projectController.updateProject2);
+
 projectRouter.delete("/:id", projectController.deleteProject);
 
 export default projectRouter;

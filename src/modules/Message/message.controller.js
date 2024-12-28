@@ -223,10 +223,8 @@ const getAllGroupsByUserProjects = catchAsync(async (req, res, next) => {
     });
   }
 
-  // Extract project IDs
   const projectIds = projects.map((project) => project._id);
 
-  // Find all group chats linked to these projects
   const groupChats = await groupChatModel
     .find({
       $and: [

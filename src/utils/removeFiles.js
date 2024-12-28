@@ -4,6 +4,8 @@ import path from "path";
 import { documentsModel } from "../../database/models/documents.model.js";
 
 export async function removeFiles(folderName, fieldName) {
+  console.log(fieldName, "This is the fieldName");
+  
   if (!fieldName || !Array.isArray(fieldName)) {
     console.error("fieldName is either undefined or not an array");
     return;
@@ -25,7 +27,7 @@ export async function removeFiles(folderName, fieldName) {
   const photoPaths =
     fieldName &&
     fieldName.map((url) =>
-      url.replace(`https://api.request-sa.com/${folderName}/`, "")
+      url.replace(`${folderName}/`, "")
     );
   console.log(photoPaths);
 
@@ -52,7 +54,7 @@ export async function removeFiles(folderName, fieldName) {
 
 export function removeFile(folderName, fieldName) {
   const photoPath = fieldName.replace(
-    `https://api.request-sa.com/${folderName}/`,
+    `${folderName}/`,
     ""
   );
   const fullPath = path.resolve(`uploads/${folderName}`, photoPath);

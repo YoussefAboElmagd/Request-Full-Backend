@@ -17,8 +17,8 @@ const createNews = catchAsync(async (req, res, next) => {
 const getAllNews = catchAsync(async (req, res, next) => {
   let ApiFeat = new ApiFeature(newsModel.find(), req.query).search();
   let results = await ApiFeat.mongooseQuery;
-  results = JSON.stringify(results);
-  results = JSON.parse(results);
+
+  results = JSON.parse(JSON.stringify(results));
   if (!ApiFeat || !results) {
     return res.status(404).json({
       message: "No News was found!",
