@@ -5,7 +5,7 @@ import { documentsModel } from "../../database/models/documents.model.js";
 
 export async function removeFiles(folderName, fieldName) {
   console.log(fieldName, "This is the fieldName");
-  Array.isArray(fieldName) ? fieldName : [fieldName];
+  fieldName =Array.isArray(fieldName) ? fieldName : [fieldName];
   if (!fieldName || !Array.isArray(fieldName)) {
     console.error("fieldName is either undefined or not an array");
     return;
