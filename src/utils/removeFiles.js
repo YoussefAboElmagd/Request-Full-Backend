@@ -5,7 +5,7 @@ import { documentsModel } from "../../database/models/documents.model.js";
 
 export async function removeFiles(folderName, fieldName) {
   console.log(fieldName, "This is the fieldName");
-  
+  Array.isArray(fieldName) ? fieldName : [fieldName];
   if (!fieldName || !Array.isArray(fieldName)) {
     console.error("fieldName is either undefined or not an array");
     return;
@@ -13,16 +13,16 @@ export async function removeFiles(folderName, fieldName) {
   function isObjectId(ids) {
     return ids.every((id) => mongoose.Types.ObjectId.isValid(id));
   }
-  if (isObjectId(fieldName)) {
-    let results = await documentsModel
-      .find({ _id: { $in: fieldName } })
-      .select("document");
-    let documentUrls = results.map((result) => `${result.document}`);
-    fieldName = documentUrls;
-    console.log(documentUrls, "This is a valid ObjectId.");
-  } else {
-    fieldName = fieldName;
-  }
+  // if (isObjectId(fieldName)) {
+  //   let results = await documentsModel
+  //     .find({ _id: { $in: fieldName } })
+  //     .select("document");
+  //   let documentUrls = results.map((result) => `${result.document}`);
+  //   fieldName = documentUrls;
+  //   console.log(documentUrls, "This is a valid ObjectId.");
+  // } else {
+  //   fieldName = fieldName;
+  // }
 
   const photoPaths =
     fieldName &&
