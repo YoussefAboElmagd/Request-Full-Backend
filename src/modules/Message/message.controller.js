@@ -7,6 +7,7 @@ import { photoUpload } from "../../utils/removeFiles.js";
 import { projectModel } from "../../../database/models/project.model.js";
 import { groupChatModel } from "../../../database/models/groupChat.js";
 import AppError from "../../utils/appError.js";
+import { sendNotification } from "../../utils/sendNotification.js";
 
 const createmessage = catchAsync(async (req, res, next) => {
   function formatAMPM(date) {
@@ -58,6 +59,19 @@ const createmessage = catchAsync(async (req, res, next) => {
       voiceNote,
       id,
     });
+    let receivers = await groupChatModel
+      .findById(savedmessage.group)
+      .select("users");
+    receivers = receivers.users;
+    receivers = [...new Set(receivers.filter(Boolean).map(String))].filter(
+      (id) => id && id.toString() !== savedmessage.sender.toString()
+    );
+    sendNotification(
+      "New message ",
+      "تم ارسال رسالة جديدة",
+      "success",
+      receivers
+    );
   } else {
     sio.emit(`message_${sender}_${project}_${receiver}`, {
       createdAt,
@@ -70,8 +84,13 @@ const createmessage = catchAsync(async (req, res, next) => {
       voiceNote,
       id,
     });
+    sendNotification(
+      "New message from " + senderName,
+      "تم ارسال رسالة جديدة من " + senderName,
+      "success",
+      receiver
+    );
   }
-
   res.status(201).json({
     message: "message created successfully!",
     savedmessage,
@@ -119,10 +138,9 @@ const getAllMessageByTwoUsers = catchAsync(async (req, res, next) => {
           },
         ],
       })
-      .sort({ $natural: -1 })
-      // .skip((pageNumber - 1) * pageSize)
-      // .limit(pageSize)
-      ,
+      .sort({ $natural: -1 }),
+    // .skip((pageNumber - 1) * pageSize)
+    // .limit(pageSize)
     req.query
   );
   // .pagination()
