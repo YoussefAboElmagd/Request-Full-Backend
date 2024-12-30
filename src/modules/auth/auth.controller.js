@@ -8,19 +8,19 @@ import { sendEmail } from "../../email/sendEmail.js";
 import { teamModel } from "../../../database/models/team.model.js";
 
 export const signUp = catchAsync(async (req, res, next) => {
-  let err_phone = "This Phone  already exist"
-  let err_phone2 = "This Phone  is not valid"
-  let err_email = "This Email  already exist"
-  let err_email2 = "This Email  is not valid"
-  let err_pass = "Password must be at least 8 characters"
-  let text = `Email Verification Code: ` 
-  if(req.query.lang == "ar"){
-    err_phone = "هذا الهاتف موجود بالفعل"
-    err_phone2 = "هذا الهاتف غير صحيح"
-    err_email = "هذا البريد الالكتروني موجود بالفعل"
-    err_email2 = "هذا البريد الالكتروني غير صحيح"
-    err_pass = "كلمة المرور يجب ان تكون 8 حروف على الاقل"
-    text = ` : رمز التحقق من البريد الالكتروني: `
+  let err_phone = "This Phone  already exist";
+  let err_phone2 = "This Phone  is not valid";
+  let err_email = "This Email  already exist";
+  let err_email2 = "This Email  is not valid";
+  let err_pass = "Password must be at least 8 characters";
+  let text = `Email Verification Code: `;
+  if (req.query.lang == "ar") {
+    err_phone = "هذا الهاتف موجود بالفعل";
+    err_phone2 = "هذا الهاتف غير صحيح";
+    err_email = "هذا البريد الالكتروني موجود بالفعل";
+    err_email2 = "هذا البريد الالكتروني غير صحيح";
+    err_pass = "كلمة المرور يجب ان تكون 8 حروف على الاقل";
+    text = ` : رمز التحقق من البريد الالكتروني: `;
   }
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
   if (req.body.phone === "" || req.body.phone.length < 10) {
@@ -41,41 +41,50 @@ export const signUp = catchAsync(async (req, res, next) => {
 
   req.body.model = "66ba00b0e39d9694110fd3df";
   req.body.userType = "superUser";
-  req.body.access ={
-    create:true,
-    read:true,
-    edit:true,
-    delete:true
-  }
+  req.body.access = {
+    create: true,
+    read: true,
+    edit: true,
+    delete: true,
+  };
   const roleToVocationMap = {
     "66d33a4b4ad80e468f231f83": "674b1195256d98c8c3a1ef8e",
     "66d33e7a4ad80e468f231f8d": "674b119c256d98c8c3a1ef90",
     "66d33ec44ad80e468f231f91": "674b11bd256d98c8c3a1ef92",
   };
-  
+
   if (roleToVocationMap[req.body.role]) {
     req.body.vocation = roleToVocationMap[req.body.role];
-  }  
+  }
   req.body.dateOfBirth = new Date("1950/01/02");
   req.body.verificationCode = generateUniqueId({
     length: 4,
     useLetters: false,
   });
   if (req.body.password.length < 8) {
-    return res
-      .status(409)
-      .json({ message: err_pass });
+    return res.status(409).json({ message: err_pass });
   }
   req.body.password = bcrypt.hashSync(
     req.body.password,
     Number(process.env.SALT_ROUNDS)
   );
+  if (req.body.userType == "admin") {
+    req.body.role = "6772a73979cf7ca4408e6ebd";
+    let results = new userModel(req.body);
+    let token = jwt.sign(
+      { name: results.name, userId: results._id },
+      process.env.JWT_SECRET_KEY
+    );
+    await results.save();
+    await results.populate("role");
+    return res.json({ message: "added", token, results });
+  }
   let results = new userModel(req.body);
   let token = jwt.sign(
     { name: results.name, userId: results._id },
     process.env.JWT_SECRET_KEY
   );
-  text = text + `${results.verificationCode}` 
+  text = text + `${results.verificationCode}`;
 
   sendEmail(results.email, text);
   let model = "66e5611c1771cb44cd6fc7de";
@@ -117,33 +126,31 @@ export const signUp = catchAsync(async (req, res, next) => {
 // });
 
 export const signIn = catchAsync(async (req, res, next) => {
-
-  let err_email2 = "this email  is not valid"
-  let err_pass = "worng email or password"
-  let err_admin = "your are admin go to admin login page"
-  let text = `Email Verification Code: ` 
-  if(req.query.lang == "ar"){
-    err_email2 = "هذا البريد الالكتروني غير صحيح"
-    err_pass = "البريد الالكتروني او كلمة المرور غير صحيحة"
-    err_admin = "انت ادمن اذهب الى صفحة تسجيل الدخول لادمن"
-    text = ` : رمز التحقق من البريد الالكتروني: `
+  let err_email2 = "this email  is not valid";
+  let err_pass = "worng email or password";
+  let err_admin = "your are admin go to admin login page";
+  let text = `Email Verification Code: `;
+  if (req.query.lang == "ar") {
+    err_email2 = "هذا البريد الالكتروني غير صحيح";
+    err_pass = "البريد الالكتروني او كلمة المرور غير صحيحة";
+    err_admin = "انت ادمن اذهب الى صفحة تسجيل الدخول لادمن";
+    text = ` : رمز التحقق من البريد الالكتروني: `;
   }
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
   if (req.body.email !== "" && req.body.email.match(emailFormat)) {
     let { email, password } = req.body;
     let userData = await userModel.findOne({ email });
-    if (!userData)
-      return res.status(401).json({ message: err_pass });
+    if (!userData) return res.status(401).json({ message: err_pass });
     const match = bcrypt.compareSync(password, userData.password);
     if (match && userData) {
-      if(userData.userType == "admin"){
+      if (userData.userType == "admin") {
         return res.status(401).json({ message: err_admin });
       }
       userData.verificationCode = generateUniqueId({
         length: 4,
         useLetters: false,
       });
-      text = text + `${userData.verificationCode}` 
+      text = text + `${userData.verificationCode}`;
       sendEmail(userData.email, text);
       await userData.save();
       let token = jwt.sign(
@@ -160,26 +167,24 @@ export const signIn = catchAsync(async (req, res, next) => {
   }
 });
 export const adminSignIn = catchAsync(async (req, res, next) => {
-
-  let err_email2 = "this email  is not valid"
-  let err_pass = "worng email or password"
-  let err_admin = "unoauthorized"
-  let text = `Email Verification Code: ` 
-  if(req.query.lang == "ar"){
-    err_email2 = "هذا البريد الالكتروني غير صحيح"
-    err_pass = "البريد الالكتروني او كلمة المرور غير صحيحة"
-    err_admin = "غير مصرح"
-    text = ` : رمز التحقق من البريد الالكتروني: `
+  let err_email2 = "this email  is not valid";
+  let err_pass = "worng email or password";
+  let err_admin = "unoauthorized";
+  let text = `Email Verification Code: `;
+  if (req.query.lang == "ar") {
+    err_email2 = "هذا البريد الالكتروني غير صحيح";
+    err_pass = "البريد الالكتروني او كلمة المرور غير صحيحة";
+    err_admin = "غير مصرح";
+    text = ` : رمز التحقق من البريد الالكتروني: `;
   }
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
   if (req.body.email !== "" && req.body.email.match(emailFormat)) {
     let { email, password } = req.body;
     let userData = await userModel.findOne({ email });
-    if (!userData)
-      return res.status(401).json({ message: err_pass });
+    if (!userData) return res.status(401).json({ message: err_pass });
     const match = bcrypt.compareSync(password, userData.password);
     if (match && userData) {
-      if(userData.userType !== "admin"){
+      if (userData.userType !== "admin") {
         return res.status(401).json({ message: err_admin });
       }
       let token = jwt.sign(
@@ -197,28 +202,27 @@ export const adminSignIn = catchAsync(async (req, res, next) => {
 });
 
 export const resend = catchAsync(async (req, res, next) => {
-  let err_email = "worng email"
-  let err_email2 = "this email  is not valid"
-  let err_pass = "worng email or password"
-  let text = `Email Verification Code: ` 
+  let err_email = "worng email";
+  let err_email2 = "this email  is not valid";
+  let err_pass = "worng email or password";
+  let text = `Email Verification Code: `;
 
-  if(req.query.lang == "ar"){
-    err_email = "البريد الالكتروني غير صحيح"
-    err_email2 = "هذا البريد الالكتروني غير صحيح"
-    err_pass = "البريد الالكتروني او كلمة المرور غير صحيحة"
-    text = ` : رمز التحقق من البريد الالكتروني: `
+  if (req.query.lang == "ar") {
+    err_email = "البريد الالكتروني غير صحيح";
+    err_email2 = "هذا البريد الالكتروني غير صحيح";
+    err_pass = "البريد الالكتروني او كلمة المرور غير صحيحة";
+    text = ` : رمز التحقق من البريد الالكتروني: `;
   }
   if (req.body.email !== "") {
     let { email } = req.body;
     let userData = await userModel.findOne({ email });
-    if (!userData)
-      return res.status(401).json({ message: err_pass });
+    if (!userData) return res.status(401).json({ message: err_pass });
     if (userData) {
       userData.verificationCode = generateUniqueId({
         length: 4,
         useLetters: false,
       });
-      text = text + `${userData.verificationCode}` 
+      text = text + `${userData.verificationCode}`;
 
       sendEmail(userData.email, text);
       await userData.save();
@@ -240,13 +244,13 @@ export const resend = catchAsync(async (req, res, next) => {
   }
 });
 export const forgetPassword = catchAsync(async (req, res, next) => {
-  let err_email2 = "this email  is not valid"
-  let err_email = "Email Not Found"
-  let text = `Email Verification Code: `
-  if(req.query.lang == "ar"){
-    err_email = "البريد الالكتروني غير موجود"
-    err_email2 = "هذا البريد الالكتروني غير صحيح"
-    text = ` : رمز التحقق من البريد الالكتروني: `
+  let err_email2 = "this email  is not valid";
+  let err_email = "Email Not Found";
+  let text = `Email Verification Code: `;
+  if (req.query.lang == "ar") {
+    err_email = "البريد الالكتروني غير موجود";
+    err_email2 = "هذا البريد الالكتروني غير صحيح";
+    text = ` : رمز التحقق من البريد الالكتروني: `;
   }
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
   if (req.body.email !== "" && req.body.email.match(emailFormat)) {
@@ -257,7 +261,7 @@ export const forgetPassword = catchAsync(async (req, res, next) => {
       length: 4,
       useLetters: false,
     });
-    text +=  `${userData.verificationCode}` 
+    text += `${userData.verificationCode}`;
     sendEmail(userData.email, text);
     await userData.save();
     let verificationCode = userData.verificationCode;
@@ -280,13 +284,13 @@ export const forgetPassword = catchAsync(async (req, res, next) => {
 // 4- check if this token is the last one or not (change password )
 
 export const protectRoutes = catchAsync(async (req, res, next) => {
-  let err_1 = "please login first"
-  let err_2 = "user Invalid"
-  let err_3 = "token Invalid"
-  if(req.query.lang == "ar"){
-    err_1 = "الرجاء تسجيل الدخول اولا"
-    err_2 = "المستخدم غير مصرح به"
-    err_3 = "التوكن غير صحيح"
+  let err_1 = "please login first";
+  let err_2 = "user Invalid";
+  let err_3 = "token Invalid";
+  if (req.query.lang == "ar") {
+    err_1 = "الرجاء تسجيل الدخول اولا";
+    err_2 = "المستخدم غير مصرح به";
+    err_3 = "التوكن غير صحيح";
   }
   const authorizationHeader = req.headers.authorization;
   if (!authorizationHeader) {
@@ -325,7 +329,7 @@ export const allowTo = (...roles) => {
 };
 
 export const signUpWithGoogle = catchAsync(async (req, res, next) => {
-  let text = `Email Verification Code: `
+  let text = `Email Verification Code: `;
   let userData = await userModel.findOne({ email: req.body.email });
   if (!userData) {
     userData = new userModel(req.body);
@@ -333,7 +337,7 @@ export const signUpWithGoogle = catchAsync(async (req, res, next) => {
       length: 4,
       useLetters: false,
     });
-    text += `${userData.verificationCode}` 
+    text += `${userData.verificationCode}`;
 
     sendEmail(userData.email, text);
     await userData.save();
