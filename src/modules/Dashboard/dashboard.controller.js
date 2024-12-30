@@ -6,6 +6,7 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import { taskModel } from "../../../database/models/tasks.model.js";
 import { tagsModel } from "../../../database/models/tags.model.js";
 import { requsetModel } from "../../../database/models/request.model.js";
+import { ticketModel } from "../../../database/models/ticket.model.js";
 
 const getTopCountries = catchAsync(async (req, res, next) => {
   let err_1 = "No Data was found!";
@@ -655,6 +656,20 @@ const weeklyActivityByUser = catchAsync(async (req, res, next) => {
     results,
   });
 });
+const getAllCounters = catchAsync(async (req, res, next) => {
+  let tasksCount = await taskModel.countDocuments();
+  let projectsCount = await projectModel.countDocuments();
+  let usersCount = await userModel.countDocuments({
+    userType: { $nin: ["admin"] },
+  });
+  let ticketsCount = await ticketModel.countDocuments();
+  res.json({
+    usersCount,
+    projectsCount,
+    tasksCount,
+    ticketsCount,
+  });
+});
 
 export {
   getTopCountries,
@@ -667,4 +682,5 @@ export {
   weeklyActivityByUser,
   getTagsRatio,
   getMostModels,
+  getAllCounters,
 };
