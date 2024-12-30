@@ -138,8 +138,10 @@ export const signIn = catchAsync(async (req, res, next) => {
         length: 4,
         useLetters: false,
       });
-      text = text + `${userData.verificationCode}` 
-      sendEmail(userData.email, text);
+      if(userData.userType != "admin"){
+        text = text + `${userData.verificationCode}` 
+        sendEmail(userData.email, text);
+      }
       await userData.save();
       let token = jwt.sign(
         { name: userData.name, userId: userData._id },
