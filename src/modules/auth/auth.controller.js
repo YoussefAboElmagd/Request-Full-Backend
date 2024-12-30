@@ -120,10 +120,12 @@ export const signIn = catchAsync(async (req, res, next) => {
 
   let err_email2 = "this email  is not valid"
   let err_pass = "worng email or password"
+  let err_admin = "your are admin go to admin login page"
   let text = `Email Verification Code: ` 
   if(req.query.lang == "ar"){
     err_email2 = "هذا البريد الالكتروني غير صحيح"
     err_pass = "البريد الالكتروني او كلمة المرور غير صحيحة"
+    err_admin = "انت ادمن اذهب الى صفحة تسجيل الدخول لادمن"
     text = ` : رمز التحقق من البريد الالكتروني: `
   }
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
@@ -134,15 +136,52 @@ export const signIn = catchAsync(async (req, res, next) => {
       return res.status(401).json({ message: err_pass });
     const match = bcrypt.compareSync(password, userData.password);
     if (match && userData) {
+      if(userData.userType == "admin"){
+        return res.status(401).json({ message: err_admin });
+      }
       userData.verificationCode = generateUniqueId({
         length: 4,
         useLetters: false,
       });
-      if(userData.userType != "admin"){
-        text = text + `${userData.verificationCode}` 
-        sendEmail(userData.email, text);
-      }
+      text = text + `${userData.verificationCode}` 
+      sendEmail(userData.email, text);
       await userData.save();
+      let token = jwt.sign(
+        { name: userData.name, userId: userData._id },
+        process.env.JWT_SECRET_KEY
+      );
+      let lastSignIn = new Date();
+      req.lastSignIn = lastSignIn;
+      return res.json({ message: "success", token, userData, lastSignIn });
+    }
+    return res.status(401).json({ message: err_pass });
+  } else {
+    return res.status(409).json({ message: err_email2 });
+  }
+});
+export const adminSignIn = catchAsync(async (req, res, next) => {
+
+  let err_email2 = "this email  is not valid"
+  let err_pass = "worng email or password"
+  let err_admin = "unoauthorized"
+  let text = `Email Verification Code: ` 
+  if(req.query.lang == "ar"){
+    err_email2 = "هذا البريد الالكتروني غير صحيح"
+    err_pass = "البريد الالكتروني او كلمة المرور غير صحيحة"
+    err_admin = "غير مصرح"
+    text = ` : رمز التحقق من البريد الالكتروني: `
+  }
+  let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+  if (req.body.email !== "" && req.body.email.match(emailFormat)) {
+    let { email, password } = req.body;
+    let userData = await userModel.findOne({ email });
+    if (!userData)
+      return res.status(401).json({ message: err_pass });
+    const match = bcrypt.compareSync(password, userData.password);
+    if (match && userData) {
+      if(userData.userType !== "admin"){
+        return res.status(401).json({ message: err_admin });
+      }
       let token = jwt.sign(
         { name: userData.name, userId: userData._id },
         process.env.JWT_SECRET_KEY
