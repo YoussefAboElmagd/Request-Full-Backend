@@ -11,6 +11,7 @@ import { globalError } from "./src/utils/middleWare/globalError.js";
 import cron from "node-cron"; // Import the node-cron library
 import moment from "moment";
 import { taskModel } from "./database/models/tasks.model.js";
+import hpp from "hpp";
 const httpServer = createServer();
 const io = new Server(httpServer, {
   cors: {
@@ -26,6 +27,7 @@ const corsOptions = {
   credentials: true, // Allow credentials to be sent with requests
 };
 app.use(cors(corsOptions));
+app.use(hpp());  // Prevent HTTP Parameter Pollution  --> in case of query string parameters
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("uploads"));

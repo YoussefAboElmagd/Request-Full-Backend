@@ -21,6 +21,7 @@
     "fs": "^0.0.1-security",
     "fs-extra": "^11.2.0",
     "generate-unique-id": "^2.0.3",
+    "hpp": "^0.2.3",
     "joi": "^17.12.2",
     "jsonwebtoken": "^9.0.2",
     "luxon": "^3.5.0",

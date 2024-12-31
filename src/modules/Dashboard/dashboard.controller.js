@@ -657,17 +657,73 @@ const weeklyActivityByUser = catchAsync(async (req, res, next) => {
   });
 });
 const getAllCounters = catchAsync(async (req, res, next) => {
+  const lastWeek = new Date();
+  lastWeek.setDate(lastWeek.getDate() - 7);
   let tasksCount = await taskModel.countDocuments();
+
+  const tasksLastWeek = await taskModel.countDocuments({
+    createdAt: { $gte: lastWeek },
+  });
+
+  const growthPercentageTasks = (
+    (tasksLastWeek / (tasksCount - tasksLastWeek)) *
+    100
+  ).toFixed(2);
+
   let projectsCount = await projectModel.countDocuments();
+
+  const projectsLastWeek = await projectModel.countDocuments({
+    createdAt: { $gte: lastWeek },
+  });
+
+  const growthPercentageProjects = (
+    (projectsLastWeek / (projectsCount - projectsLastWeek)) *
+    100
+  ).toFixed(2);
+
   let usersCount = await userModel.countDocuments({
     userType: { $nin: ["admin"] },
   });
+
+  const usersLastWeek = await userModel.countDocuments({
+    createdAt: { $gte: lastWeek },
+  });
+
+  const growthPercentageUsers = (
+    (usersLastWeek / (usersCount - usersLastWeek)) *
+    100
+  ).toFixed(2);
+
   let ticketsCount = await ticketModel.countDocuments();
+  const ticketsLastWeek = await ticketModel.countDocuments({
+    createdAt: { $gte: lastWeek },
+  });
+
+  const growthPercentageTickets = (
+    (tasksLastWeek / (usersCount - usersLastWeek)) *
+    100
+  ).toFixed(2);
   res.json({
-    usersCount,
-    projectsCount,
-    tasksCount,
-    ticketsCount,
+    users: {
+      name: "Total Users",
+      count: usersCount,
+      growth: growthPercentageUsers,
+    },
+    projects: {
+      name: "Total Projects",
+      count: projectsCount,
+      growth: growthPercentageProjects,
+    },
+    tasks: {
+      name: "Total Tasks",
+      count: tasksCount,
+      growth: growthPercentageTasks,
+    },
+    tickets: {
+      name: "Total Tickets",
+      count: ticketsCount,
+      growth: growthPercentageTickets,
+    },
   });
 });
 

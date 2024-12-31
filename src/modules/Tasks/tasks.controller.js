@@ -15,6 +15,7 @@ const createTask = catchAsync(async (req, res, next) => {
   let tasks = Array.isArray(req.body) ? req.body : [req.body];
   let err_1 = "Project not found!";
   let err_2 = "Parent task not found";
+  let err_3 = "User not found";
   let err_date_1 = "Start date must be less than or equal to due date";
 
   let err_valid_1 =
@@ -28,6 +29,7 @@ const createTask = catchAsync(async (req, res, next) => {
   if (req.query.lang == "ar") {
     err_1 = "المشروع غير موجود";
     err_2 = "المهمة الأساسية غير موجودة";
+    err_3 = "المستخدم غير موجود";
     err_date_1 = "تاريخ البدء يجب ان يكون اقل من او يساوي تاريخ الانتهاء";
 
     err_valid_1 =
@@ -47,6 +49,9 @@ const createTask = catchAsync(async (req, res, next) => {
   for (const task of tasks) {
     const project = await projectModel.findById(task.project);
     user = await userModel.findById(task.createdBy);
+    if (!user) {
+      return res.status(404).json({ message: err_3 });
+    }
     if (!project) {
       return res.status(404).json({ message: err_1 });
     }
@@ -172,9 +177,7 @@ const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
   }
   let ApiFeat = null;
 
-  if (
-    req.query.filterValue == "Approved"
-  ) {
+  if (req.query.filterValue == "Approved") {
     ApiFeat = new ApiFeature(
       taskModel
         .find({ isAproved: true })
@@ -210,10 +213,7 @@ const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
     );
   } else {
     ApiFeat = new ApiFeature(
-      taskModel
-        .find()
-        .populate("project")
-        .sort({ $natural: -1 }),
+      taskModel.find().populate("project").sort({ $natural: -1 }),
       req.query
     )
       .sort()
