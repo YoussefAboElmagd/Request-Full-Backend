@@ -700,7 +700,7 @@ const getAllCounters = catchAsync(async (req, res, next) => {
   });
 
   const growthPercentageTickets = (
-    (tasksLastWeek / (usersCount - usersLastWeek)) *
+    (ticketsLastWeek / (tasksCount - usersLastWeek)) *
     100
   ).toFixed(2);
   res.json({
