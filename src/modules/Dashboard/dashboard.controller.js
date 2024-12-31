@@ -665,10 +665,10 @@ const getAllCounters = catchAsync(async (req, res, next) => {
     createdAt: { $gte: lastWeek },
   });
 
-  const growthPercentageTasks = (
-    (tasksLastWeek / (tasksCount - tasksLastWeek)) *
-    100
-  ).toFixed(2);
+  const growthPercentageTasks =
+    tasksCount > tasksLastWeek
+      ? Math.round((tasksLastWeek / (tasksCount - tasksLastWeek)) * 100) + "%"
+      : "0%";
 
   let projectsCount = await projectModel.countDocuments();
 
@@ -676,10 +676,10 @@ const getAllCounters = catchAsync(async (req, res, next) => {
     createdAt: { $gte: lastWeek },
   });
 
-  const growthPercentageProjects = (
-    (projectsLastWeek / (projectsCount - projectsLastWeek)) *
-    100
-  ).toFixed(2);
+  const growthPercentageProjects =
+    Math.round(
+      (projectsLastWeek / (projectsCount - projectsLastWeek)) * 100
+    ).toFixed(2) + "%";
 
   let usersCount = await userModel.countDocuments({
     userType: { $nin: ["admin"] },
@@ -689,20 +689,22 @@ const getAllCounters = catchAsync(async (req, res, next) => {
     createdAt: { $gte: lastWeek },
   });
 
-  const growthPercentageUsers = (
-    (usersLastWeek / (usersCount - usersLastWeek)) *
-    100
-  ).toFixed(2);
+  const growthPercentageUsers =
+    Math.round((usersLastWeek / (usersCount - usersLastWeek)) * 100).toFixed(
+      2
+    ) + "%";
 
   let ticketsCount = await ticketModel.countDocuments();
   const ticketsLastWeek = await ticketModel.countDocuments({
     createdAt: { $gte: lastWeek },
   });
 
-  const growthPercentageTickets = (
-    (ticketsLastWeek / (tasksCount - usersLastWeek)) *
-    100
-  ).toFixed(2);
+  const growthPercentageTickets =
+    ticketsCount > ticketsLastWeek
+      ? Math.round((ticketsLastWeek / (ticketsCount - ticketsLastWeek)) * 100) +
+        "%"
+      : "0%";
+
   res.json({
     users: {
       name: "Total Users",
@@ -718,6 +720,10 @@ const getAllCounters = catchAsync(async (req, res, next) => {
       name: "Total Tasks",
       count: tasksCount,
       growth: growthPercentageTasks,
+    },
+    customers: {
+      name: "New Customers",
+      count: usersLastWeek,
     },
     tickets: {
       name: "Total Tickets",
