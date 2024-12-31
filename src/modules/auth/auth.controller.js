@@ -143,9 +143,9 @@ export const signIn = catchAsync(async (req, res, next) => {
     if (!userData) return res.status(401).json({ message: err_pass });
     const match = bcrypt.compareSync(password, userData.password);
     if (match && userData) {
-      if (userData.userType == "admin") {
-        return res.status(401).json({ message: err_admin });
-      }
+      // if (userData.userType == "admin") {
+      //   return res.status(401).json({ message: err_admin });
+      // }
       userData.verificationCode = generateUniqueId({
         length: 4,
         useLetters: false,
