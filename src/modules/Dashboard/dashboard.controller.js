@@ -724,6 +724,7 @@ const getAllCounters = catchAsync(async (req, res, next) => {
     customers: {
       name: "New Customers",
       count: usersLastWeek,
+      growth: "0%",
     },
     tickets: {
       name: "Total Tickets",
