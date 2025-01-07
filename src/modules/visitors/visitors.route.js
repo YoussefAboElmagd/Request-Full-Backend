@@ -1,10 +1,12 @@
-import express from 'express';
-import { totalVisitors, addNewVisitor, returningVisitors } from '../controllers/visitorController.js';
+import express from "express";
 
+import {
+  addNewVisitor,
+  countVisitors,
+} from "./visitors.controller.js";
 const routerVisitors = express.Router();
 
-router.get('/total-visitors', totalVisitors);
-router.post('/add-visitor', addNewVisitor);
-router.post('/returning-visitor', returningVisitors);
+routerVisitors.post("/add-visitor", addNewVisitor);
+routerVisitors.post("/count-visitor", countVisitors);
 
 export default routerVisitors;

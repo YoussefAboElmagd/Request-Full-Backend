@@ -1,59 +1,75 @@
-import Visitor from "../../../database/models/visitor.model";
+import Visitor from "../../../database/models/visitor.model.js";
 
 
+export const addNewVisitor = async function (req, res) {
 
-export const totalVisitors=async function getTotalVisitors(req, res) {
-    try {
-        const totalVisitors = await Visitor.countDocuments();
-        res.json({totalVisitors  });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-}
-export const addNewVisitor= async function addNewVisitor(req, res) {
     const { visitorId } = req.body;
-    const now = new Date();
-
+    const nowInHours = Math.floor(new Date().getTime() / (1000 * 60 * 60));
     try {
         const existingVisitor = await Visitor.findOne({ visitorId });
-        if (existingVisitor) {
-            const timeDifference = (now - new Date(existingVisitor.lastVisit)) / (1000 * 60 * 60);
-console.log(timeDifference);
-
-            if (timeDifference > 24) {
-                existingVisitor.isNew = true;
-            }
-
-            existingVisitor.lastVisit = now;
-            await existingVisitor.save();
-
+        if (!existingVisitor) {
+            await Visitor.create({
+                visitorId,
+                isNew: true,
+                lastVisit: nowInHours,
+            })
+            return res.json({ message: "Visitor added successfully" });
         }
-else{ 
-    await Visitor.create({
-    visitorId,
-    isNew: true,
-    lastVisit: now,
-});}
-       
-
-const newVisitorCount = await Visitor.countDocuments({ isNew: true, $and: [{ lastVisit: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } }] });
-        res.json({ newVisitorCount });
+        return
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 }
 
-export const returningVisitors = async function getReturningVisitors(req, res) {
-    try {
-        const now = new Date();
-        
-        const returningVisitors = await Visitor.countDocuments({
-            isNew: false,
-            lastVisit: { $lt: new Date(now.getTime() - 24 * 60 * 60 * 1000) },
-        });
 
-        res.json({ returningVisitors });
+export const countVisitors = async (req, res) => {
+    try {
+        const { visitorId } = req.body;
+        const nowInHours = Math.floor(new Date().getTime() / (1000 * 60 * 60));
+
+        let visitor;
+        if (visitorId) {
+            visitor = await Visitor.findOne({ visitorId });
+            console.log("old", visitor);
+        } else {
+            return res.status(400).json({ message: "visitorId is required" });
+        }
+        if (!visitor) {
+            // If the visitor does not exist, create a new one
+            return 
+        }
+        const lastseen = Math.abs((nowInHours - visitor.lastVisit));
+
+        // Update the visitor if they are a returning visitor
+        if (lastseen <= 24) {
+            visitor.isNew = false;
+            await visitor.save();
+
+        } else {
+            visitor.isNew = true;
+            await visitor.save();
+            console.log("true");
+        }
+
+        const [totalVisitors, returningVisitorCount, newVisitorCount] = await Promise.all([
+            Visitor.countDocuments(),
+            Visitor.countDocuments({
+                isNew: false
+            }),
+            Visitor.countDocuments({
+
+                isNew: true
+
+            })
+        ]);
+
+        visitor.lastVisit = nowInHours;
+        await visitor.save();
+
+        return res.json({ message: "Done", totalVisitors, newVisitorCount, returningVisitorCount });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error("Error in counting visitors:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
     }
 };
+
