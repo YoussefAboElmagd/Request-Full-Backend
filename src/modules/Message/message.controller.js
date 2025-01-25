@@ -32,6 +32,7 @@ const createmessage = catchAsync(async (req, res, next) => {
   let user = await userModel.findById(sender).select("name");
   let senderName = user.name;
   let profilePic = user.profilePic;
+  let userRole = user.vocation.name;
 
   let docs = null;
   let voiceNote = [];
@@ -52,6 +53,7 @@ const createmessage = catchAsync(async (req, res, next) => {
       content,
       type,
       sender,
+      userRole,
       profilePic,
       senderName,
       receiver,
