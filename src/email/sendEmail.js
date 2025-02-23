@@ -101,7 +101,7 @@ export async function contactUs2(name,email,phone,message,id) {
 
   let message_en = ` Your Message has been successfully submitted to support, and we will contact you as soon as possible `
   let message_ar = 'لقد تم إرسال رسالتك بنجاح إلى الدعم، وسوف نقوم بالتواصل معك في أقرب وقت ممكن '
-  sendNotification(message_en,message_ar,"support",id)
+  // sendNotification(message_en,message_ar,"support",id)
   console.log("Message sent: %s", messageEmail.messageId);
 
 }

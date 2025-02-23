@@ -52,6 +52,7 @@ const postMessage = catchAsync(async (req, res, next) => {
   res.json({ message: message, user });
 });
 const getInTouch = catchAsync(async (req, res, next) => {
+  console.log(req.body)
   let err_1 = "This Phone is not valid";
   let err_2 = "This Email is not valid";
   let message = "Message sent to admin";
@@ -65,7 +66,8 @@ const getInTouch = catchAsync(async (req, res, next) => {
     return res.status(409).json({ message: err_1 });
   }
   if (req.body.email !== "" && req.body.email.match(emailFormat)) {
-    contactUs2(req.body.name, req.body.email, req.body.phone, req.body.message,req.user._id);
+    // contactUs2(req.body.name, req.body.email, req.body.phone, req.body.message,req.user._id);
+    contactUs2(req.body.name, req.body.email, req.body.phone, req.body.message);
     res.json({ message: message });
   } else {
     return res.status(409).json({ message: err_2 });

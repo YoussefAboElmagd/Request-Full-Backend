@@ -76,7 +76,7 @@ export function removeFile(folderName, fieldName) {
 }
 export const photoUpload = (req, fieldName, uploadDirectory) => {
   let fileUrl = "";
-
+   
   if (req.files && req.files[fieldName]) {
     // Generate file URLs
     req.body[fieldName] = req.files[fieldName].map(

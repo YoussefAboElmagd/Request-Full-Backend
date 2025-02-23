@@ -512,6 +512,7 @@ const getAllParentTasks = catchAsync(async (req, res, next) => {
     results,
   });
 });
+
 const updateTask = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const userId = req.query.id;
@@ -534,7 +535,12 @@ const updateTask = catchAsync(async (req, res, next) => {
         $push: {
           documents: { $each: Array.isArray(documents) ? documents : [] },
           assignees: { $each: Array.isArray(assignees) ? assignees : [] },
-          notes: { $each: Array.isArray(notes) ? notes : [] },
+          notes: {
+            content: notes,
+            postedBy: userId,
+            createdAt: Date.now(),
+            // required: true,
+          },
           attachments: { $each: Array.isArray(attachments) ? attachments : [] },
           // approvalOfSchemesModel: { $each: approvalOfSchemesModel || [] },
           // workRequestModel: { $each: workRequestModel || [] },
