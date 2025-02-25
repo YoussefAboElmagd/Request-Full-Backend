@@ -132,6 +132,8 @@ const delegteTeamAccess = catchAsync(async (req, res, next) => {
       })
       .exec();
 
+    console.log(team.members[0]);
+
     const groupedMembers = team.members.reduce((acc, member) => {
       member.projects.forEach((project) => {
         if (!acc[project._id]) {
@@ -225,6 +227,7 @@ const DeleteUserFromProject = catchAsync(async (req, res, next) => {
 
 
 
+
 const updateTeam = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   let err_phone = "This Phone  already exist";
@@ -298,33 +301,24 @@ const updateTeam = catchAsync(async (req, res, next) => {
       return res.status(409).json({ message: err_email2 });
     }
   }
-  // if (existUser) {
-  //   return res.status(404).json({ message: err_email });
-  // } else if (existPhone) {
-  //   return res.status(404).json({ message: err_phone });
-  // } else {
-  //   if (req.body.email !== "" && req.body.email.match(emailFormat)) {
-  //     if (req.body.password.length < 8) {
-  //       return res.status(409).json({ message: err_pass });
-  //     }
-  //     password = bcrypt.hashSync(password, Number(process.env.SALT_ROUNDS));
-  //     let model = "66ba00b0e39d9694110fd3df";
-  //     let newUser = new userModel({
-  //       name,
-  //       email,
-  //       password,
-  //       vocation,
-  //       projects,
-  //       model,
-  //       phone,
-  //       role,
-  //       tags,
-  //       access,
-  //     });
-  //     const savedUser = await newUser.save();
-  //   }
+
+
 
   if (existUser) {
+    let modell = "66ba00b0e39d9694110fd3df";
+    const updatedUser = await userModel.findByIdAndUpdate(
+      { _id: existUser._id },
+      {
+        vocation,
+        projects,
+        modell,
+        phone,
+        role,
+        tags,
+        access,
+      },
+      { new: true }
+    );
     const updateeTeam = await teamModel.findById(id);
 
     if (updateeTeam.members.includes(existUser._id)) {
@@ -338,14 +332,6 @@ const updateTeam = catchAsync(async (req, res, next) => {
         { new: true }
       );
     }
-
-    // await
-
-    // const updateUserGroup = await userGroupModel.findByIdAndUpdate(
-    //   access,
-    //   { $push: { users: existUser._id } },
-    //   { new: true }
-    // );
 
     let addprojects = Array.isArray(projects) ? projects : [projects];
     addprojects.forEach(async (project) => {
