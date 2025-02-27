@@ -245,10 +245,13 @@ const updateTeam = catchAsync(async (req, res, next) => {
   let { vocation, projects, name, email, password, access, tags, phone, role } =
     req.body;
   let existUser = await userModel.findOne({ email: email });
-  // let existPhone = await userModel.findOne({ phone });
+  let existPhone = await userModel.findOne({ phone });
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
-
-  if (!existUser) {
+  if (existUser) {
+    return res.status(404).json({ message: err_email });
+  } else if (existPhone) {
+    return res.status(404).json({ message: err_phone });
+  } else {
     if (req.body.email !== "" && req.body.email.match(emailFormat)) {
       if (req.body.password.length < 8) {
         return res.status(409).json({ message: err_pass });
@@ -301,58 +304,8 @@ const updateTeam = catchAsync(async (req, res, next) => {
       return res.status(409).json({ message: err_email2 });
     }
   }
-
-
-
-  if (existUser) {
-    let modell = "66ba00b0e39d9694110fd3df";
-    const updatedUser = await userModel.findByIdAndUpdate(
-      { _id: existUser._id },
-      {
-        vocation,
-        projects,
-        modell,
-        phone,
-        role,
-        tags,
-        access,
-      },
-      { new: true }
-    );
-    const updateeTeam = await teamModel.findById(id);
-
-    if (updateeTeam.members.includes(existUser._id)) {
-      return res
-        .status(409)
-        .json({ message: "user already exist in this project" });
-    } else {
-      const lastUpdateTeam = await teamModel.findByIdAndUpdate(
-        id,
-        { $push: { members: existUser._id } },
-        { new: true }
-      );
-    }
-
-    let addprojects = Array.isArray(projects) ? projects : [projects];
-    addprojects.forEach(async (project) => {
-      await projectModel.findByIdAndUpdate(
-        project,
-        {
-          $push: { members: existUser._id },
-        },
-        { new: true }
-      );
-    });
-
-    if (!updateeTeam) {
-      return res.status(404).json({ message: err_5 });
-    }
-    res.status(200).json({
-      message: "Team Updated successfully!",
-      updateeTeam,
-    });
-  }
 });
+
 
 const updateTeamMembers = catchAsync(async (req, res, next) => {
   const { id } = req.params;
