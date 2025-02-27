@@ -218,97 +218,83 @@ const DeleteUserFromProject = catchAsync(async (req, res, next) => {
   });
 });
 
-
-
-
-
-
-
-
-
-
-
 const updateTeam = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  let err_phone = "This Phone already exists";
-  let err_email = "This Email already exists";
-  let err_email2 = "This Email is not valid";
+  let err_phone = "This Phone  already exist";
+  let err_email = "This Email  already exist";
+  let err_email2 = "This Email  is not valid";
   let err_pass = "Password must be at least 8 characters";
   let err_5 = "No Team was found!";
-  let err_member = "Member already exists in the team!";
-
   if (req.query.lang == "ar") {
     err_5 = "لا يوجد فريق";
     err_phone = "هذا الهاتف موجود بالفعل";
     err_email = "هذا البريد الالكتروني موجود بالفعل";
     err_email2 = "هذا البريد الالكتروني غير صحيح";
     err_pass = "كلمة المرور يجب ان تكون 8 حروف على الاقل";
-    err_member = "العضو موجود بالفعل في الفريق!";
   }
+  let { vocation, projects, name, email, password, access, tags, phone, role } =
+    req.body;
+  let existUser = await userModel.findOne({ email: email });
+  let existPhone = await userModel.findOne({ phone });
+  let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+  if (existUser) {
+    return res.status(404).json({ message: err_email });
+  } else if (existPhone) {
+    return res.status(404).json({ message: err_phone });
+  } else {
+    if (req.body.email !== "" && req.body.email.match(emailFormat)) {
+      if (req.body.password.length < 8) {
+        return res.status(409).json({ message: err_pass });
+      }
+      password = bcrypt.hashSync(password, Number(process.env.SALT_ROUNDS));
+      let model = "66ba00b0e39d9694110fd3df";
+      let newUser = new userModel({
+        name,
+        email,
+        password,
+        vocation,
+        projects,
+        model,
+        phone,
+        role,
+        tags,
+        access,
+      });
+      const savedUser = await newUser.save();
+      const updateeTeam = await teamModel.findByIdAndUpdate(
+        id,
+        { $push: { members: savedUser._id } },
+        { new: true }
+      );
+      // const updateUserGroup = await userGroupModel.findByIdAndUpdate(
+      //   access,
+      //   { $push: { users: savedUser._id } },
+      //   { new: true }
+      // );
 
-  let { vocation, projects, name, email, password, access, tags, phone, role } = req.body;
+      let addprojects = Array.isArray(projects) ? projects : [projects];
+      addprojects.forEach(async (project) => {
+        await projectModel.findByIdAndUpdate(
+          project,
+          {
+            $push: { members: savedUser._id },
+          },
+          { new: true }
+        );
+      });
 
-  let existingUser = await userModel.findOne({ email: email }) || await userModel.findOne({ phone });
-  
-  let savedUser;
-  if (!existingUser) {
-    if (!email.match(/^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/)) {
+      if (!updateeTeam) {
+        return res.status(404).json({ message: err_5 });
+      }
+      res.status(200).json({
+        message: "Team Updated successfully!",
+        updateeTeam,
+      });
+    } else {
       return res.status(409).json({ message: err_email2 });
     }
-    if (password.length < 8) {
-      return res.status(409).json({ message: err_pass });
-    }
-    password = bcrypt.hashSync(password, Number(process.env.SALT_ROUNDS));
-    
-    let model = "66ba00b0e39d9694110fd3df";
-    let newUser = new userModel({
-      name,
-      email,
-      password,
-      vocation,
-      projects,
-      model,
-      phone,
-      role,
-      tags,
-      access,
-    });
-    savedUser = await newUser.save();
-  } else {
-    savedUser = existingUser;
   }
-
-  const team = await teamModel.findById(id);
-  if (!team) {
-    return res.status(404).json({ message: err_5 });
-  }
-  
-  if (team.members.includes(savedUser._id)) {
-    return res.status(409).json({ message: err_member });
-  }
-
-  const updatedTeam = await teamModel.findByIdAndUpdate(
-    id,
-    { $addToSet: { members: savedUser._id } },
-    { new: true }
-  );
-
-  let addProjects = Array.isArray(projects) ? projects : [projects];
-  await Promise.all(addProjects.map(project => 
-    projectModel.findByIdAndUpdate(
-      project,
-      { $addToSet: { members: savedUser._id } },
-      { new: true }
-    )
-  ));
-
-  res.status(200).json({
-    message: "Team Updated successfully!",
-    updatedTeam,
-  });
 });
-
-
 
 const updateTeamMembers = catchAsync(async (req, res, next) => {
   const { id } = req.params;
