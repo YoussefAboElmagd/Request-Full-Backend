@@ -78,7 +78,7 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
   const { email, project } = req.body;
   
   const getProject = await projectModel.findById(project).populate("members");
-  console.log(getProject);
+  
 
   
 
@@ -98,7 +98,7 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
   let err_2 = "This Email is not valid";
   let err_1 = "Project not found!";
-  let message = "Invite has been sent!";
+  let message = "Invite has been sent successfully!";
   if (req.query.lang == "ar") {
     err_2 = "هذا البريد الالكتروني غير صحيح";
     err_1 = "المشروع غير موجود";
