@@ -48,11 +48,11 @@ const postMessage = catchAsync(async (req, res, next) => {
     message = "تم إرسال الرسالة إلى المسؤول";
   }
   !user && res.status(404).json({ message: "couldn't post! user not found!" });
-  contactUs(user.name, user.email, req.body.message,user._id);
+  contactUs(user.name, user.email, req.body.message, user._id);
   res.json({ message: message, user });
 });
 const getInTouch = catchAsync(async (req, res, next) => {
-  console.log(req.body)
+  console.log(req.body);
   let err_1 = "This Phone is not valid";
   let err_2 = "This Email is not valid";
   let message = "Message sent to admin";
@@ -75,6 +75,24 @@ const getInTouch = catchAsync(async (req, res, next) => {
 });
 
 const sendInviteToProject = catchAsync(async (req, res, next) => {
+  const { email, project } = req.body;
+  
+  const getProject = await projectModel.findById(project).populate("members");
+  console.log(getProject);
+
+  
+
+  const checker = getProject.members.find((member) => member.email == email);
+  const checkerInviations = await invitationModel.findOne({
+    email,
+    project,
+  })
+
+  
+
+  if(checker || checkerInviations)return res.status(409).json({ message: "user already exist or invited in this project" });
+
+  
   let link = "https://request-sa.com/Invitation";
   let invitations = Array.isArray(req.body) ? req.body : [req.body];
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
@@ -100,9 +118,9 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
       let project = await projectModel
         .findOne({ _id: invitation.project })
         .select("name");
-        if(!project){
-          return res.status(404).json({ message: err_1 });
-        }
+      if (!project) {
+        return res.status(404).json({ message: err_1 });
+      }
       let addedInvitations = new invitationModel(invitation);
       let savedData = await addedInvitations.save();
 
@@ -119,9 +137,15 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
           { isSignUp: true },
           { new: true }
         );
-        let message_en = `You have been invited to join ${project.name} as ${roleName.jobTitle}`
-        let message_ar = `لقد تم دعوتك للانضمام إلى ${project.name} ك ${roleName.jobTitle}`
-        sendNotification(message_en,message_ar,"warning",isFound._id,invitation)
+        let message_en = `You have been invited to join ${project.name} as ${roleName.jobTitle}`;
+        let message_ar = `لقد تم دعوتك للانضمام إلى ${project.name} ك ${roleName.jobTitle}`;
+        sendNotification(
+          message_en,
+          message_ar,
+          "warning",
+          isFound._id,
+          invitation
+        );
       }
     } catch (error) {
       return res
@@ -152,23 +176,29 @@ const updateInvite = catchAsync(async (req, res, next) => {
   if (req.body.isApproved == true) {
     let foundUser = await userModel.findOne({ email: check.email });
     if (foundUser) {
-      let updates = {}
+      let updates = {};
       let project = await projectModel.findById(check.project);
-      if(check.role == "66d33e7a4ad80e468f231f8d" && project.consultant == null){ //consultant
-        updates.consultant = foundUser._id
-        updates.$push = { members: foundUser._id }
-      }else if(check.role == "66d33ec44ad80e468f231f91" && project.contractor == null){ //contractor
-        updates.contractor = foundUser._id
-        updates.$push = { members: foundUser._id }
-      }else{
-        updates.$push = { members: foundUser._id }
+      if (
+        check.role == "66d33e7a4ad80e468f231f8d" &&
+        project.consultant == null
+      ) {
+        //consultant
+        updates.consultant = foundUser._id;
+        updates.$push = { members: foundUser._id };
+      } else if (
+        check.role == "66d33ec44ad80e468f231f91" &&
+        project.contractor == null
+      ) {
+        //contractor
+        updates.contractor = foundUser._id;
+        updates.$push = { members: foundUser._id };
+      } else {
+        updates.$push = { members: foundUser._id };
       }
 
-      await projectModel.findOneAndUpdate(
-        { _id: check.project },
-        updates,
-        { new: true }
-      );
+      await projectModel.findOneAndUpdate({ _id: check.project }, updates, {
+        new: true,
+      });
       await invitationModel.deleteOne({ _id: id });
       return res.status(200).json({ message: "Done" });
     } else {
@@ -202,13 +232,15 @@ const updateCollection = catchAsync(async (req, res, next) => {
     signature = signature.replace(`https://api.request-sa.com/`, "");
     updates.signature = signature;
   }
-  if (companyLogo)
-    {
-      companyLogo = companyLogo.replace(`https://api.request-sa.com/`, "");
-      updates.companyLogo = companyLogo;
-    }
+  if (companyLogo) {
+    companyLogo = companyLogo.replace(`https://api.request-sa.com/`, "");
+    updates.companyLogo = companyLogo;
+  }
   if (electronicStamp) {
-    electronicStamp = electronicStamp.replace(`https://api.request-sa.com/`, "");
+    electronicStamp = electronicStamp.replace(
+      `https://api.request-sa.com/`,
+      ""
+    );
     updates.electronicStamp = electronicStamp;
   }
   if (req.body.companyName) {
@@ -225,10 +257,7 @@ const updateCollection = catchAsync(async (req, res, next) => {
 });
 
 const getAllUsersByAdmin = catchAsync(async (req, res, next) => {
-  let ApiFeat = new ApiFeature(
-    userModel.find().limit(10),
-    req.query
-  ).search();
+  let ApiFeat = new ApiFeature(userModel.find().limit(10), req.query).search();
   let message = "No users was found! add a new user to get started!";
   if (req.query.lang == "ar") {
     message = "لا يوجد مستخدمين! أضف مستخدم جديد للبدء!";
@@ -242,9 +271,15 @@ const getAllUsersByAdmin = catchAsync(async (req, res, next) => {
   res.json({
     message: "Done",
     countAllUsers: await userModel.countDocuments(),
-    countOwners: await userModel.countDocuments({ role: "66d33a4b4ad80e468f231f83" }),
-    countContractors: await userModel.countDocuments({ role: "66d33ec44ad80e468f231f91" }),
-    countConsultant: await userModel.countDocuments({ role: "66d33e7a4ad80e468f231f8d" }),
+    countOwners: await userModel.countDocuments({
+      role: "66d33a4b4ad80e468f231f83",
+    }),
+    countContractors: await userModel.countDocuments({
+      role: "66d33ec44ad80e468f231f91",
+    }),
+    countConsultant: await userModel.countDocuments({
+      role: "66d33e7a4ad80e468f231f8d",
+    }),
     results,
   });
 });
@@ -376,11 +411,10 @@ const getUserForInvite = catchAsync(async (req, res, next) => {
     });
   }
   !results && next(new AppError(message, 404));
-  if(results.email == data.email){
-
+  if (results.email == data.email) {
     results = { ...results._doc, ...data._doc };
     results && res.json({ message: "Done", results });
-  }else{
+  } else {
     return res.status(404).json({
       message: message3,
     });
