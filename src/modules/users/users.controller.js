@@ -75,24 +75,31 @@ const getInTouch = catchAsync(async (req, res, next) => {
 });
 
 const sendInviteToProject = catchAsync(async (req, res, next) => {
-  const { email, project } = req.body;
-  
+  const { email, project } = req.body[0];
+ 
+
+  console.log(req.body);
+
   const getProject = await projectModel.findById(project).populate("members");
   
 
+  req?.body?.forEach(async (req) => {
+    const { email, project } = req;
+    const checker = getProject.members.find((member) => member.email == email);
+    const checkerInviations = await invitationModel.findOne({
+      email,
+      project,
+    });
+    if (checker || checkerInviations)
+      return res
+        .status(409)
+        .json({ message: "user already exist or invited in this project" });
+  });
+
+
+
   
 
-  const checker = getProject.members.find((member) => member.email == email);
-  const checkerInviations = await invitationModel.findOne({
-    email,
-    project,
-  })
-
-  
-
-  if(checker || checkerInviations)return res.status(409).json({ message: "user already exist or invited in this project" });
-
-  
   let link = "https://request-sa.com/Invitation";
   let invitations = Array.isArray(req.body) ? req.body : [req.body];
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
