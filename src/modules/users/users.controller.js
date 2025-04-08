@@ -74,11 +74,14 @@ const getInTouch = catchAsync(async (req, res, next) => {
   }
 });
 
+
+
+
 const sendInviteToProject = catchAsync(async (req, res, next) => {
   const { email, project } = req.body[0];
  
 
-  console.log(req.body);
+ 
 
   const getProject = await projectModel.findById(project).populate("members");
   
@@ -100,7 +103,7 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
 
   
 
-  let link = "https://request-sa.com/Invitation";
+  let link = "https://requestt.vercel.app/Invitation";
   let invitations = Array.isArray(req.body) ? req.body : [req.body];
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
   let err_2 = "This Email is not valid";
