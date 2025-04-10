@@ -30,9 +30,10 @@ const createmessage = catchAsync(async (req, res, next) => {
   let type = req.body.type;
 
   let user = await userModel.findById(sender).select("name");
+  console.log(user);
   let senderName = user.name;
   let profilePic = user.profilePic;
-  let userRole = user.vocation.name;
+  // let userRole = user.vocation.name;
 
   let docs = null;
   let voiceNote = [];
