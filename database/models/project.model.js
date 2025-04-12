@@ -25,6 +25,7 @@ const projectSchema = mongoose.Schema(
       default: "medium",
       required: true,
     },
+    location:String,
     // requestForDocumentSubmittalApproval: {
     //   type: Boolean,
     //   default: false,
@@ -175,6 +176,7 @@ const projectSchema = mongoose.Schema(
   },
   { timestamps: true }
 );
+
 
 projectSchema.post("find", async function (docs , next) {
   for (let project of docs) {
