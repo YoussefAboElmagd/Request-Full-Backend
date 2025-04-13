@@ -27,7 +27,6 @@ const requsetSchema = mongoose.Schema(
     },
     description: {
       type: String,
-      required: true,
     },
     qty: {
       type: Number,
@@ -61,7 +60,6 @@ const requsetSchema = mongoose.Schema(
     discipline: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "discipline",
-      required: true,
     },
     actionCode: {
       type: mongoose.Schema.Types.ObjectId,
@@ -240,12 +238,9 @@ async function populateOwnerConsultantContractor(doc) {
       doc.owner = project.owner || null;
       doc.consultant = project.consultant || null;
       doc.contractor = project.contractor || null;
-      doc.ownerCompanyLogo =
-        `${project.ownerCompanyLogo}` || null;
-      doc.consultantCompanyLogo =
-        `${project.consultantCompanyLogo}` || null;
-      doc.contractorCompanyLogo =
-        `${project.contractorCompanyLogo}` || null;
+      doc.ownerCompanyLogo = `${project.ownerCompanyLogo}` || null;
+      doc.consultantCompanyLogo = `${project.consultantCompanyLogo}` || null;
+      doc.contractorCompanyLogo = `${project.contractorCompanyLogo}` || null;
     }
   }
 }
