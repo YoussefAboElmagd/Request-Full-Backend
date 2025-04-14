@@ -265,15 +265,15 @@ requsetSchema.pre("save", async function (next) {
     await populateOwnerConsultantContractor(this);
     let user = await userModel.findById(this.createdBy);
     this.submitedBy = `${user.signature}`;
-    if (this.createdBy.toString() == this.owner?._id.toString()) {
-      this.ownerStatus = "approved";
-    } else if (this.createdBy.toString() == this.contractor?._id.toString()) {
-      this.contractorStatus = "approved";
-    } else if (this.createdBy.toString() == this.consultant?._id.toString()) {
-      this.consultantStatus = "approved";
-    } else {
-      return next(new AppError("Unauthorized user", 401));
-    }
+    // if (this.createdBy.toString() == this.owner?._id.toString()) {
+    //   this.ownerStatus = "approved";
+    // } else if (this.createdBy.toString() == this.contractor?._id.toString()) {
+    //   this.contractorStatus = "approved";
+    // } else if (this.createdBy.toString() == this.consultant?._id.toString()) {
+    //   this.consultantStatus = "approved";
+    // } else {
+    //   return next(new AppError("Unauthorized user", 401));
+    // }
     const sequence = await Sequence.findOneAndUpdate(
       { project: this.project },
       { $inc: { seq: 1 } },
