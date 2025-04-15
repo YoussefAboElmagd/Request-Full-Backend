@@ -35,8 +35,9 @@ const createRequest = catchAsync(async (req, res, next) => {
   }
   const newData = new requsetModel(req.body);
   const savedData = await newData.save();
-  let message_en = " New Model has been created !";
-  let message_ar = " تم انشاء نموذج جديد !";
+ 
+  let message_en = ` New Model has been created in ${project?.name} project !`;
+  let message_ar = ` ${project?.name} تم انشاء نموذج جديد في !`;
   const receivers = [
     project.owner?._id,
     project.contractor?._id,

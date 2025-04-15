@@ -55,9 +55,9 @@ const createTask = catchAsync(async (req, res, next) => {
     if (!project) {
       return res.status(404).json({ message: err_1 });
     }
-    let message_en = ` New Task has been created on Project \' ${project.name} '\ !`;
-    let message_ar = ` تم انشاء مهمة جديدة في المشروع \' ${project.name} '\ !`;
-
+    let message_en = ` New Task called ${task.title} has been created on Project \' ${project.name} '\ !`;
+    let message_ar = ` تم انشاء مهمة جديدة تدعي ${task.title} في المشروع \' ${project.name} '\ !`;
+    
     let receivers = [
       project.owner?._id,
       project.contractor?._id,
@@ -252,6 +252,7 @@ const getAllTaskByAdmin = catchAsync(async (req, res, next) => {
   //   });
   // }
 
+  console.log("ahmed");
   res.json({
     message: "Done",
     // count: await taskModel.countDocuments(),
