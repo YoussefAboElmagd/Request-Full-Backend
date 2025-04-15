@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { userModel } from "./user.model.js";
 import AppError from "../../src/utils/appError.js";
 import { sendNotification } from "../../src/utils/sendNotification.js";
+import { projectModel } from "./project.model.js";
 
 const requsetSchema = mongoose.Schema(
   {
@@ -253,8 +254,10 @@ export const Sequence = mongoose.model("sequence", sequenceSchema);
 
 requsetSchema.pre("save", async function (next) {
   await populateOwnerConsultantContractor(this);
-  let message_en = `There are new Models to be approved`;
-  let message_ar = `هناك نماذج جديدة للموافقة عليها`;
+  const proj = await projectModel.findById(this.project);
+  
+  let message_en = `There are new Models to be approved in ${proj?.name}`;
+  let message_ar = `${proj?.name} هناك نماذج جديدة للموافقة عليها في  `;
   let receivers = [this.owner?._id, this.contractor?._id, this.consultant?._id];
   sendNotification(message_en, message_ar, "warning", receivers);
 
