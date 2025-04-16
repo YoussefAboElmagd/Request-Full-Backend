@@ -4,6 +4,7 @@ import * as requestController from "./request.controller.js";
 const requestRouter = express.Router();
 
 requestRouter.post("/", requestController.createRequest);
+requestRouter.post("/:id", requestController.handleContractorReject);
 requestRouter.get("/", requestController.getAllRequest);
 requestRouter.get("/:id", requestController.getRequestById);
 requestRouter.get("/user/:id", requestController.getAllRequestByUser);

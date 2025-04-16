@@ -35,7 +35,7 @@ const createRequest = catchAsync(async (req, res, next) => {
   }
   const newData = new requsetModel(req.body);
   const savedData = await newData.save();
- 
+
   let message_en = ` New Model has been created in ${project?.name} project !`;
   let message_ar = ` ${project?.name} تم انشاء نموذج جديد في !`;
   const receivers = [
@@ -149,6 +149,28 @@ const getAllRequestByTask = catchAsync(async (req, res, next) => {
   !results && next(new AppError(err_2, 404));
   results && res.json({ message: "Done", results });
 });
+const handleContractorReject = catchAsync(async (req, res, next) => {
+  let { id } = req.params; // projectId
+  let { contId } = req.body; // contractorId
+  let err_2 = "Projec not found!";
+  if (req.query.lang == "ar") {
+    err_2 = "المشروع غير موجود";
+  }
+  let results = await projectModel.findByIdAndUpdate(
+    { _id: id },
+    {
+      contractor: null,
+
+      $pull: { members: contId },
+    }
+  );
+  !results && next(new AppError(err_2, 404));
+
+  await requsetModel.updateMany({ project: id }, { status: "rejected" });
+
+  res.json({ message: "Done", results });
+});
+
 const updateRequest = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   let err_1 = "No Model was found!";
@@ -194,6 +216,33 @@ const updateRequest = catchAsync(async (req, res, next) => {
       sendNotification(message_en, message_ar, "success", receivers);
     }
   });
+  if (
+    updatedRequest?.ownerStatus == "approved" &&
+    updatedRequest?.consultantStatus == "approved" &&
+    updatedRequest?.contractorStatus == "approved"
+  ) {
+    await requsetModel.findByIdAndUpdate(
+      id,
+      { status: "approved" },
+      {
+        new: true,
+      }
+    );
+  }
+  if (
+    updatedRequest?.ownerStatus == "approved" &&
+    updatedRequest?.consultantStatus == "approved" &&
+    updatedRequest?.contractorStatus == "rejected"
+  ) {
+    await requsetModel.findByIdAndUpdate(
+      id,
+      { status: "rejected" },
+      {
+        new: true,
+      }
+    );
+  }
+  console.log(updatedRequest);
   res.status(200).json({
     message: "Request updated successfully!",
     updatedRequest,
@@ -219,6 +268,7 @@ const deleteRequest = catchAsync(async (req, res, next) => {
 });
 
 export {
+  handleContractorReject,
   createRequest,
   getAllRequest,
   updateRequest,
