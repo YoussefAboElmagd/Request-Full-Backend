@@ -103,7 +103,7 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
 
   
 
-  let link = "https://requestt.vercel.app/Invitation";
+  let link = "https://request-sa.com/Invitation";
   let invitations = Array.isArray(req.body) ? req.body : [req.body];
   let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
   let err_2 = "This Email is not valid";
