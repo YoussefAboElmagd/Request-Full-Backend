@@ -57,7 +57,7 @@ const createTask = catchAsync(async (req, res, next) => {
     }
     let message_en = ` New Task called ${task.title} has been created on Project \' ${project.name} '\ !`;
     let message_ar = ` تم انشاء مهمة جديدة تدعي ${task.title} في المشروع \' ${project.name} '\ !`;
-    
+
     let receivers = [
       project.owner?._id,
       project.contractor?._id,
@@ -116,18 +116,18 @@ const createTask = catchAsync(async (req, res, next) => {
         totalRequiredQuantity += subTask.requiredQuantity || 0;
       });
 
-      if (parentTask.requiredQuantity < totalRequiredQuantity) {
-        return next(new AppError(err_valid_1, 400));
-      }
-      if (parentTask.invoicedQuantity < totalInvoicedQuantity) {
-        return next(new AppError(err_valid_2, 400));
-      }
-      if (parentTask.executedQuantity < totalExecutedQuantity) {
-        return next(new AppError(err_valid_3, 400));
-      }
-      if (parentTask.approvedQuantity < totalApprovedQuantity) {
-        return next(new AppError(err_valid_4, 400));
-      }
+      // if (parentTask.requiredQuantity < totalRequiredQuantity) {
+      //   return next(new AppError(err_valid_1, 400));
+      // }
+      // if (parentTask.invoicedQuantity < totalInvoicedQuantity) {
+      //   return next(new AppError(err_valid_2, 400));
+      // }
+      // if (parentTask.executedQuantity < totalExecutedQuantity) {
+      //   return next(new AppError(err_valid_3, 400));
+      // }
+      // if (parentTask.approvedQuantity < totalApprovedQuantity) {
+      //   return next(new AppError(err_valid_4, 400));
+      // }
       let newSubTaskLog = await taskLogModel.findOneAndUpdate(
         { taskId: task.parentTask },
         {
@@ -465,7 +465,7 @@ const scheduleRecurringTasks = catchAsync(async (req, res, next) => {
     }
   });
 });
-const getAllSubTasksByParentTask = catchAsync(async (req, res, next) => {
+const   getAllSubTasksByParentTask = catchAsync(async (req, res, next) => {
   let err_1 = "Task not found!";
   if (req.query.lang == "ar") {
     err_1 = "المهمة غير موجودة";
