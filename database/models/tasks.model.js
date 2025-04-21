@@ -216,19 +216,19 @@ taskSchema.pre("findOneAndUpdate", async function (next) {
   }
   next();
 });
-taskSchema.pre("findOneAndUpdate", function (next) {
-  const update = this.getUpdate();
-  if (
-    update.dueDate &&
-    new Date(update.dueDate) < new Date() &&
-    update.dueDate.toDateString() !== new Date().toDateString() &&
-    update.status !== "completed"
-  ) {
-    this.setUpdate({ ...update, taskStatus: "delayed" });
-  }
+// taskSchema.pre("findOneAndUpdate", function (next) {
+//   const update = this.getUpdate();
+//   if (
+//     update.dueDate &&
+//     new Date(update.dueDate) < new Date() &&
+//     update.dueDate.toDateString() !== new Date().toDateString() &&
+//     update.status !== "completed"
+//   ) {
+//     this.setUpdate({ ...update, taskStatus: "delayed" });
+//   }
 
-  next();
-});
+//   next();
+// });
 taskSchema.pre("findOneAndUpdate", async function (next) {
   const update = this.getUpdate();
   const taskToUpdate = await mongoose.model("task").findOne(this.getQuery());
