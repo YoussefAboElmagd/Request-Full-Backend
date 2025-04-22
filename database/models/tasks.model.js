@@ -306,7 +306,6 @@ taskSchema.pre(/^delete/, { document: false, query: true }, async function () {
 taskSchema.pre(/^find/, function () {
   this.populate("tags");
   this.populate("unit");
-  
   this.populate("parentTask");
 });
 export const taskModel = mongoose.model("task", taskSchema);

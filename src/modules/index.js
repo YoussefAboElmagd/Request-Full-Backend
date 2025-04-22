@@ -57,7 +57,7 @@ export function init(app) {
 
   app.use("/", (req, res, next) => {
     // res.send("Page Not Found");
-    return res.status(404).json({ message: "Page Not Found" });
+   return res.status(404).json({ message: "Page Not Found" });
   });
 
   app.all("*", (req, res, next) => {

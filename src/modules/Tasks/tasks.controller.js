@@ -867,16 +867,15 @@ const deleteTask = catchAsync(async (req, res, next) => {
 });
 
 const updatestatusTask = catchAsync(async (req, res, next) => {
-  
   const { taskId, status } = req.body;
 
-  const task = await taskModel.findById(
-    { _id: taskId }
-    // { taskStatus: status },
-    // { new: true }
-  );
+  const task = await taskModel.findById({ _id: taskId });
   if (!task) return res.status(404).json({ message: "task not found" });
-
+  if (status == "completed") {
+    task.progress = 100;
+  } else {
+    task.progress = 0;
+  }
   task.taskStatus = status;
   await task.save();
   res.status(200).json({ message: "task updated" });
