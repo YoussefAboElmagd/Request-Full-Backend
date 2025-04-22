@@ -465,7 +465,7 @@ const scheduleRecurringTasks = catchAsync(async (req, res, next) => {
     }
   });
 });
-const   getAllSubTasksByParentTask = catchAsync(async (req, res, next) => {
+const getAllSubTasksByParentTask = catchAsync(async (req, res, next) => {
   let err_1 = "Task not found!";
   if (req.query.lang == "ar") {
     err_1 = "المهمة غير موجودة";
@@ -866,7 +866,24 @@ const deleteTask = catchAsync(async (req, res, next) => {
   res.status(200).json({ message: "Task deleted successfully!" });
 });
 
+const updatestatusTask = catchAsync(async (req, res, next) => {
+  
+  const { taskId, status } = req.body;
+
+  const task = await taskModel.findById(
+    { _id: taskId }
+    // { taskStatus: status },
+    // { new: true }
+  );
+  if (!task) return res.status(404).json({ message: "task not found" });
+
+  task.taskStatus = status;
+  await task.save();
+  res.status(200).json({ message: "task updated" });
+});
+
 export {
+  updatestatusTask,
   createTask,
   getAllTaskByAdmin,
   getTaskById,
