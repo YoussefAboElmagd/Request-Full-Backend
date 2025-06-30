@@ -7,11 +7,13 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import { taskModel } from "../../../database/models/tasks.model.js";
 import bcrypt from "bcrypt";
 import { sendNotification } from "../../utils/sendNotification.js";
+import { requsetModel } from "../../../database/models/request.model.js";
 
 const createProject = catchAsync(async (req, res, next) => {
   req.body.model = "66ba015a73f994dd94dbc1e9";
 
   // Check if budget is valid
+  const { role } = req.body;
   if (req.body.budget < 0) {
     return res.status(404).json({ message: "Budget must be greater than 0" });
   }
@@ -25,7 +27,16 @@ const createProject = catchAsync(async (req, res, next) => {
   let newProject = new projectModel(req.body);
 
   newProject.members.push(newProject.createdBy);
-  newProject.owner = newProject.createdBy;
+  if (role == "owner") {
+    newProject.owner = newProject.createdBy;
+  } else if (role == "contractor") {
+    newProject.contractor = newProject.createdBy;
+  } else if (role == "consultant") {
+    newProject.consultant = newProject.createdBy;
+  } else {
+    return next(new AppError("this role is not allowed", 400));
+  }
+
   // newProject.members.push(newProject.contractor);
   // newProject.members.push(newProject.owner);
   // newProject.members.push(newProject.consultant);
@@ -112,6 +123,101 @@ const getCounts = catchAsync(async (req, res, next) => {
       ],
     }),
   });
+});
+const getModelsAprroved = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+
+  const objectId = new mongoose.Types.ObjectId(id);
+  const models = await requsetModel.aggregate([
+    {
+      $match: {
+        status: "approved",
+        $or: [
+          { owner: objectId },
+          { contractor: objectId },
+          { consultant: objectId },
+        ],
+      },
+    },
+    // Lookup owner
+    {
+      $lookup: {
+        from: "users", // Replace with actual User collection name if different
+        localField: "owner",
+        foreignField: "_id",
+        as: "owner",
+      },
+    },
+    { $unwind: { path: "$owner", preserveNullAndEmptyArrays: true } },
+
+    // Lookup contractor
+    {
+      $lookup: {
+        from: "users",
+        localField: "contractor",
+        foreignField: "_id",
+        as: "contractor",
+      },
+    },
+    { $unwind: { path: "$contractor", preserveNullAndEmptyArrays: true } },
+
+    // Lookup consultant
+    {
+      $lookup: {
+        from: "users",
+        localField: "consultant",
+        foreignField: "_id",
+        as: "consultant",
+      },
+    },
+    { $unwind: { path: "$consultant", preserveNullAndEmptyArrays: true } },
+
+    // Final project: return full requestModel fields + selective user fields
+    {
+      $project: {
+        // Include all original requestModel fields
+        _id: 1,
+        status: 1,
+        title: 1,
+        description: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        project: 1,
+        // ...add more model fields as needed
+
+        // Overwrite owner, contractor, consultant with selected fields
+        owner: {
+          _id: "$owner._id",
+          name: "$owner.name",
+          email: "$owner.email",
+          companyName: "$owner.companyName",
+          signature: "$owner.signature",
+          companyLogo: "$owner.companyLogo",
+          electronicStamp: "$owner.electronicStamp",
+        },
+        contractor: {
+          _id: "$contractor._id",
+          name: "$contractor.name",
+          email: "$contractor.email",
+          companyName: "$contractor.companyName",
+          signature: "$contractor.signature",
+          companyLogo: "$contractor.companyLogo",
+          electronicStamp: "$contractor.electronicStamp",
+        },
+        consultant: {
+          _id: "$consultant._id",
+          name: "$consultant.name",
+          email: "$consultant.email",
+          companyName: "$consultant.companyName",
+          signature: "$consultant.signature",
+          companyLogo: "$consultant.companyLogo",
+          electronicStamp: "$consultant.electronicStamp",
+        },
+      },
+    },
+  ]);
+
+  res.status(200).json({ message: "Models founded", data: models });
 });
 ////////////////////////////////// admin \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
@@ -1311,4 +1417,5 @@ export {
   addMemberForProject,
   getCounts,
   getProjectTagProgress,
+  getModelsAprroved,
 };

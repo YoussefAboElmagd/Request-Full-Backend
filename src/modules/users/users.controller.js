@@ -74,97 +74,202 @@ const getInTouch = catchAsync(async (req, res, next) => {
   }
 });
 
-
-
-
 const sendInviteToProject = catchAsync(async (req, res, next) => {
-  const { email, project } = req.body[0];
- 
-
- 
-
-  const getProject = await projectModel.findById(project).populate("members");
-  
-
-  req?.body?.forEach(async (req) => {
-    const { email, project } = req;
-    const checker = getProject.members.find((member) => member.email == email);
-    const checkerInviations = await invitationModel.findOne({
-      email,
-      project,
-    });
-    if (checker || checkerInviations)
-      return res
-        .status(409)
-        .json({ message: "user already exist or invited in this project" });
-  });
-
-
-
-  
-
-  let link = "https://request-sa.com/Invitation";
-  let invitations = Array.isArray(req.body) ? req.body : [req.body];
-  let emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
-  let err_2 = "This Email is not valid";
-  let err_1 = "Project not found!";
-  let message = "Invite has been sent successfully!";
-  if (req.query.lang == "ar") {
-    err_2 = "هذا البريد الالكتروني غير صحيح";
-    err_1 = "المشروع غير موجود";
-    message = "تم إرسال الدعوة  ";
+  // Input validation
+  if (!req.body || !Array.isArray(req.body) || req.body.length === 0) {
+    return res
+      .status(400)
+      .json({
+        message: "Invalid request body. Expected array of invitations.",
+      });
   }
-  for (let invitation of invitations) {
-    if (invitation.email === "" || !invitation.email.match(emailFormat)) {
-      return res
-        .status(409)
-        .json({ message: `${invitation.email}  ${err_2}.` });
-    }
-    try {
-      let isFound = await userModel.findOne({ email: invitation.email });
-      let roleName = await userTypeModel
-        .findOne({ _id: invitation.role })
-        .select("jobTitle");
-      let project = await projectModel
-        .findOne({ _id: invitation.project })
-        .select("name");
-      if (!project) {
-        return res.status(404).json({ message: err_1 });
-      }
-      let addedInvitations = new invitationModel(invitation);
-      let savedData = await addedInvitations.save();
 
-      sendInvite(
+  const { email, project } = req.body[0];
+
+  // Prevent: Invalid project ID
+  if (!project) {
+    return res.status(400).json({ message: "Project ID is required" });
+  }
+
+  // Prevent: Project not found
+  const getProject = await projectModel.findById(project).populate("members");
+  if (!getProject) {
+    return res.status(404).json({ message: "Project not found" });
+  }
+
+  // Email format validation
+  const emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+
+  // Localization setup
+  const isArabic = req.query.lang === "ar";
+  const messages = {
+    invalidEmail: isArabic
+      ? "هذا البريد الالكتروني غير صحيح"
+      : "This Email is not valid",
+    projectNotFound: isArabic ? "المشروع غير موجود" : "Project not found!",
+    success: isArabic
+      ? "تم إرسال الدعوة"
+      : "Invite has been sent successfully!",
+    userExists: isArabic
+      ? "المستخدم موجود بالفعل أو مدعو في هذا المشروع"
+      : "User already exists or is invited in this project",
+    roleExists: isArabic
+      ? "المشروع لديه بالفعل هذا الدور"
+      : "Project already has this role",
+    invalidRole: isArabic ? "الدور غير صحيح" : "Invalid role",
+  };
+
+  // Prevent: Duplicate invitations and existing members (batch check)
+  for (const reqItem of req.body) {
+    const { email, project: itemProject, role } = reqItem;
+
+    // Prevent: Empty or invalid email
+    if (!email || !email.match(emailFormat)) {
+      return res.status(400).json({
+        message: `${email || "Empty email"} ${messages.invalidEmail}`,
+      });
+    }
+
+    // Prevent: Invalid role
+    if (!role) {
+      return res.status(400).json({ message: messages.invalidRole });
+    }
+
+    // Prevent: User already member
+    const existingMember = getProject.members.find(
+      (member) => member.email === email
+    );
+    if (existingMember) {
+      return res.status(409).json({
+        message: `${email} is already a member of this project`,
+      });
+    }
+
+    // Prevent: User already invited
+    const existingInvitation = await invitationModel.findOne({
+      email,
+      project: itemProject,
+    });
+    if (existingInvitation) {
+      return res.status(409).json({
+        message: `${email} is already invited to this project`,
+      });
+    }
+  }
+
+  // Prevent: Role conflicts (uncommented and improved)
+  const roleChecks = new Map(); // Track roles being assigned
+
+  for (const reqItem of req.body) {
+    const { role, email } = reqItem;
+
+    try {
+      // Get role information
+      const roleInfo = await userTypeModel.findById(role);
+      if (!roleInfo) {
+        return res.status(400).json({ message: `Invalid role ID: ${role}` });
+      }
+
+      const roleType = roleInfo.jobTitle.toLowerCase();
+
+      // Prevent: Multiple users with same unique role
+      if (["owner", "consultant", "contractor"].includes(roleType)) {
+        // Check if role already exists in project
+        if (getProject[roleType]) {
+          return res.status(409).json({
+            message: `Project already has a ${roleType}`,
+          });
+        }
+
+        // Check if multiple people in this batch are being assigned the same unique role
+        if (roleChecks.has(roleType)) {
+          return res.status(409).json({
+            message: `Cannot assign ${roleType} role to multiple users`,
+          });
+        }
+
+        roleChecks.set(roleType, email);
+      }
+    } catch (error) {
+      return res.status(500).json({
+        message: "Error validating role",
+        error: error.message,
+      });
+    }
+  }
+
+  // Process invitations
+  const link = "https://request-sa.com/Invitation";
+  const processedInvitations = [];
+
+  for (let invitation of req.body) {
+    try {
+      // Check if user exists
+      const existingUser = await userModel.findOne({ email: invitation.email });
+
+      // Get role and project info
+      const [roleInfo, projectInfo] = await Promise.all([
+        userTypeModel.findById(invitation.role).select("jobTitle"),
+        projectModel.findById(invitation.project),
+      ]);
+
+      if (!roleInfo) {
+        return res.status(400).json({ message: "Invalid role specified" });
+      }
+
+      if (!projectInfo) {
+        return res.status(404).json({ message: messages.projectNotFound });
+      }
+
+      // Create invitation
+      const newInvitation = new invitationModel({
+        ...invitation,
+        isSignUp: !!existingUser, // Set to true if user already exists
+      });
+
+      const savedInvitation = await newInvitation.save();
+      processedInvitations.push(savedInvitation);
+
+      // Send email invitation
+      await sendInvite(
         invitation,
-        project.name,
-        roleName.jobTitle,
-        savedData._id,
+        projectInfo.name,
+        roleInfo.jobTitle,
+        savedInvitation._id,
         link
       );
-      if (isFound) {
-        await invitationModel.findByIdAndUpdate(
-          savedData._id,
-          { isSignUp: true },
-          { new: true }
-        );
-        let message_en = `You have been invited to join ${project.name} as ${roleName.jobTitle}`;
-        let message_ar = `لقد تم دعوتك للانضمام إلى ${project.name} ك ${roleName.jobTitle}`;
-        sendNotification(
-          message_en,
-          message_ar,
+
+      // Send in-app notification if user exists
+      if (existingUser) {
+        const notificationMessageEn = `You have been invited to join ${projectInfo.name} as ${roleInfo.jobTitle}`;
+        const notificationMessageAr = `لقد تم دعوتك للانضمام إلى ${projectInfo.name} كـ ${roleInfo.jobTitle}`;
+
+        await sendNotification(
+          notificationMessageEn,
+          notificationMessageAr,
           "warning",
-          isFound._id,
+          existingUser._id,
           invitation
         );
       }
     } catch (error) {
-      return res
-        .status(500)
-        .json({ message: "An error occurred.", error: error.message });
+      // Prevent: Partial success - rollback created invitations
+      if (processedInvitations.length > 0) {
+        await invitationModel.deleteMany({
+          _id: { $in: processedInvitations.map((inv) => inv._id) },
+        });
+      }
+
+      return res.status(500).json({
+        message: "An error occurred while processing invitations",
+        error: error.message,
+      });
     }
   }
+
   return res.json({
-    message: message,
+    message: messages.success,
+    invitationsSent: processedInvitations.length,
   });
 });
 const updateInvite = catchAsync(async (req, res, next) => {

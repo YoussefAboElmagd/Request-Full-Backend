@@ -37,6 +37,7 @@ projectRouter.get(
   projectController.getProjectTagProgress
 );
 projectRouter.get("/counts/:id", projectController.getCounts);
+projectRouter.get("/requests/:id", projectController.getModelsAprroved);
 
 projectRouter.post("/", projectController.createProject);
 
