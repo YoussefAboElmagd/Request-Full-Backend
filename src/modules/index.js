@@ -25,6 +25,7 @@ import userGroupRouter from "./User Group/userGroup.routes.js";
 import planRouter from "./plan/plan.routes.js";
 import paymentRouter from "./payment/payment.routes.js";
 import taskLogRouter from "./Tasks Log/tasksLog.routes.js";
+import adminRoutes from "./adminn/admin.routes.js";
 
 export function init(app) {
   app.use("/api/v1/users", usersRouter);
@@ -54,10 +55,11 @@ export function init(app) {
   app.use("/api/v1/plan", planRouter);
   app.use("/api/v1/payment", paymentRouter);
   app.use("/api/v1/taskLog", taskLogRouter);
+  app.use("/api/v1/admin", adminRoutes);
 
   app.use("/", (req, res, next) => {
     // res.send("Page Not Found");
-   return res.status(404).json({ message: "Page Not Found" });
+    return res.status(404).json({ message: "Page Not Found" });
   });
 
   app.all("*", (req, res, next) => {

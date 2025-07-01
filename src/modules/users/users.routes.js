@@ -8,14 +8,14 @@ import {
   fileSizeLimitErrorHandler,
   uploadMixFile,
 } from "../../utils/middleWare/fileUploads.js";
-import { protectRoutes , allowTo } from "../auth/auth.controller.js";
+import { protectRoutes, allowTo } from "../auth/auth.controller.js";
 
 usersRouter.get("/", usersController.getAllUsersByAdmin);
 usersRouter.get("/owners/", usersController.getAllowners);
 usersRouter.get("/consultant/", usersController.getAllconsultant);
 usersRouter.get("/contractor/", usersController.getAllcontractors);
 usersRouter.get("/new/", usersController.getAllNewUsers);
-usersRouter.get("/:id",protectRoutes, usersController.getUserById);
+usersRouter.get("/:id", protectRoutes, usersController.getUserById);
 usersRouter.get("/tags/:id", usersController.getUserTags);
 usersRouter.get("/email/", usersController.getUserByEmail);
 usersRouter.get("/companyDetails/:id", usersController.getUserCompanyDetails);
@@ -39,7 +39,11 @@ usersRouter.put(
 
 usersRouter.put(
   "/company/:id",
-  uploadMixFile("company", [{ name: "companyLogo" },{ name: "electronicStamp" }, { name: "signature" }, ]),
+  uploadMixFile("company", [
+    { name: "companyLogo" },
+    { name: "electronicStamp" },
+    { name: "signature" },
+  ]),
   fileSizeLimitErrorHandler,
   usersController.updateCollection
 );

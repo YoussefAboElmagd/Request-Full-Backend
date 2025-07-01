@@ -77,11 +77,9 @@ const getInTouch = catchAsync(async (req, res, next) => {
 const sendInviteToProject = catchAsync(async (req, res, next) => {
   // Input validation
   if (!req.body || !Array.isArray(req.body) || req.body.length === 0) {
-    return res
-      .status(400)
-      .json({
-        message: "Invalid request body. Expected array of invitations.",
-      });
+    return res.status(400).json({
+      message: "Invalid request body. Expected array of invitations.",
+    });
   }
 
   const { email, project } = req.body[0];
@@ -274,7 +272,8 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
 });
 const updateInvite = catchAsync(async (req, res, next) => {
   let { id } = req.params;
-  let check = await invitationModel.findById(id);
+  let check = await invitationModel.findById(id).populate("role");
+  console.log(check);
   let err_1 = "Ivitation not found!";
   let err_2 = "Ivitation not vaild!";
   let err_3 = "User not found!";
@@ -293,19 +292,20 @@ const updateInvite = catchAsync(async (req, res, next) => {
     if (foundUser) {
       let updates = {};
       let project = await projectModel.findById(check.project);
-      if (
-        check.role == "66d33e7a4ad80e468f231f8d" &&
-        project.consultant == null
-      ) {
+      if (check.role.jobTitle == "consultant" && project.consultant == null) {
         //consultant
         updates.consultant = foundUser._id;
         updates.$push = { members: foundUser._id };
       } else if (
-        check.role == "66d33ec44ad80e468f231f91" &&
+        check.role.jobTitle == "contractor" &&
         project.contractor == null
       ) {
         //contractor
         updates.contractor = foundUser._id;
+        updates.$push = { members: foundUser._id };
+      } else if (check.role.jobTitle == "owner" && project.owner == null) {
+        //contractor
+        updates.owner = foundUser._id;
         updates.$push = { members: foundUser._id };
       } else {
         updates.$push = { members: foundUser._id };
