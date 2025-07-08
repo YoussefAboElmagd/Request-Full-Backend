@@ -5,6 +5,10 @@ import { customAlphabet } from "nanoid";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../../email/sendEmail.js";
+import { userTypeModel } from "../../../database/models/userType.model.js";
+import mongoose from "mongoose";
+import { projectModel } from "../../../database/models/project.model.js";
+import { taskModel } from "../../../database/models/tasks.model.js";
 
 const handle_admin_signin = catchAsync(async (req, res, next) => {
   const { lang } = req.query;
@@ -65,7 +69,9 @@ const handle_admin_verify = catchAsync(async (req, res, next) => {
     process.env.JWT_SECRET_KEY,
     { expiresIn: "1d" }
   );
-  const user = await userModel.findOne({ email }).select("-password -verificationCode");
+  const user = await userModel
+    .findOne({ email })
+    .select("-password -verificationCode");
   res.status(200).json({ message: "success", data: { userData: user, token } });
 });
 const handle_admin_resend_otp = catchAsync(async (req, res, next) => {
@@ -92,5 +98,368 @@ const handle_admin_resend_otp = catchAsync(async (req, res, next) => {
   sendEmail(email, `Email Verification Code:${fourDigitCode}`);
   res.status(200).json({ message: "otp sent successfully" });
 });
+const handle_admin_get_users = catchAsync(async (req, res, next) => {
+  // Use aggregation instead of find
+  const users = await userModel.aggregate([
+    {
+      $match: {
+        userType: { $ne: "admin" },
+      },
+    },
+    {
+      $lookup: {
+        from: "usertypes", // replace with actual collection name of userTypeModel if different
+        localField: "role",
+        foreignField: "_id",
+        as: "role",
+      },
+    },
+    {
+      $unwind: "$role",
+    },
+    {
+      $project: {
+        profilePic: 1,
+        name: 1,
+        email: 1,
+        role: {
+          jobTitle: "$role.jobTitle",
+        },
+      },
+    },
+  ]);
 
-export { handle_admin_signin, handle_admin_verify, handle_admin_resend_otp };
+  // Fetch role IDs using direct queries
+  const [owner, contractor, consultant] = await Promise.all([
+    userTypeModel.findOne({ jobTitle: "owner" }).select("_id"),
+    userTypeModel.findOne({ jobTitle: "contractor" }).select("_id"),
+    userTypeModel.findOne({ jobTitle: "consultant" }).select("_id"),
+  ]);
+
+  if (!owner || !contractor || !consultant) {
+    return res
+      .status(500)
+      .json({ message: "Some roles are missing in the database." });
+  }
+
+  // Count documents by role
+  const [countOwner, countContractor, countConsultant] = await Promise.all([
+    userModel.countDocuments({ role: owner._id }),
+    userModel.countDocuments({ role: contractor._id }),
+    userModel.countDocuments({ role: consultant._id }),
+  ]);
+
+  res.status(200).json({
+    message: "users found successfully",
+    users,
+    stats: {
+      owner: countOwner,
+      contractor: countContractor,
+      consultant: countConsultant,
+    },
+  });
+});
+const handle_admin_get_user_by_id = catchAsync(async (req, res, next) => {
+  const { lang } = req.query;
+  const notFound = lang === "ar" ? "المستخدم غير موجود" : "User not found";
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid ID format." });
+  }
+
+  const users = await userModel.aggregate([
+    {
+      $match: { _id: new mongoose.Types.ObjectId(id) },
+    },
+    {
+      $lookup: {
+        from: "usertypes", // ⚠️ replace with the actual collection name
+        localField: "role",
+        foreignField: "_id",
+        as: "role",
+      },
+    },
+    {
+      $unwind: {
+        path: "$role",
+        preserveNullAndEmptyArrays: true, // allows role to be null if not found
+      },
+    },
+    {
+      $project: {
+        password: 0,
+        vocation: 0,
+        model: 0,
+
+        verificationCode: 0,
+        access: 0,
+
+        userGroups: 0,
+        projects: 0,
+        signature: 0,
+        electronicStamp: 0,
+        companyLogo: 0,
+        updatedAt: 0,
+        createdAt: 0,
+        userType: 0,
+        tags: 0,
+        renewalSubscription: 0,
+        renewalSubscription: 0,
+        notifications: 0,
+        offersAndPackages: 0,
+        twoWayAuthentication: 0,
+        confirmedPhone: 0,
+        verified: 0,
+        plan: 0,
+        team: 0,
+      },
+    },
+  ]);
+
+  const user = users[0];
+
+  if (!user) {
+    return res.status(404).json({ message: notFound });
+  }
+  const projects = await projectModel.aggregate([
+    {
+      $match: {
+        members: { $in: [new mongoose.Types.ObjectId(id)] },
+      },
+    },
+    {
+      $lookup: {
+        from: "users", // ⚠️ replace with your actual collection name for users
+        localField: "members",
+        foreignField: "_id",
+        as: "members",
+      },
+    },
+    {
+      $project: {
+        name: 1,
+        tasks: 1,
+        progress: 1,
+        members: {
+          $map: {
+            input: "$members",
+            as: "member",
+            in: {
+              _id: "$$member._id",
+              profilePic: "$$member.profilePic",
+            },
+          },
+        },
+      },
+    },
+  ]);
+
+  res.status(200).json({
+    message:
+      lang === "ar"
+        ? "تم العثور على المستخدم بنجاح"
+        : "User found successfully",
+    projects,
+    user: user,
+  });
+});
+
+const handle_admin_get_tasks = catchAsync(async (req, res, next) => {
+  const { search, page = 1, limit = 10 } = req.query;
+
+  const skip = (Number(page) - 1) * Number(limit);
+
+  const matchStage = search
+    ? { $match: { taskStatus: search } }
+    : { $match: {} };
+
+  const tasks = await taskModel.aggregate([
+    matchStage,
+
+    // Lookup for assignees
+    {
+      $lookup: {
+        from: "users",
+        localField: "assignees",
+        foreignField: "_id",
+        as: "assignees",
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "createdBy",
+        foreignField: "_id",
+        as: "createdBy",
+      },
+    },
+    {
+      $unwind: {
+        path: "$createdBy",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $lookup: {
+        from: "tags",
+        localField: "tags",
+        foreignField: "_id",
+        as: "tags",
+      },
+    },
+
+    // Format data like select() + populate()
+    {
+      $project: {
+        title: 1,
+        taskStatus: 1,
+        sDate: 1,
+        dueDate: 1,
+        assignees: {
+          $map: {
+            input: "$assignees",
+            as: "assignee",
+            in: {
+              name: "$$assignee.name",
+              profilePic: "$$assignee.profilePic",
+            },
+          },
+        },
+        createdBy: {
+          name: "$createdBy.name",
+          profilePic: "$createdBy.profilePic",
+        },
+        tags: {
+          $map: {
+            input: "$tags",
+            as: "tag",
+            in: {
+              name: "$$tag.name",
+              color: "$$tag.colorCode",
+            },
+          },
+        },
+      },
+    },
+
+    { $skip: skip },
+    { $limit: Number(limit) },
+  ]);
+
+  // For total count (without pagination)
+  const total = await taskModel.countDocuments(
+    search ? { taskStatus: search } : {}
+  );
+
+  res.status(200).json({
+    message: "Tasks found successfully",
+    data: tasks,
+    pagination: {
+      total,
+      page: Number(page),
+      limit: Number(limit),
+      pages: Math.ceil(total / limit),
+    },
+  });
+});
+const handle_admin_get_tasks_by_id = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid ID format." });
+  }
+
+  const tasks = await taskModel.aggregate([
+    {
+      $match: { _id: new mongoose.Types.ObjectId(id) },
+    },
+
+    // Lookup createdBy
+    {
+      $lookup: {
+        from: "users",
+        localField: "createdBy",
+        foreignField: "_id",
+        as: "createdBy",
+      },
+    },
+    {
+      $unwind: {
+        path: "$createdBy",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+
+    // Lookup assignees
+    {
+      $lookup: {
+        from: "users",
+        localField: "assignees",
+        foreignField: "_id",
+        as: "assignees",
+      },
+    },
+
+    // Lookup project
+    {
+      $lookup: {
+        from: "projects",
+        localField: "project",
+        foreignField: "_id",
+        as: "project",
+      },
+    },
+    {
+      $unwind: {
+        path: "$project",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+
+    // Final projection
+    {
+      $project: {
+        title: 1,
+        description: 1,
+        taskStatus: 1,
+        dueDate: 1,
+        sDate: 1,
+        createdBy: {
+          name: "$createdBy.name",
+        },
+        assignees: {
+          $map: {
+            input: "$assignees",
+            as: "a",
+            in: {
+              name: "$$a.name",
+            },
+          },
+        },
+        project: {
+          name: "$project.name",
+        },
+      },
+    },
+  ]);
+
+  if (!tasks.length) {
+    return res.status(404).json({ message: "task not found" });
+  }
+
+  res.status(200).json({
+    message: "task found successfully",
+    data: tasks[0],
+  });
+});
+
+export {
+  handle_admin_signin,
+  handle_admin_verify,
+  handle_admin_resend_otp,
+  handle_admin_get_users,
+  handle_admin_get_user_by_id,
+  handle_admin_get_tasks,
+  handle_admin_get_tasks_by_id,
+};
