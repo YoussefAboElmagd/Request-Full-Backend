@@ -48,5 +48,15 @@ adminRoutes.get(
   authen(["admin"]),
   adminController.handle_admin_get_tasks_by_id
 );
+adminRoutes.get(
+  "/projects",
+  authen(["admin"]),
+  adminController.handle_admin_get_projects
+);
+adminRoutes.get(
+  "/projects/:id",
+  authen(["admin"]),
+  adminController.handle_admin_get_projects_by_id
+);
 
 export default adminRoutes;

@@ -11,7 +11,7 @@ export async function sendEmail(email,text) {
     secure: true,               // Set true for port 465
     auth: {
         user: 'support@request-sa.com', // Your Hostinger email address
-        pass: 'Request@2025',    // Your Hostinger email password
+        pass: 'ASDasdasd@10',    // Your Hostinger email password
     },
 });
   // const transporter = nodemailer.createTransport({
@@ -40,7 +40,7 @@ export async function sendInvite(recipient,projectName,roleName,id,link) {
     secure: true,               // Set true for port 465
     auth: {
         user: 'support@request-sa.com', // Your Hostinger email address
-        pass: 'Request@2025',    // Your Hostinger email password
+        pass: 'ASDasdasd@10',    // Your Hostinger email password
     },
   });
 
@@ -66,7 +66,7 @@ export async function contactUs(name,email,message,id) {
     secure: true,               // Set true for port 465
     auth: {
         user: 'support@request-sa.com', // Your Hostinger email address
-        pass: 'Request@2025',    // Your Hostinger email password
+        pass: 'ASDasdasd@10',    // Your Hostinger email password
     },
   });
 
@@ -89,7 +89,7 @@ export async function contactUs2(name,email,phone,message,id) {
     secure: true,               // Set true for port 465
     auth: {
         user: 'support@request-sa.com', // Your Hostinger email address
-        pass: 'Request@2025',    // Your Hostinger email password
+        pass: 'ASDasdasd@10',    // Your Hostinger email password
     },
   });
   const messageEmail = await transporter.sendMail({

@@ -454,6 +454,117 @@ const handle_admin_get_tasks_by_id = catchAsync(async (req, res, next) => {
   });
 });
 
+const handle_admin_get_projects = catchAsync(async (req, res, next) => {
+  const page = parseInt(req.query.page) || 1; // default page 1
+  const limit = parseInt(req.query.limit) || 10; // default limit 10
+  const skip = (page - 1) * limit;
+
+  const projects = await projectModel.aggregate([
+    {
+      $project: {
+        status: 1,
+        name: 1,
+        budget: 1,
+        projectPriority: 1,
+        sDate: 1,
+        dueDate: 1,
+        tasks: 1,
+        members: 1,
+        progress: 1,
+      },
+    },
+    {
+      $lookup: {
+        from: "users", // the name of the collection (not model)
+        localField: "members",
+        foreignField: "_id",
+        as: "members",
+        pipeline: [{ $project: { profilePic: 1 } }],
+      },
+    },
+    { $skip: skip },
+    { $limit: limit },
+  ]);
+
+  const total = await projectModel.countDocuments();
+
+  res.status(200).json({
+    message: "Projects fetched successfully",
+    data: projects,
+    pagination: {
+      total,
+      page,
+      limit,
+      pages: Math.ceil(total / limit),
+    },
+  });
+});
+const handle_admin_get_projects_by_id = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid ID format." });
+  }
+
+  const objectId = new mongoose.Types.ObjectId(id);
+
+  const project = await projectModel.aggregate([
+    {
+      $match: { _id: objectId }
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "consultant",
+        foreignField: "_id",
+        as: "consultant",
+        pipeline: [
+          { $project: { name: 1, profilePic: 1 } }
+        ]
+      }
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "owner",
+        pipeline: [
+          { $project: { name: 1, profilePic: 1 } }
+        ]
+      }
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "contractor",
+        foreignField: "_id",
+        as: "contractor",
+        pipeline: [
+          { $project: { name: 1, profilePic: 1 } }
+        ]
+      }
+    },
+    // Convert single-element arrays to objects
+    {
+      $addFields: {
+        consultant: { $arrayElemAt: ["$consultant", 0] },
+        owner: { $arrayElemAt: ["$owner", 0] },
+        contractor: { $arrayElemAt: ["$contractor", 0] }
+      }
+    }
+  ]);
+
+  if (!project.length)
+    return res.status(404).json({ message: "Project not found" });
+
+  res.status(200).json({
+    message: "Project fetched successfully",
+    data: project[0]
+  });
+});
+
+
 export {
   handle_admin_signin,
   handle_admin_verify,
@@ -462,4 +573,6 @@ export {
   handle_admin_get_user_by_id,
   handle_admin_get_tasks,
   handle_admin_get_tasks_by_id,
+  handle_admin_get_projects,
+  handle_admin_get_projects_by_id,
 };
