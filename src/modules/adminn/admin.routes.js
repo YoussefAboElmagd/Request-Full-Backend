@@ -37,6 +37,12 @@ adminRoutes.get(
   authen(["admin"]),
   adminController.handle_admin_get_user_by_id
 );
+adminRoutes.delete(
+  "/users/:id",
+  authen(["admin"]),
+  adminController.handle_admin_delete_user
+);
+
 //tasks
 adminRoutes.get(
   "/tasks",
@@ -48,6 +54,7 @@ adminRoutes.get(
   authen(["admin"]),
   adminController.handle_admin_get_tasks_by_id
 );
+//tasks
 adminRoutes.get(
   "/projects",
   authen(["admin"]),

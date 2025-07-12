@@ -264,6 +264,26 @@ const handle_admin_get_user_by_id = catchAsync(async (req, res, next) => {
     user: user,
   });
 });
+const handle_admin_delete_user = catchAsync(async (req, res, next) => {
+  const { lang } = req.query;
+  const notFound = lang === "ar" ? "المستخدم غير موجود" : "User not found";
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid ID format." });
+  }
+
+  const user = await userModel.findByIdAndDelete(id);
+
+  if (!user) {
+    return res.status(404).json({ message: notFound });
+  }
+
+  res.status(200).json({
+    message:
+      lang === "ar" ? "تم  حذف المستخدم بنجاح" : "User deleted successfully",
+  });
+});
 
 const handle_admin_get_tasks = catchAsync(async (req, res, next) => {
   const { search, page = 1, limit = 10 } = req.query;
@@ -510,7 +530,7 @@ const handle_admin_get_projects_by_id = catchAsync(async (req, res, next) => {
 
   const project = await projectModel.aggregate([
     {
-      $match: { _id: objectId }
+      $match: { _id: objectId },
     },
     {
       $lookup: {
@@ -518,10 +538,8 @@ const handle_admin_get_projects_by_id = catchAsync(async (req, res, next) => {
         localField: "consultant",
         foreignField: "_id",
         as: "consultant",
-        pipeline: [
-          { $project: { name: 1, profilePic: 1 } }
-        ]
-      }
+        pipeline: [{ $project: { name: 1, profilePic: 1 } }],
+      },
     },
     {
       $lookup: {
@@ -529,10 +547,8 @@ const handle_admin_get_projects_by_id = catchAsync(async (req, res, next) => {
         localField: "owner",
         foreignField: "_id",
         as: "owner",
-        pipeline: [
-          { $project: { name: 1, profilePic: 1 } }
-        ]
-      }
+        pipeline: [{ $project: { name: 1, profilePic: 1 } }],
+      },
     },
     {
       $lookup: {
@@ -540,19 +556,17 @@ const handle_admin_get_projects_by_id = catchAsync(async (req, res, next) => {
         localField: "contractor",
         foreignField: "_id",
         as: "contractor",
-        pipeline: [
-          { $project: { name: 1, profilePic: 1 } }
-        ]
-      }
+        pipeline: [{ $project: { name: 1, profilePic: 1 } }],
+      },
     },
     // Convert single-element arrays to objects
     {
       $addFields: {
         consultant: { $arrayElemAt: ["$consultant", 0] },
         owner: { $arrayElemAt: ["$owner", 0] },
-        contractor: { $arrayElemAt: ["$contractor", 0] }
-      }
-    }
+        contractor: { $arrayElemAt: ["$contractor", 0] },
+      },
+    },
   ]);
 
   if (!project.length)
@@ -560,10 +574,9 @@ const handle_admin_get_projects_by_id = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     message: "Project fetched successfully",
-    data: project[0]
+    data: project[0],
   });
 });
-
 
 export {
   handle_admin_signin,
@@ -575,4 +588,5 @@ export {
   handle_admin_get_tasks_by_id,
   handle_admin_get_projects,
   handle_admin_get_projects_by_id,
+  handle_admin_delete_user,
 };
