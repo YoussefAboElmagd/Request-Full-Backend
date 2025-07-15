@@ -212,10 +212,6 @@ const DeleteUserFromProject = catchAsync(async (req, res, next) => {
   if (!updateeUser) {
     return res.status(404).json({ message: err_2 });
   }
-  res.status(200).json({
-    message: "User Updated successfully!",
-    updateeUser,
-  });
 });
 
 const updateTeam = catchAsync(async (req, res, next) => {

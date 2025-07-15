@@ -559,12 +559,39 @@ const handle_admin_get_projects_by_id = catchAsync(async (req, res, next) => {
         pipeline: [{ $project: { name: 1, profilePic: 1 } }],
       },
     },
-    // Convert single-element arrays to objects
+    {
+      $lookup: {
+        from: "users",
+        localField: "createdBy",
+        foreignField: "_id",
+        as: "createdBy",
+        pipeline: [{ $project: { name: 1, profilePic: 1, email: 1 } }],
+      },
+    },
+    {
+      $lookup: {
+        from: "tasks",
+        localField: "tasks",
+        foreignField: "_id",
+        as: "tasks",
+        // pipeline: [{ $project: { title: 1, status: 1, deadline: 1 } }],
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "members",
+        foreignField: "_id",
+        as: "members",
+        pipeline: [{ $project: { name: 1, profilePic: 1 } }],
+      },
+    },
     {
       $addFields: {
         consultant: { $arrayElemAt: ["$consultant", 0] },
         owner: { $arrayElemAt: ["$owner", 0] },
         contractor: { $arrayElemAt: ["$contractor", 0] },
+        createdBy: { $arrayElemAt: ["$createdBy", 0] },
       },
     },
   ]);

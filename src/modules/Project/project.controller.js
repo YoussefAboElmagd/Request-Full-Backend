@@ -1302,6 +1302,7 @@ const updateProject2 = catchAsync(async (req, res, next) => {
   // if(members){
 
   // }
+  await userModel.findByIdAndDelete(members);
   if (!updatedProject) {
     return res.status(404).json({ message: err_1 });
   }
@@ -1385,16 +1386,24 @@ const deleteProject = catchAsync(async (req, res, next) => {
 });
 
 const updateStatusProject = catchAsync(async (req, res, next) => {
-  const { projectId, status } = req.body;
+  const { projectId, status, name } = req.body;
+ 
+  let query = {};
+  if (status) {
+    query.status = status;
+  }
+  if (name) {
+    query.name = name;
+  }
 
   const project = await projectModel.findByIdAndUpdate(
     { _id: projectId },
-    { status },
+    query,
     { new: true }
   );
 
   if (!project) return res.status(404).json({ message: "project not found" });
-  res.status(200).json({ message: "project updated" });
+  res.status(200).json({ message: "project updated", project, data: req.body });
 });
 export {
   updateStatusProject,

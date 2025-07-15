@@ -42,6 +42,7 @@ projectRouter.get("/requests/:id", projectController.getModelsAprroved);
 projectRouter.post("/", projectController.createProject);
 
 projectRouter.put("/:id", projectController.updateProject);
+projectRouter.put("/name/:id", projectController.updateProject);
 projectRouter.put("/member/:id", projectController.addMemberForProject);
 projectRouter.put("/pull/:id", projectController.updateProject2);
 projectRouter.put("/", projectController.updateStatusProject);
