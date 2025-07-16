@@ -6,12 +6,12 @@ const invitationSchema = mongoose.Schema(
       type: Date,
       default: Date.now,
     },
-    project:{
+    project: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "project",
       required: true,
     },
-    role:{
+    role: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "userType",
       required: true,
@@ -22,22 +22,23 @@ const invitationSchema = mongoose.Schema(
     },
     comment: {
       type: String,
-      default:"",
+      default: "",
       // required: true,
     },
     projectName: {
       type: String,
       required: true,
     },
-    isSignUp:{
+    isSignUp: {
       type: Boolean,
       default: false,
     },
-    isApproved:{
+    isApproved: {
       type: Boolean,
       default: false,
     },
-    createdBy:{
+    inivitaionLink: String,
+    createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       required: true,
@@ -46,6 +47,4 @@ const invitationSchema = mongoose.Schema(
   { timestamps: true }
 );
 
-
 export const invitationModel = mongoose.model("invitation", invitationSchema);
-

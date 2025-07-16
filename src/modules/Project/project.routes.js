@@ -38,6 +38,11 @@ projectRouter.get(
 );
 projectRouter.get("/counts/:id", projectController.getCounts);
 projectRouter.get("/requests/:id", projectController.getModelsAprroved);
+projectRouter.get(
+  "/invitations/:projectId",
+  projectController.getinvitationByproject
+);
+projectRouter.post("/resendInivite/", projectController.reSendinvite);
 
 projectRouter.post("/", projectController.createProject);
 

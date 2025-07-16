@@ -65,5 +65,21 @@ adminRoutes.get(
   authen(["admin"]),
   adminController.handle_admin_get_projects_by_id
 );
+//requests
+adminRoutes.get(
+  "/requets",
+  authen(["admin"]),
+  adminController.handle_admin_get_requests
+);
+adminRoutes.get(
+  "/requets/:id",
+  authen(["admin"]),
+  adminController.handle_admin_get_requests_by_id
+);
+adminRoutes.get(
+  "/requets/most/used",
+  authen(["admin"]),
+  adminController.handle_admin_get_requests_most_use
+);
 
 export default adminRoutes;

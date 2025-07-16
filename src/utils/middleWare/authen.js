@@ -7,13 +7,13 @@ export const authen = (role = ["user"]) => {
 
     if (token) {
       jwt.verify(token, process.env.JWT_SECRET_KEY, async (err, decode) => {
-        if (err) return next(new AppError("Token is not valid", 401));
-        const admin = await userModel
-          .findById(decode.userId)
-          .select("userType");
-        console.log(admin.userType);
+        if (err) return res.status(400).json({ message: err.message });
+
+        const admin = await userModel.findById(decode.id).select("userType");
+
         if (role.includes(admin.userType)) {
           req.user = decode.user;
+
           return next();
         } else {
           return res.status(401).json({ message: "Unauthorized" });

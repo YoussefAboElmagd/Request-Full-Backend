@@ -8,6 +8,8 @@ import { taskModel } from "../../../database/models/tasks.model.js";
 import bcrypt from "bcrypt";
 import { sendNotification } from "../../utils/sendNotification.js";
 import { requsetModel } from "../../../database/models/request.model.js";
+import { invitationModel } from "../../../database/models/invitation.model.js";
+import { reesendInvite, sendInvite } from "../../email/sendEmail.js";
 
 const createProject = catchAsync(async (req, res, next) => {
   req.body.model = "66ba015a73f994dd94dbc1e9";
@@ -126,8 +128,8 @@ const getCounts = catchAsync(async (req, res, next) => {
 });
 const getModelsAprroved = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-
   const objectId = new mongoose.Types.ObjectId(id);
+
   const models = await requsetModel.aggregate([
     {
       $match: {
@@ -139,10 +141,11 @@ const getModelsAprroved = catchAsync(async (req, res, next) => {
         ],
       },
     },
+
     // Lookup owner
     {
       $lookup: {
-        from: "users", // Replace with actual User collection name if different
+        from: "users",
         localField: "owner",
         foreignField: "_id",
         as: "owner",
@@ -172,20 +175,32 @@ const getModelsAprroved = catchAsync(async (req, res, next) => {
     },
     { $unwind: { path: "$consultant", preserveNullAndEmptyArrays: true } },
 
-    // Final project: return full requestModel fields + selective user fields
+    // Lookup project
+    {
+      $lookup: {
+        from: "projects",
+        localField: "project",
+        foreignField: "_id",
+        as: "project",
+      },
+    },
+    { $unwind: { path: "$project", preserveNullAndEmptyArrays: true } },
+
+    // Final project
     {
       $project: {
-        // Include all original requestModel fields
         _id: 1,
         status: 1,
         title: 1,
         description: 1,
         createdAt: 1,
         updatedAt: 1,
-        project: 1,
-        // ...add more model fields as needed
 
-        // Overwrite owner, contractor, consultant with selected fields
+        project: {
+          _id: "$project._id",
+          name: "$project.name",
+        },
+
         owner: {
           _id: "$owner._id",
           name: "$owner.name",
@@ -217,8 +232,47 @@ const getModelsAprroved = catchAsync(async (req, res, next) => {
     },
   ]);
 
-  res.status(200).json({ message: "Models founded", data: models });
+  res.status(200).json({ message: "Models found", data: models });
 });
+const getinvitationByproject = catchAsync(async (req, res, next) => {
+  const { projectId } = req.params;
+
+  const existProject = await projectModel.findById(projectId);
+  if (!existProject)
+    return res.status(404).json({ message: "project not found" });
+
+  const inivations = await invitationModel
+    .find({ project: projectId })
+    .populate("project", "name")
+    .populate("role", "jobTitle");
+
+  res
+    .status(200)
+    .json({ message: "invetations founded successfully", data: inivations });
+});
+const reSendinvite = catchAsync(async (req, res, next) => {
+  const { invitationId } = req.body;
+  const invitationExist = await invitationModel
+    .findById(invitationId)
+    .populate("project", "name")
+    .populate("role");
+  if (!invitationExist)
+    return res.status(404).json({ message: "invitation not found" });
+
+  const projectExist = await projectModel.findById(invitationExist.project._id);
+  if (!projectExist)
+    return res.status(404).json({ message: "project not found" });
+
+  await reesendInvite(
+    invitationExist.email,
+    invitationExist.project.name,
+    invitationExist.role.jobTitle,
+    invitationExist.inivitaionLink
+  );
+
+  res.status(200).json({ message: "invitation resended successfully" });
+});
+
 ////////////////////////////////// admin \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
@@ -1379,6 +1433,7 @@ const deleteProject = catchAsync(async (req, res, next) => {
     err_1 = "المشروع غير موجود";
   }
   const deletedProject = await projectModel.deleteOne({ _id: id });
+  const deletedTasks = await taskModel.findByIdAndDelete({ project: id });
   if (!deletedProject) {
     return res.status(404).json({ message: err_1 });
   }
@@ -1387,7 +1442,7 @@ const deleteProject = catchAsync(async (req, res, next) => {
 
 const updateStatusProject = catchAsync(async (req, res, next) => {
   const { projectId, status, name } = req.body;
- 
+
   let query = {};
   if (status) {
     query.status = status;
@@ -1427,4 +1482,6 @@ export {
   getCounts,
   getProjectTagProgress,
   getModelsAprroved,
+  getinvitationByproject,
+  reSendinvite,
 };

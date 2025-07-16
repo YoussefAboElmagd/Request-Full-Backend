@@ -147,6 +147,7 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
     const existingInvitation = await invitationModel.findOne({
       email,
       project: itemProject,
+      isApproved: true,
     });
     if (existingInvitation) {
       return res.status(409).json({
@@ -226,6 +227,8 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
       });
 
       const savedInvitation = await newInvitation.save();
+      savedInvitation.inivitaionLink = `${link}?id=${savedInvitation._id}`;
+      await savedInvitation.save();
       processedInvitations.push(savedInvitation);
 
       // Send email invitation
@@ -314,7 +317,7 @@ const updateInvite = catchAsync(async (req, res, next) => {
       await projectModel.findOneAndUpdate({ _id: check.project }, updates, {
         new: true,
       });
-      await invitationModel.deleteOne({ _id: id });
+      // await invitationModel.deleteOne({ _id: id });
       return res.status(200).json({ message: "Done" });
     } else {
       return res.status(404).json({ message: err_3 });

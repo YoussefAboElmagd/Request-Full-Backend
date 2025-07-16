@@ -9,6 +9,7 @@ import { userTypeModel } from "../../../database/models/userType.model.js";
 import mongoose from "mongoose";
 import { projectModel } from "../../../database/models/project.model.js";
 import { taskModel } from "../../../database/models/tasks.model.js";
+import { requsetModel } from "../../../database/models/request.model.js";
 
 const handle_admin_signin = catchAsync(async (req, res, next) => {
   const { lang } = req.query;
@@ -519,6 +520,253 @@ const handle_admin_get_projects = catchAsync(async (req, res, next) => {
     },
   });
 });
+const handle_admin_get_requests = catchAsync(async (req, res, next) => {
+  const data = await requsetModel.aggregate([
+    // Populate consultant - only select name and profilePic
+    {
+      $lookup: {
+        from: "users",
+        localField: "consultant",
+        foreignField: "_id",
+        as: "consultant",
+        pipeline: [
+          {
+            $project: {
+              _id: 1,
+              name: 1,
+              profilePic: 1,
+            },
+          },
+        ],
+      },
+    },
+    { $unwind: { path: "$consultant", preserveNullAndEmptyArrays: true } },
+
+    // Populate contractor - only select name and profilePic
+    {
+      $lookup: {
+        from: "users",
+        localField: "contractor",
+        foreignField: "_id",
+        as: "contractor",
+        pipeline: [
+          {
+            $project: {
+              _id: 1,
+              name: 1,
+              profilePic: 1,
+            },
+          },
+        ],
+      },
+    },
+    { $unwind: { path: "$contractor", preserveNullAndEmptyArrays: true } },
+
+    // Populate owner - only select name and profilePic
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "owner",
+        pipeline: [
+          {
+            $project: {
+              _id: 1,
+              name: 1,
+              profilePic: 1,
+            },
+          },
+        ],
+      },
+    },
+    { $unwind: { path: "$owner", preserveNullAndEmptyArrays: true } },
+
+    // Populate createdBy - only select name and profilePic
+    {
+      $lookup: {
+        from: "users",
+        localField: "createdBy",
+        foreignField: "_id",
+        as: "createdBy",
+        pipeline: [
+          {
+            $project: {
+              _id: 1,
+              name: 1,
+              profilePic: 1,
+            },
+          },
+        ],
+      },
+    },
+    { $unwind: { path: "$createdBy", preserveNullAndEmptyArrays: true } },
+  ]);
+
+  res.status(200).json({
+    message: "Requests fetched successfully",
+    data,
+  });
+});
+const handle_admin_get_requests_most_use = catchAsync(
+  async (req, res, next) => {
+    const [SubmittalRequest, TOF, Matrial, work, inspection, totalRequests] =
+      await Promise.all([
+        requsetModel.countDocuments({ type: "requestForDocumentSubmittal" }),
+        requsetModel.countDocuments({ type: "tableOfQuantity" }),
+        requsetModel.countDocuments({ type: "requestForMaterialAndEquipment" }),
+        requsetModel.countDocuments({ type: "workRequest" }),
+        requsetModel.countDocuments({ type: "requestForInspaction" }),
+        requsetModel.countDocuments(),
+      ]);
+
+    res.status(200).json({
+      message: "Request counts fetched successfully",
+      data: {
+        SubmittalRequest,
+        TOF,
+        Matrial,
+        work,
+        inspection,
+        totalRequests,
+      },
+    });
+  }
+);
+const handle_admin_get_requests_by_id = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+
+  const request = await requsetModel.aggregate([
+    {
+      $match: { _id: new mongoose.Types.ObjectId(id) },
+    },
+    {
+      $lookup: {
+        from: "users", // assuming your user collection name is "users"
+        localField: "owner",
+        foreignField: "_id",
+        as: "owner",
+        pipeline: [
+          {
+            $project: {
+              name: 1,
+              profilePic: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "consultant",
+        foreignField: "_id",
+        as: "consultant",
+        pipeline: [
+          {
+            $project: {
+              name: 1,
+              profilePic: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "contractor",
+        foreignField: "_id",
+        as: "contractor",
+        pipeline: [
+          {
+            $project: {
+              name: 1,
+              profilePic: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "createdBy",
+        foreignField: "_id",
+        as: "createdBy",
+        pipeline: [
+          {
+            $project: {
+              name: 1,
+              profilePic: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $lookup: {
+        from: "units", // assuming your unit collection name is "units"
+        localField: "unit",
+        foreignField: "_id",
+        as: "unit",
+      },
+    },
+    {
+      $lookup: {
+        from: "disciplines", // assuming your discipline collection name is "disciplines"
+        localField: "discipline",
+        foreignField: "_id",
+        as: "discipline",
+      },
+    },
+    {
+      $unwind: {
+        path: "$owner",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $unwind: {
+        path: "$consultant",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $unwind: {
+        path: "$contractor",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $unwind: {
+        path: "$createdBy",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $unwind: {
+        path: "$unit",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $unwind: {
+        path: "$discipline",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+  ]);
+
+  if (!request || request.length === 0) {
+    return res.status(404).json({ message: "request not found" });
+  }
+
+  res
+    .status(200)
+    .json({ message: "request found successfully", data: request[0] });
+});
+
 const handle_admin_get_projects_by_id = catchAsync(async (req, res, next) => {
   const { id } = req.params;
 
@@ -606,6 +854,7 @@ const handle_admin_get_projects_by_id = catchAsync(async (req, res, next) => {
 });
 
 export {
+  handle_admin_get_requests,
   handle_admin_signin,
   handle_admin_verify,
   handle_admin_resend_otp,
@@ -616,4 +865,6 @@ export {
   handle_admin_get_projects,
   handle_admin_get_projects_by_id,
   handle_admin_delete_user,
+  handle_admin_get_requests_most_use,
+  handle_admin_get_requests_by_id,
 };
