@@ -81,5 +81,26 @@ adminRoutes.get(
   authen(["admin"]),
   adminController.handle_admin_get_requests_most_use
 );
+//tickets
+adminRoutes.get(
+  "/tickets",
+  authen(["admin"]),
+  adminController.handle_admin_get_Tickets
+);
+adminRoutes.get(
+  "/tickets/:id",
+  authen(["admin"]),
+  adminController.handle_admin_get_Tickets_by_id
+);
+adminRoutes.post(
+  "/tickets/:id",
+  authen(["admin"]),
+  adminController.handle_admin_response_Tickets_by_id
+);
+adminRoutes.patch(
+  "/tickets/:id",
+  authen(["admin"]),
+  adminController.handle_admin_change_ticket_status
+);
 
 export default adminRoutes;

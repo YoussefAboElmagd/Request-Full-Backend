@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const ticketSchema = mongoose.Schema(
   {
-    ticketId: {
+    ticketNumber: {
       type: String,
     },
     subject: {
@@ -13,28 +13,21 @@ const ticketSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      enum:["inProgress","done","waiting"],
-      default:"waiting",
+      enum: ["inProgress", "solved", "waiting"],
+      default: "waiting",
     },
+    email: String,
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
-      required: true,
     },
-    priority: {
-      type: String,
-      enum: ['low', 'medium', 'high'], // Priority level
-      default: 'medium',
-    },
-    assignee: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "user",
-      required: true,
-    },
+
     attachment: {
       type: String,
-      default: null, 
+      default: null,
     },
+
+    response: String,
   },
   { timestamps: true }
 );

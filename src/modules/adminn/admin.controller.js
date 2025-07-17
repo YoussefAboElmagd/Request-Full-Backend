@@ -10,6 +10,7 @@ import mongoose from "mongoose";
 import { projectModel } from "../../../database/models/project.model.js";
 import { taskModel } from "../../../database/models/tasks.model.js";
 import { requsetModel } from "../../../database/models/request.model.js";
+import { ticketModel } from "../../../database/models/ticket.model.js";
 
 const handle_admin_signin = catchAsync(async (req, res, next) => {
   const { lang } = req.query;
@@ -852,9 +853,108 @@ const handle_admin_get_projects_by_id = catchAsync(async (req, res, next) => {
     data: project[0],
   });
 });
+const handle_admin_get_Tickets = catchAsync(async (req, res, next) => {
+  // Parse pagination params with defaults
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const limit = Math.max(1, parseInt(req.query.limit, 10) || 10);
+  const skip = (page - 1) * limit;
+
+  // Get total count to calculate total pages
+  const total = await ticketModel.countDocuments();
+
+  const tickets = await ticketModel
+    .find()
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .populate({
+      path: "user",
+      select: "name profilePic",
+    });
+
+  res.status(200).json({
+    message: "Tickets fetched successfully",
+    data: tickets,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  });
+});
+
+const handle_admin_get_Tickets_by_id = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const tickets = await ticketModel
+    .findById(id)
+
+    .populate({
+      path: "user",
+      select: "name profilePic",
+    });
+  if (!tickets) return res.status(404).json({ message: "ticket not found" });
+  res
+    .status(200)
+    .json({ message: "ticket founded successfully", data: tickets });
+});
+const handle_admin_response_Tickets_by_id = catchAsync(
+  async (req, res, next) => {
+    const { id } = req.params;
+    const { response } = req.body;
+    const tickets = await ticketModel
+      .findById(id)
+
+      .populate({
+        path: "user",
+        select: "name profilePic",
+      });
+
+    if (!tickets) return res.status(404).json({ message: "ticket not found" });
+    tickets.response = response;
+    await tickets.save();
+    await sendEmail(tickets.email, response);
+    res.status(200).json({ message: "message sent to user successfully" });
+  }
+);
+const handle_admin_change_ticket_status = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const allowedStatuses = ['inProgress', 'waiting', 'solved'];
+  if (!allowedStatuses.includes(status)) {
+    return res.status(400).json({
+      message: "Status must be one of: ['inProgress', 'waiting', 'solved']",
+    });
+  }
+
+  const ticket = await ticketModel
+    .findByIdAndUpdate(id, { status }, { new: true })
+    .populate({
+      path: "user",
+      select: "name profilePic",
+    });
+
+  if (!ticket) {
+    return res.status(404).json({ message: "Ticket not found" });
+  }
+
+  // Optional: Send email if the ticket is solved
+  // if (status === "solved") {
+  //   const message = `Your problem titled "${ticket.title}" has been solved.`;
+  //   await sendEmail(ticket.email, message);
+  // }
+
+  res.status(200).json({ message: "Ticket status updated successfully", ticket });
+});
+
 
 export {
   handle_admin_get_requests,
+  handle_admin_change_ticket_status,
+  handle_admin_response_Tickets_by_id,
+  handle_admin_get_Tickets_by_id,
+  handle_admin_get_Tickets,
   handle_admin_signin,
   handle_admin_verify,
   handle_admin_resend_otp,

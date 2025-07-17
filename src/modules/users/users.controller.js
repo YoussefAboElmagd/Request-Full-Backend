@@ -10,6 +10,8 @@ import { invitationModel } from "../../../database/models/invitation.model.js";
 import { userTypeModel } from "../../../database/models/userType.model.js";
 import { projectModel } from "../../../database/models/project.model.js";
 import { sendNotification } from "../../utils/sendNotification.js";
+import { ticketModel } from "../../../database/models/ticket.model.js";
+import { customAlphabet } from "nanoid";
 
 const updateprofilePic = catchAsync(async (req, res, next) => {
   let { id } = req.params;
@@ -53,6 +55,8 @@ const postMessage = catchAsync(async (req, res, next) => {
 });
 const getInTouch = catchAsync(async (req, res, next) => {
   console.log(req.body);
+  console.log(req.file);
+
   let err_1 = "This Phone is not valid";
   let err_2 = "This Email is not valid";
   let message = "Message sent to admin";
@@ -66,7 +70,28 @@ const getInTouch = catchAsync(async (req, res, next) => {
     return res.status(409).json({ message: err_1 });
   }
   if (req.body.email !== "" && req.body.email.match(emailFormat)) {
-    // contactUs2(req.body.name, req.body.email, req.body.phone, req.body.message,req.user._id);
+    const generate7DigitID = customAlphabet("0123456789", 7);
+
+    const id = generate7DigitID();
+    let obj = {
+      ticketNumber: id,
+      subject: req.body.title,
+      email: req.body.email,
+      phone: req.body.phone,
+      description: req.body.message,
+    };
+
+    const userExist = await userModel.findOne({ email: req.body.email });
+    if (userExist) {
+      obj.user = userExist._id;
+    }
+    if (req.file) {
+      obj.attachment = "tickets/" + req.file.filename;
+    }
+
+    const ticket = await ticketModel.create( obj );
+    console.log(ticket);
+
     contactUs2(req.body.name, req.body.email, req.body.phone, req.body.message);
     res.json({ message: message });
   } else {

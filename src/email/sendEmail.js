@@ -20,7 +20,7 @@ export async function sendEmail(email, text) {
   //     pass: "ykejlphmzcmmwlgw",
   //   },
   // });
-
+// <support@request-sa.com>
   const info = await transporter.sendMail({
     from: `Admin " <support@request-sa.com>`, // sender address
     to: `${email}`, // list of receivers
