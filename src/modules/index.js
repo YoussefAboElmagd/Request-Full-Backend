@@ -26,12 +26,14 @@ import planRouter from "./plan/plan.routes.js";
 import paymentRouter from "./payment/payment.routes.js";
 import taskLogRouter from "./Tasks Log/tasksLog.routes.js";
 import adminRoutes from "./adminn/admin.routes.js";
+import reviewRoutes from "../review/review.routes.js";
 
 export function init(app) {
   app.use("/api/v1/users", usersRouter);
   app.use("/api/v1/auth", authRouter);
   app.use("/api/v1/notification", notiticationRouter);
   app.use("/api/v1/message", messageRouter);
+  app.use("/api/v1/review", reviewRoutes);
   app.use("/api/v1/project", projectRouter);
   app.use("/api/v1/task", taskRouter);
   app.use("/api/v1/complaint", complaintRouter);
