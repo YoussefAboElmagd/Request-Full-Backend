@@ -10,9 +10,11 @@ export const authen = (role = ["user"]) => {
         if (err) return res.status(400).json({ message: err.message });
 
         const admin = await userModel.findById(decode.id).select("userType");
-
+        // console.log(decode)
+        // console.log(admin);
         if (role.includes(admin.userType)) {
-          req.user = decode.user;
+          req.user = decode;
+          // console.log(req.user, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 
           return next();
         } else {

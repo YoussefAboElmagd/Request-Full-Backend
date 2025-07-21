@@ -54,8 +54,7 @@ const postMessage = catchAsync(async (req, res, next) => {
   res.json({ message: message, user });
 });
 const getInTouch = catchAsync(async (req, res, next) => {
-  console.log(req.body);
-  console.log(req.file);
+  
 
   let err_1 = "This Phone is not valid";
   let err_2 = "This Email is not valid";

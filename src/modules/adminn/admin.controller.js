@@ -100,6 +100,28 @@ const handle_admin_resend_otp = catchAsync(async (req, res, next) => {
   sendEmail(email, `Email Verification Code:${fourDigitCode}`);
   res.status(200).json({ message: "otp sent successfully" });
 });
+const handle_admin_update_profile = catchAsync(async (req, res, next) => {
+  const { lang } = req.query;
+
+  const data = req.body;
+  console.log(req.user.id);
+  const id = req.user.id;
+
+  const existAdmin = await userModel.findById(id);
+
+  if (!existAdmin) return res.status(404).json({ message: "admin not found" });
+
+  if (req.file) {
+    data.profilePic = "profilePic/" + req.file.filename;
+  }
+
+  const updatedData = await userModel.findByIdAndUpdate(id, data);
+  if (!updatedData) {
+    return res.status(500).json({ message: "Failed to update admin profile" });
+  }
+
+  res.status(200).json({ message: "admin upadated successfully" });
+});
 const handle_admin_get_users = catchAsync(async (req, res, next) => {
   // Use aggregation instead of find
   const users = await userModel.aggregate([
@@ -921,7 +943,7 @@ const handle_admin_change_ticket_status = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const { status } = req.body;
 
-  const allowedStatuses = ['inProgress', 'waiting', 'solved'];
+  const allowedStatuses = ["inProgress", "waiting", "solved"];
   if (!allowedStatuses.includes(status)) {
     return res.status(400).json({
       message: "Status must be one of: ['inProgress', 'waiting', 'solved']",
@@ -945,15 +967,17 @@ const handle_admin_change_ticket_status = catchAsync(async (req, res, next) => {
   //   await sendEmail(ticket.email, message);
   // }
 
-  res.status(200).json({ message: "Ticket status updated successfully", ticket });
+  res
+    .status(200)
+    .json({ message: "Ticket status updated successfully", ticket });
 });
-
 
 export {
   handle_admin_get_requests,
   handle_admin_change_ticket_status,
   handle_admin_response_Tickets_by_id,
   handle_admin_get_Tickets_by_id,
+  handle_admin_update_profile,
   handle_admin_get_Tickets,
   handle_admin_signin,
   handle_admin_verify,

@@ -7,6 +7,7 @@ import {
   reotpSchema,
 } from "../../utils/middleWare/validation/schema.js";
 import { authen } from "../../utils/middleWare/authen.js";
+import { uploadSingleFile } from "../../utils/middleWare/fileUploads.js";
 
 const adminRoutes = exprees.Router();
 // AUTH
@@ -24,6 +25,12 @@ adminRoutes.post(
   "/resendotp",
   validate(reotpSchema),
   adminController.handle_admin_resend_otp
+);
+adminRoutes.put(
+  "/updateadmin",
+  uploadSingleFile("profilePic", "image"),
+  authen(["admin"]),
+  adminController.handle_admin_update_profile
 );
 
 //USERS
