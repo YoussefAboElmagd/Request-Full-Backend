@@ -7,87 +7,80 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-    - name: Deploy to VPS
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.PRIVATE_KEY }}
-        port: 22
-        script: |
-          # Set environment variables
-          export HOME=/home/${{ secrets.USERNAME }}
-          APP_DIR=$HOME/apps/RequestCiCd
-          REPO_URL=git@github.com:YoussefAboElmagd/Request-Full-Backend.git
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          port: 22
+          script: |
+            set -e  # Exit on any error
+            export DEBIAN_FRONTEND=noninteractive
+            export HOME=/home/${{ secrets.USERNAME }}
+            export APP_DIR=$HOME/apps/RequestCiCd
+            export REPO_URL=git@github.com:YoussefAboElmagd/Request-Full-Backend.git
 
-          # Ensure git is installed
-          sudo apt-get update
-          sudo apt-get install -y git || { echo "Git installation failed"; exit 1; }
-          git --version
+            echo ">>> Updating apt and installing Git"
+            sudo apt-get update -y
+            sudo apt-get install -y git || { echo "Git installation failed"; exit 1; }
 
-          # Set up SSH key for GitHub
-          mkdir -p $HOME/.ssh
-          echo "${{ secrets.PRIVATE_KEY }}" > $HOME/.ssh/id_rsa
-          chmod 600 $HOME/.ssh/id_rsa
-          ssh-keyscan github.com >> $HOME/.ssh/known_hosts
-          chmod 644 $HOME/.ssh/known_hosts
+            echo ">>> Setting up SSH for GitHub"
+            mkdir -p $HOME/.ssh
+            echo "${{ secrets.PRIVATE_KEY }}" > $HOME/.ssh/id_rsa
+            chmod 600 $HOME/.ssh/id_rsa
+            ssh-keyscan github.com >> $HOME/.ssh/known_hosts
+            chmod 644 $HOME/.ssh/known_hosts
 
-          # Test SSH connection to GitHub
-          ssh -T git@github.com || echo "SSH authentication test to GitHub failed, proceeding anyway"
+            echo ">>> Testing SSH connection to GitHub"
+            ssh -T git@github.com || echo "SSH auth to GitHub failed — ignoring"
 
-          # Install nvm if not already installed
-          if ! command -v nvm >/dev/null 2>&1; then
-            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash || { echo "nvm installation failed"; exit 1; }
-          fi
+            echo ">>> Installing NVM and Node.js"
+            if ! command -v nvm >/dev/null 2>&1; then
+              curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash || { echo "nvm install failed"; exit 1; }
+            fi
 
-          # Source nvm
-          export NVM_DIR=$HOME/.nvm
-          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" || { echo "Failed to source nvm"; exit 1; }
+            export NVM_DIR=$HOME/.nvm
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" || { echo "Failed to source nvm"; exit 1; }
+            nvm install 18 || { echo "Node install failed"; exit 1; }
 
-          # Install Node.js 18 (adjust version if needed)
-          nvm install 18 || { echo "Node.js installation failed"; exit 1; }
-          node -v
-          npm -v
+            echo ">>> Creating app directory and setting permissions"
+            mkdir -p $APP_DIR
+            cd $APP_DIR || { echo "Failed to enter app dir"; exit 1; }
+            chown -R ${{ secrets.USERNAME }}:${{ secrets.USERNAME }} $APP_DIR
+            chmod -R 755 $APP_DIR
 
-          # Create and navigate to app directory
-          mkdir -p $APP_DIR
-          cd $APP_DIR || { echo "Failed to access directory"; exit 1; }
+            echo ">>> Cloning or updating repository"
+            if [ ! -d ".git" ]; then
+              rm -rf *
+              git clone $REPO_URL . || { echo "Git clone failed"; exit 1; }
+            else
+              git fetch origin
+              git reset --hard origin/main || { echo "Git reset failed"; exit 1; }
+            fi
 
-          # Set directory permissions
-          chown -R ${{ secrets.USERNAME }}:${{ secrets.USERNAME }} $APP_DIR
-          chmod -R 755 $APP_DIR
+            echo ">>> Installing app dependencies"
+            timeout 300 npm install --omit=dev --verbose || { echo "npm install timed out or failed"; exit 1; }
 
-          # Check if directory is a Git repository
-          if [ ! -d ".git" ]; then
-            rm -rf *
-            echo "Cloning repository from $REPO_URL"
-            git clone $REPO_URL . || { echo "Git clone failed"; exit 1; }
-          else
-            echo "Updating repository"
-            git fetch origin
-            git reset --hard origin/main || { echo "Git pull/reset failed"; exit 1; }
-          fi
+            echo ">>> Writing environment variables to .env"
+            echo "PORT=8020" > .env
+            echo "DB_CONNECTION_STRING=${{ secrets.DB_CONNECTION_STRING }}" >> .env
 
-          # Install dependencies
-          npm install --omit=dev --verbose || { echo "npm install failed"; exit 1; }
+            echo ">>> Installing and starting PM2"
+            npm install -g pm2 || { echo "PM2 install failed"; exit 1; }
 
-          # Create .env file
-          echo "PORT=8020" > .env
-          echo "DB_CONNECTION_STRING=${{ secrets.DB_CONNECTION_STRING }}" >> .env
-          # Add other environment variables as needed
+            pm2 describe RequestCiCd > /dev/null 2>&1 && \
+              pm2 restart RequestCiCd || \
+              pm2 start server.js --name RequestCiCd
 
-          # Ensure PM2 is installed globally
-          npm install -g pm2 || { echo "PM2 installation failed"; exit 1; }
+            pm2 save
 
-          # Start or restart PM2 process
-          pm2 describe RequestCiCd > /dev/null 2>&1 && pm2 restart RequestCiCd || pm2 start server.js --name RequestCiCd
-          
-          # Save PM2 process list
-          pm2 save
+            echo ">>> Reloading Nginx (if needed)"
+            sudo nginx -t && sudo systemctl reload nginx || echo "Nginx reload skipped or failed"
 
-          # Reload Nginx to apply any config changes
-          sudo nginx -t && sudo systemctl reload nginx || { echo "Nginx reload failed"; exit 1; }
+            echo ">>> Ensuring port 8020 is open"
+            sudo ufw allow 8020 || echo "Failed to open port (already open?)"
 
-          # Ensure port 8020 is open in firewall (example for UFW)
-          sudo ufw allow 8020 || { echo "Failed to open port 8020"; exit 1; }
+            echo "✅ Deployment completed successfully"
