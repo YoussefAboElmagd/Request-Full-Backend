@@ -80,8 +80,8 @@ cron.schedule("0 0 * * *", async () => {
   }
 });
 
-app.listen(process.env.PORT || 8000, () =>
-  console.log(`Server is running on port ${process.env.PORT || 8000}!`)
+app.listen(process.env.PORT || 8020, () =>
+  console.log(`Server is running on port ${process.env.PORT || 8020}!`)
 );
-httpServer.listen(8000);
+httpServer.listen(8020);
 export const sio = io;
