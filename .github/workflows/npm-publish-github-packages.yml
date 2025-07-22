@@ -21,11 +21,19 @@ jobs:
           APP_DIR=$HOME/apps/RequestCiCd
           REPO_URL=git@github.com:YoussefAboElmagd/Request-Full-Backend.git
 
-          # Ensure Node.js is installed (e.g., using nvm)
+          # Install nvm if not already installed
+          if ! command -v nvm >/dev/null 2>&1; then
+            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash || { echo "nvm installation failed"; exit 1; }
+          fi
+
+          # Source nvm
           export NVM_DIR=$HOME/.nvm
-          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" || { echo "Failed to source nvm"; exit 1; }
+
+          # Install Node.js 18 (adjust version if needed)
           nvm install 18 || { echo "Node.js installation failed"; exit 1; }
           node -v
+          npm -v
 
           # Create and navigate to app directory
           mkdir -p $APP_DIR
@@ -47,7 +55,7 @@ jobs:
           # Install dependencies
           npm install --omit=dev --verbose || { echo "npm install failed"; exit 1; }
 
-          # Create .env file if needed (example)
+          # Create .env file
           echo "PORT=8020" > .env
           echo "DB_CONNECTION_STRING=${{ secrets.DB_CONNECTION_STRING }}" >> .env
           # Add other environment variables as needed
