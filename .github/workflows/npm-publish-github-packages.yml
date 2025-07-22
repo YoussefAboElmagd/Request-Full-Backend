@@ -16,7 +16,7 @@ jobs:
         key: ${{ secrets.PRIVATE_KEY }}
         port: 22
         script: |
-          cd ~/apps/your-app-name
+          cd ~/RequestCiCd
           git pull origin main
           npm install --production
           pm2 restart your-app-name
