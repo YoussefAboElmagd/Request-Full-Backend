@@ -16,7 +16,7 @@ jobs:
         key: ${{ secrets.PRIVATE_KEY }}
         port: 22
         script: |
-          cd ~/RequestCiCd
+          cd /RequestCiCd || { echo "Directory not found"; exit 1; }
           git pull origin main
-          npm install --production
-          pm2 restart your-app-name
+          npm install --omit=dev
+          pm2 describe ReCiCd > /dev
