@@ -16,23 +16,53 @@ jobs:
         key: ${{ secrets.PRIVATE_KEY }}
         port: 22
         script: |
-          # Navigate to or create the correct directory
-          mkdir -p /home/your-username/apps/RequestCiCd
-          cd /home/your-username/apps/RequestCiCd || { echo "Failed to access directory"; exit 1; }
-          
+          # Set environment variables
+          export HOME=/home/${{ secrets.USERNAME }}
+          APP_DIR=$HOME/apps/RequestCiCd
+          REPO_URL=git@github.com:YoussefAboElmagd/Request-Full-Backend.git
+
+          # Ensure Node.js is installed (e.g., using nvm)
+          export NVM_DIR=$HOME/.nvm
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          nvm install 18 || { echo "Node.js installation failed"; exit 1; }
+          node -v
+
+          # Create and navigate to app directory
+          mkdir -p $APP_DIR
+          cd $APP_DIR || { echo "Failed to access directory"; exit 1; }
+
+          # Set directory permissions
+          chown -R ${{ secrets.USERNAME }}:${{ secrets.USERNAME }} $APP_DIR
+          chmod -R 755 $APP_DIR
+
           # Check if directory is a Git repository
           if [ ! -d ".git" ]; then
-            rm -rf *  # Clear directory if not a Git repo
-            git clone https://github.com/YoussefAboElmagd/Request-Full-Backend.git . || { echo "Git clone failed"; exit 1; }
+            rm -rf *
+            git clone $REPO_URL . || { echo "Git clone failed"; exit 1; }
           else
-            git pull origin main || { echo "Git pull failed"; exit 1; }
+            git fetch origin
+            git reset --hard origin/main || { echo "Git pull/reset failed"; exit 1; }
           fi
-          
+
           # Install dependencies
-          npm install --omit=dev || { echo "npm install failed"; exit 1; }
-          
+          npm install --omit=dev --verbose || { echo "npm install failed"; exit 1; }
+
+          # Create .env file if needed (example)
+          echo "PORT=8020" > .env
+          echo "DB_CONNECTION_STRING=${{ secrets.DB_CONNECTION_STRING }}" >> .env
+          # Add other environment variables as needed
+
+          # Ensure PM2 is installed globally
+          npm install -g pm2 || { echo "PM2 installation failed"; exit 1; }
+
           # Start or restart PM2 process
-          pm2 describe RequestCiCd > /dev/null 2>&1 && pm2 restart RequestCiCd || pm2 start server.js --name RequestCiCd --env PORT=8020
+          pm2 describe RequestCiCd > /dev/null 2>&1 && pm2 restart RequestCiCd || pm2 start server.js --name RequestCiCd
           
           # Save PM2 process list
           pm2 save
+
+          # Reload Nginx to apply any config changes
+          sudo nginx -t && sudo systemctl reload nginx || { echo "Nginx reload failed"; exit 1; }
+
+          # Ensure port 8020 is open in firewall (example for UFW)
+          sudo ufw allow 8020 || { echo "Failed to open port 8020"; exit 1; }
