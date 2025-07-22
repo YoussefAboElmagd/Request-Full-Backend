@@ -20,7 +20,7 @@ jobs:
           mkdir -p /home/your-username/apps/RequestCiCd
           cd /home/your-username/apps/RequestCiCd || { echo "Failed to access directory"; exit 1; }
           
-          # Check if directory is a Git review repository
+          # Check if directory is a Git repository
           if [ ! -d ".git" ]; then
             rm -rf *  # Clear directory if not a Git repo
             git clone https://github.com/YoussefAboElmagd/Request-Full-Backend.git . || { echo "Git clone failed"; exit 1; }
@@ -32,7 +32,7 @@ jobs:
           npm install --omit=dev || { echo "npm install failed"; exit 1; }
           
           # Start or restart PM2 process
-          pm2 describe RequestCiCd > /dev/null 2>&1 && pm2 restart RequestCiCd || pm2 start server.js --name RequestCiCd
-
+          pm2 describe RequestCiCd > /dev/null 2>&1 && pm2 restart RequestCiCd || pm2 start server.js --name RequestCiCd --env PORT=8001
+          
           # Save PM2 process list
           pm2 save
