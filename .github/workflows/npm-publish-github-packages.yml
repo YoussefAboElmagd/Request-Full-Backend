@@ -21,6 +21,21 @@ jobs:
           APP_DIR=$HOME/apps/RequestCiCd
           REPO_URL=git@github.com:YoussefAboElmagd/Request-Full-Backend.git
 
+          # Ensure git is installed
+          sudo apt-get update
+          sudo apt-get install -y git || { echo "Git installation failed"; exit 1; }
+          git --version
+
+          # Set up SSH key for GitHub
+          mkdir -p $HOME/.ssh
+          echo "${{ secrets.PRIVATE_KEY }}" > $HOME/.ssh/id_rsa
+          chmod 600 $HOME/.ssh/id_rsa
+          ssh-keyscan github.com >> $HOME/.ssh/known_hosts
+          chmod 644 $HOME/.ssh/known_hosts
+
+          # Test SSH connection to GitHub
+          ssh -T git@github.com || echo "SSH authentication test to GitHub failed, proceeding anyway"
+
           # Install nvm if not already installed
           if ! command -v nvm >/dev/null 2>&1; then
             curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash || { echo "nvm installation failed"; exit 1; }
@@ -46,8 +61,10 @@ jobs:
           # Check if directory is a Git repository
           if [ ! -d ".git" ]; then
             rm -rf *
+            echo "Cloning repository from $REPO_URL"
             git clone $REPO_URL . || { echo "Git clone failed"; exit 1; }
           else
+            echo "Updating repository"
             git fetch origin
             git reset --hard origin/main || { echo "Git pull/reset failed"; exit 1; }
           fi
