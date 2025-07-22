@@ -17,11 +17,17 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           port: 22
           script: |
-            set -e  # Exit on any error
+            set -e
             export DEBIAN_FRONTEND=noninteractive
             export HOME=/home/${{ secrets.USERNAME }}
             export APP_DIR=$HOME/apps/RequestCiCd
             export REPO_URL=git@github.com:YoussefAboElmagd/Request-Full-Backend.git
+
+            echo ">>> Waiting for apt lock..."
+            while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+              echo "Another apt process is running. Waiting..."
+              sleep 5
+            done
 
             echo ">>> Updating apt and installing Git"
             sudo apt-get update -y
@@ -35,7 +41,7 @@ jobs:
             chmod 644 $HOME/.ssh/known_hosts
 
             echo ">>> Testing SSH connection to GitHub"
-            ssh -T git@github.com || echo "SSH auth to GitHub failed — ignoring"
+            ssh -T git@github.com || echo "SSH auth to GitHub failed — continuing"
 
             echo ">>> Installing NVM and Node.js"
             if ! command -v nvm >/dev/null 2>&1; then
@@ -46,13 +52,15 @@ jobs:
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" || { echo "Failed to source nvm"; exit 1; }
             nvm install 18 || { echo "Node install failed"; exit 1; }
 
-            echo ">>> Creating app directory and setting permissions"
+            echo ">>> Creating app directory"
             mkdir -p $APP_DIR
             cd $APP_DIR || { echo "Failed to enter app dir"; exit 1; }
+
+            echo ">>> Setting permissions"
             chown -R ${{ secrets.USERNAME }}:${{ secrets.USERNAME }} $APP_DIR
             chmod -R 755 $APP_DIR
 
-            echo ">>> Cloning or updating repository"
+            echo ">>> Cloning or pulling repository"
             if [ ! -d ".git" ]; then
               rm -rf *
               git clone $REPO_URL . || { echo "Git clone failed"; exit 1; }
@@ -61,26 +69,27 @@ jobs:
               git reset --hard origin/main || { echo "Git reset failed"; exit 1; }
             fi
 
-            echo ">>> Installing app dependencies"
-            timeout 300 npm install --omit=dev --verbose || { echo "npm install timed out or failed"; exit 1; }
+            echo ">>> Installing dependencies"
+            timeout 300 npm install --omit=dev --verbose || { echo "npm install failed or timed out"; exit 1; }
 
-            echo ">>> Writing environment variables to .env"
+            echo ">>> Writing .env file"
             echo "PORT=8020" > .env
             echo "DB_CONNECTION_STRING=${{ secrets.DB_CONNECTION_STRING }}" >> .env
 
-            echo ">>> Installing and starting PM2"
+            echo ">>> Installing PM2"
             npm install -g pm2 || { echo "PM2 install failed"; exit 1; }
 
+            echo ">>> Starting or restarting app with PM2"
             pm2 describe RequestCiCd > /dev/null 2>&1 && \
               pm2 restart RequestCiCd || \
               pm2 start server.js --name RequestCiCd
 
             pm2 save
 
-            echo ">>> Reloading Nginx (if needed)"
+            echo ">>> Reloading Nginx (optional)"
             sudo nginx -t && sudo systemctl reload nginx || echo "Nginx reload skipped or failed"
 
-            echo ">>> Ensuring port 8020 is open"
-            sudo ufw allow 8020 || echo "Failed to open port (already open?)"
+            echo ">>> Opening port 8020 (if not already)"
+            sudo ufw allow 8020 || echo "Port 8020 may already be open"
 
-            echo "✅ Deployment completed successfully"
+            echo "✅ Deployment complete"
