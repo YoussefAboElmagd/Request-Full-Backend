@@ -36,7 +36,7 @@ adminRoutes.put(
 //USERS
 adminRoutes.get(
   "/users",
-  authen(["admin"]),
+//  authen(["admin"]),
   adminController.handle_admin_get_users
 );
 adminRoutes.get(
