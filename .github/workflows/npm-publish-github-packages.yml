@@ -7,42 +7,44 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Deploy to VPS via SSH
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.PRIVATE_KEY }}
-          port: 22
-          script: |
-            echo "Starting deployment..."
+    - name: 📦 Deploy to VPS via SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.PRIVATE_KEY }}
+        port: 22
+        script: |
+          echo "📁 Creating or accessing app folder..."
+          mkdir -p /home/${{ secrets.USERNAME }}/apps/RequestCiCd
+          cd /home/${{ secrets.USERNAME }}/apps/RequestCiCd || exit 1
 
-            # Create app folder if not exists
-            mkdir -p /home/${{ secrets.USERNAME }}/apps/RequestCiCd
-            cd /home/${{ secrets.USERNAME }}/apps/RequestCiCd || exit 1
+          echo "📥 Pulling code..."
+          if [ ! -d ".git" ]; then
+            rm -rf *
+            git clone https://github.com/YoussefAboElmagd/Request-Full-Backend.git . || exit 1
+          else
+            git reset --hard
+            git pull origin main || exit 1
+          fi
 
-            # If not a git repo, clone fresh
-            if [ ! -d ".git" ]; then
-              echo "Cloning repo..."
-              rm -rf *
-              git clone https://github.com/YoussefAboElmagd/Request-Full-Backend.git . || exit 1
-            else
-              echo "Pulling latest code..."
-              git reset --hard
-              git pull origin main || exit 1
-            fi
+          echo "📦 Installing dependencies..."
+          npm install --omit=dev || exit 1
 
-            # Install Node modules
-            echo "Installing dependencies..."
-            npm install --omit=dev || exit 1
+          echo "⚙️ Setting up environment..."
+          echo "PORT=8020" > .env
+          echo "DB_URI=${{ secrets.DB_URI }}" >> .env
+          echo "ANOTHER_SECRET=${{ secrets.ANOTHER_SECRET }}" >> .env
 
-            # Restart using PM2
-            echo "Restarting PM2..."
-            pm2 describe RequestCiCd > /dev/null 2>&1 \
-              && pm2 restart RequestCiCd \
-              || pm2 start server.js --name RequestCiCd -- --port 8020
+          echo "🚀 Starting/Restarting PM2..."
+          npm install -g pm2
+          pm2 describe RequestCiCd > /dev/null 2>&1 \
+            && pm2 restart RequestCiCd \
+            || pm2 start server.js --name RequestCiCd
 
-            pm2 save
+          pm2 save
+          pm2 list
 
-            echo "✅ Deployment done"
+          echo "✅ Deployment complete."
