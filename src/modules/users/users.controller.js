@@ -54,8 +54,6 @@ const postMessage = catchAsync(async (req, res, next) => {
   res.json({ message: message, user });
 });
 const getInTouch = catchAsync(async (req, res, next) => {
-  
-
   let err_1 = "This Phone is not valid";
   let err_2 = "This Email is not valid";
   let message = "Message sent to admin";
@@ -88,7 +86,7 @@ const getInTouch = catchAsync(async (req, res, next) => {
       obj.attachment = "tickets/" + req.file.filename;
     }
 
-    const ticket = await ticketModel.create( obj );
+    const ticket = await ticketModel.create(obj);
     console.log(ticket);
 
     contactUs2(req.body.name, req.body.email, req.body.phone, req.body.message);
@@ -300,7 +298,7 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
 const updateInvite = catchAsync(async (req, res, next) => {
   let { id } = req.params;
   let check = await invitationModel.findById(id).populate("role");
-  console.log(check);
+  const { isApproved } = req.body;
   let err_1 = "Ivitation not found!";
   let err_2 = "Ivitation not vaild!";
   let err_3 = "User not found!";
@@ -341,7 +339,10 @@ const updateInvite = catchAsync(async (req, res, next) => {
       await projectModel.findOneAndUpdate({ _id: check.project }, updates, {
         new: true,
       });
-      // await invitationModel.deleteOne({ _id: id });
+      await invitationModel.findByIdAndUpdate(
+        { _id: id },
+        { isApproved }
+      );
       return res.status(200).json({ message: "Done" });
     } else {
       return res.status(404).json({ message: err_3 });
