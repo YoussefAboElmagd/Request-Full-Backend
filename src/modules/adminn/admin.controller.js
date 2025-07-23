@@ -101,10 +101,8 @@ const handle_admin_resend_otp = catchAsync(async (req, res, next) => {
   res.status(200).json({ message: "otp sent successfully" });
 });
 const handle_admin_update_profile = catchAsync(async (req, res, next) => {
-  const { lang } = req.query;
-
   const data = req.body;
-  console.log(req.user.id);
+
   const id = req.user.id;
 
   const existAdmin = await userModel.findById(id);
@@ -112,14 +110,19 @@ const handle_admin_update_profile = catchAsync(async (req, res, next) => {
   if (!existAdmin) return res.status(404).json({ message: "admin not found" });
 
   if (req.file) {
-    data.profilePic = "profilePic/" + req.file.filename;
+    existAdmin.profilePic = "profilePic/" + req.file.filename;
   }
 
-  const updatedData = await userModel.findByIdAndUpdate(id, data);
-  if (!updatedData) {
-    return res.status(500).json({ message: "Failed to update admin profile" });
+  if (data.name) {
+    existAdmin.name = data.name;
   }
-
+  if (data.phone) {
+    existAdmin.phone = data.phone;
+  }
+  if (data.email) {
+    existAdmin.email = data.email;
+  }
+  await existAdmin.save()
   res.status(200).json({ message: "admin upadated successfully" });
 });
 const handle_admin_get_users = catchAsync(async (req, res, next) => {

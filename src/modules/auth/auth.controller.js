@@ -155,7 +155,8 @@ export const signIn = catchAsync(async (req, res, next) => {
       await userData.save();
       let token = jwt.sign(
         { name: userData.name, userId: userData._id },
-        process.env.JWT_SECRET_KEY
+        process.env.JWT_SECRET_KEY,
+        { expiresIn: "1h" } // expires in 1 hour
       );
       let lastSignIn = new Date();
       req.lastSignIn = lastSignIn;
