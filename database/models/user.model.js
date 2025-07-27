@@ -4,6 +4,7 @@ import { removeFile } from "../../src/utils/removeFiles.js";
 import { tagsModel } from "./tags.model.js";
 import { teamModel } from "./team.model.js";
 import { projectModel } from "./project.model.js";
+import { messageModel } from "./message.model.js";
 
 const userSchema = mongoose.Schema(
   {

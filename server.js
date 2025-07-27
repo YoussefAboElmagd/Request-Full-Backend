@@ -27,15 +27,15 @@ const corsOptions = {
   credentials: true, // Allow credentials to be sent with requests
 };
 app.use(cors(corsOptions));
-app.use(hpp());  // Prevent HTTP Parameter Pollution  --> in case of query string parameters
+app.use(hpp()); // Prevent HTTP Parameter Pollution  --> in case of query string parameters
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("uploads"));
 
 dbConnection();
 app.use((err, req, res, next) => {
-  if (err.code === 'ENOTFOUND') {
-    return res.status(500).send('Network error, please try again later.');
+  if (err.code === "ENOTFOUND") {
+    return res.status(500).send("Network error, please try again later.");
   }
   res.status(500).send(err.message);
 });

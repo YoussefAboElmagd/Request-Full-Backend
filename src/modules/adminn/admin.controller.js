@@ -100,6 +100,9 @@ const handle_admin_resend_otp = catchAsync(async (req, res, next) => {
   sendEmail(email, `Email Verification Code:${fourDigitCode}`);
   res.status(200).json({ message: "otp sent successfully" });
 });
+
+
+
 const handle_admin_update_profile = catchAsync(async (req, res, next) => {
   const data = req.body;
 

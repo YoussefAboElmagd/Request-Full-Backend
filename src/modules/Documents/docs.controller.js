@@ -26,27 +26,21 @@ const createDocs = catchAsync(async (req, res, next) => {
   }
 
   // Normalize the file path for consistency
-  const normalizedPath = req.file.path
-    .replaceAll(/\\/g, "/")
-    .replaceAll(" ", "-");
 
   // Save document info to DB
   const doc = await documentsModel.create({
-    path: normalizedPath,
-    filename: req.file.filename,
+    path: `/documents/${req.file.filename}`,
     task,
     uploadedBy,
   });
 
   // Optionally, generate a URL to access the uploaded file
-  const fileUrl = `${req.protocol}://${req.get("host")}/${normalizedPath}`;
 
   res.status(201).json({
     message: "Document uploaded successfully.",
     document: {
       id: doc._id,
       filename: doc.filename,
-      url: fileUrl, // You can omit this if not needed
     },
   });
 });
