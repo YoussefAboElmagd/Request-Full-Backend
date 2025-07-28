@@ -32,13 +32,6 @@ jobs:
           echo "📦 Installing dependencies..."
           npm install --omit=dev || { echo "❌ npm install failed"; exit 1; }
 
-          echo "⚙️ Writing environment variables..."
-          cat > .env << EOF
-          PORT=8020
-          DB_URI=${{ secrets.DB_URI }}
-          ANOTHER_SECRET=${{ secrets.ANOTHER_SECRET }}
-          EOF
-          echo "✅ Environment variables set"
 
           echo "🚀 Managing PM2 process..."
           npm install -g pm2 || { echo "❌ PM2 installation failed"; exit 1; }
