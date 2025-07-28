@@ -17,39 +17,43 @@ jobs:
         key: ${{ secrets.PRIVATE_KEY }}
         port: 22
         script: |
-          echo "📁 Creating or accessing app folder..."
-          mkdir -p /home/${{ secrets.USERNAME }}/apps/RequestCiCd
-          cd /home/${{ secrets.USERNAME }}/apps/RequestCiCd || exit 1
+          set -e  # Exit on any error
+          
+          echo "📁 Setting up application directory..."
+          APP_DIR="/home/${{ secrets.USERNAME }}/apps/RequestCiCd"
+          rm -rf "$APP_DIR"
+          mkdir -p "$APP_DIR"
+          cd "$APP_DIR" || { echo "❌ Failed to access directory"; exit 1; }
 
-          echo "🧹 Cleaning up working directory..."
-          if [ -d ".git" ]; then
-            git fetch origin main || exit 1
-            git checkout main || exit 1
-            git reset --hard origin/main || exit 1
-            echo "📥 Code updated to latest main branch."
-          else
-            echo "📥 Cloning repository..."
-            rm -rf ./* ./.*
-            git clone --branch main https://github.com/YoussefAboElmagd/Request-Full-Backend.git . || exit 1
-          fi
+          echo "📥 Cloning repository..."
+          git clone --depth 1 --branch main https://github.com/YoussefAboElmagd/Request-Full-Backend.git . || { echo "❌ Git clone failed"; exit 1; }
+          echo "✅ Repository cloned. Commit: $(git rev-parse --short HEAD)"
 
           echo "📦 Installing dependencies..."
-          npm install --omit=dev || exit 1
+          npm install --omit=dev || { echo "❌ npm install failed"; exit 1; }
 
-          echo "⚙️ Setting up environment..."
+          echo "⚙️ Writing environment variables..."
           cat > .env << EOF
           PORT=8020
           DB_URI=${{ secrets.DB_URI }}
           ANOTHER_SECRET=${{ secrets.ANOTHER_SECRET }}
           EOF
+          echo "✅ Environment variables set"
 
-          echo "🚀 Starting/Restarting PM2..."
-          npm install -g pm2
-          pm2 describe RequestCiCd > /dev/null 2>&1 \
-            && (echo "🔄 Restarting existing PM2 process..." && pm2 restart RequestCiCd) \
-            || (echo "▶️ Starting new PM2 process..." && pm2 start server.js --name RequestCiCd)
-
+          echo "🚀 Managing PM2 process..."
+          npm install -g pm2 || { echo "❌ PM2 installation failed"; exit 1; }
+          
+          # Stop and delete any existing PM2 process to ensure clean start
+          pm2 describe RequestCiCd > /dev/null 2>&1 && pm2 delete RequestCiCd || echo "ℹ️ No existing PM2 process found"
+          
+          # Start new PM2 process
+          pm2 start server.js --name RequestCiCd || { echo "❌ PM2 start failed"; exit 1; }
           pm2 save
-          pm2 list
+          echo "✅ PM2 process started"
 
-          echo "✅ Deployment complete."
+          echo "🩺 Checking application health..."
+          sleep 2  # Give the app a moment to start
+          curl --fail http://localhost:8020/health || { echo "❌ Health check failed"; exit 1; }
+
+          echo "✅ Deployment complete. PM2 status:"
+          pm2 list
