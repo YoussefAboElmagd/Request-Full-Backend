@@ -3,6 +3,7 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import ApiFeature from "../../utils/apiFeature.js";
 import { taskModel } from "../../../database/models/tasks.model.js";
 import { photoUpload } from "../../utils/removeFiles.js";
+import { userModel } from "../../../database/models/user.model.js";
 
 const createDocs = catchAsync(async (req, res, next) => {
   // Check if a file was uploaded
@@ -46,26 +47,14 @@ const createDocs = catchAsync(async (req, res, next) => {
 });
 
 const getAllDocsByTask = catchAsync(async (req, res, next) => {
-  let err_1 = "No Data was found!";
-  if (req.query.lang == "ar") {
-    err_1 = "لا يوجد بيانات";
-  }
-  let ApiFeat = new ApiFeature(
-    taskModel.find({ _id: req.params.id }),
-    req.query
-  );
-  let results = await ApiFeat.mongooseQuery;
-  results = JSON.stringify(results);
-  results = JSON.parse(results);
-  if (!ApiFeat || !results) {
-    return res.status(404).json({
-      message: err_1,
-    });
-  }
-  results = results[0].documents;
+  let docs = await documentsModel
+    .find({ task: req.params.id })
+    .populate("uploadedBy","name profilePic") ;
+
+   
   res.json({
     message: "Done",
-    results,
+    data: docs,
   });
 });
 

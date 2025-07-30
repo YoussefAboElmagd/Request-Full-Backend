@@ -16,7 +16,8 @@ const httpServer = createServer();
 const io = new Server(httpServer, {
   cors: {
     origin: "*",
-    rejectUnauthorized: false,
+    // rejectUnauthorized: false,
+    methods:["GET","POST"]
   },
 });
 const app = express();

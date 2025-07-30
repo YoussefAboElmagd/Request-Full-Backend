@@ -41,7 +41,7 @@ const documentsSchema = mongoose.Schema(
   { timestamps: true }
 );
 documentsSchema.pre(/^find/, function () {
-  this.populate("uploadedBy", "task");
+  // this.populate("uploadedBy", "task");
 });
 documentsSchema.pre(
   /^delete/,

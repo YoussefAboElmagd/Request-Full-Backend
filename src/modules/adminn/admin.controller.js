@@ -101,8 +101,6 @@ const handle_admin_resend_otp = catchAsync(async (req, res, next) => {
   res.status(200).json({ message: "otp sent successfully" });
 });
 
-
-
 const handle_admin_update_profile = catchAsync(async (req, res, next) => {
   const data = req.body;
 
@@ -271,6 +269,7 @@ const handle_admin_get_user_by_id = catchAsync(async (req, res, next) => {
         name: 1,
         tasks: 1,
         progress: 1,
+        status: 1,
         members: {
           $map: {
             input: "$members",
@@ -278,6 +277,7 @@ const handle_admin_get_user_by_id = catchAsync(async (req, res, next) => {
             in: {
               _id: "$$member._id",
               profilePic: "$$member.profilePic",
+              name: "$$member.name",
             },
           },
         },
@@ -651,14 +651,15 @@ const handle_admin_get_requests_most_use = catchAsync(
 
     res.status(200).json({
       message: "Request counts fetched successfully",
-      data: {
-        SubmittalRequest,
-        TOF,
-        Matrial,
-        work,
-        inspection,
+      data: [
+        { title: "Work Request", value: work },
+        { title: "Table Of Quantity", value: TOF },
+        { title: "Request For Material And Equipment", value: Matrial },
+        { title: "Request For Document Submittal", value: SubmittalRequest },
+        { title: "Request For Inspection(RFI)", value: inspection },
+
         totalRequests,
-      },
+      ],
     });
   }
 );
