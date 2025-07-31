@@ -5,7 +5,7 @@ const messageSchema = mongoose.Schema(
     project: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "project",
-      required: true,
+      // required: true,
     },
     receiver: {
       type: mongoose.Schema.Types.ObjectId,

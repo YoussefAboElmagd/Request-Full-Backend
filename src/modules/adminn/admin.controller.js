@@ -100,6 +100,7 @@ const handle_admin_resend_otp = catchAsync(async (req, res, next) => {
   sendEmail(email, `Email Verification Code:${fourDigitCode}`);
   res.status(200).json({ message: "otp sent successfully" });
 });
+
 const handle_admin_update_profile = catchAsync(async (req, res, next) => {
   const data = req.body;
 
@@ -122,7 +123,7 @@ const handle_admin_update_profile = catchAsync(async (req, res, next) => {
   if (data.email) {
     existAdmin.email = data.email;
   }
-  await existAdmin.save()
+  await existAdmin.save();
   res.status(200).json({ message: "admin upadated successfully" });
 });
 const handle_admin_get_users = catchAsync(async (req, res, next) => {
@@ -268,6 +269,7 @@ const handle_admin_get_user_by_id = catchAsync(async (req, res, next) => {
         name: 1,
         tasks: 1,
         progress: 1,
+        status: 1,
         members: {
           $map: {
             input: "$members",
@@ -275,6 +277,7 @@ const handle_admin_get_user_by_id = catchAsync(async (req, res, next) => {
             in: {
               _id: "$$member._id",
               profilePic: "$$member.profilePic",
+              name: "$$member.name",
             },
           },
         },
@@ -648,149 +651,151 @@ const handle_admin_get_requests_most_use = catchAsync(
 
     res.status(200).json({
       message: "Request counts fetched successfully",
-      data: {
-        SubmittalRequest,
-        TOF,
-        Matrial,
-        work,
-        inspection,
+      data: [
+        { title: "Work Request", value: work },
+        { title: "Table Of Quantity", value: TOF },
+        { title: "Request For Material And Equipment", value: Matrial },
+        { title: "Request For Document Submittal", value: SubmittalRequest },
+        { title: "Request For Inspection(RFI)", value: inspection },
+
         totalRequests,
-      },
+      ],
     });
   }
 );
 const handle_admin_get_requests_by_id = catchAsync(async (req, res, next) => {
   const { id } = req.params;
 
-  const request = await requsetModel.aggregate([
-    {
-      $match: { _id: new mongoose.Types.ObjectId(id) },
-    },
-    {
-      $lookup: {
-        from: "users", // assuming your user collection name is "users"
-        localField: "owner",
-        foreignField: "_id",
-        as: "owner",
-        pipeline: [
-          {
-            $project: {
-              name: 1,
-              profilePic: 1,
-            },
-          },
-        ],
-      },
-    },
-    {
-      $lookup: {
-        from: "users",
-        localField: "consultant",
-        foreignField: "_id",
-        as: "consultant",
-        pipeline: [
-          {
-            $project: {
-              name: 1,
-              profilePic: 1,
-            },
-          },
-        ],
-      },
-    },
-    {
-      $lookup: {
-        from: "users",
-        localField: "contractor",
-        foreignField: "_id",
-        as: "contractor",
-        pipeline: [
-          {
-            $project: {
-              name: 1,
-              profilePic: 1,
-            },
-          },
-        ],
-      },
-    },
-    {
-      $lookup: {
-        from: "users",
-        localField: "createdBy",
-        foreignField: "_id",
-        as: "createdBy",
-        pipeline: [
-          {
-            $project: {
-              name: 1,
-              profilePic: 1,
-            },
-          },
-        ],
-      },
-    },
-    {
-      $lookup: {
-        from: "units", // assuming your unit collection name is "units"
-        localField: "unit",
-        foreignField: "_id",
-        as: "unit",
-      },
-    },
-    {
-      $lookup: {
-        from: "disciplines", // assuming your discipline collection name is "disciplines"
-        localField: "discipline",
-        foreignField: "_id",
-        as: "discipline",
-      },
-    },
-    {
-      $unwind: {
-        path: "$owner",
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-    {
-      $unwind: {
-        path: "$consultant",
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-    {
-      $unwind: {
-        path: "$contractor",
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-    {
-      $unwind: {
-        path: "$createdBy",
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-    {
-      $unwind: {
-        path: "$unit",
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-    {
-      $unwind: {
-        path: "$discipline",
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-  ]);
+  // const request = await requsetModel.aggregate([
+  //   {
+  //     $match: { _id: new mongoose.Types.ObjectId(id) },
+  //   },
+  //   {
+  //     $lookup: {
+  //       from: "users", // assuming your user collection name is "users"
+  //       localField: "owner",
+  //       foreignField: "_id",
+  //       as: "owner",
+  //       pipeline: [
+  //         {
+  //           $project: {
+  //             name: 1,
+  //             profilePic: 1,
+  //           },
+  //         },
+  //       ],
+  //     },
+  //   },
+  //   {
+  //     $lookup: {
+  //       from: "users",
+  //       localField: "consultant",
+  //       foreignField: "_id",
+  //       as: "consultant",
+  //       pipeline: [
+  //         {
+  //           $project: {
+  //             name: 1,
+  //             profilePic: 1,
+  //           },
+  //         },
+  //       ],
+  //     },
+  //   },
+  //   {
+  //     $lookup: {
+  //       from: "users",
+  //       localField: "contractor",
+  //       foreignField: "_id",
+  //       as: "contractor",
+  //       pipeline: [
+  //         {
+  //           $project: {
+  //             name: 1,
+  //             profilePic: 1,
+  //           },
+  //         },
+  //       ],
+  //     },
+  //   },
+  //   {
+  //     $lookup: {
+  //       from: "users",
+  //       localField: "createdBy",
+  //       foreignField: "_id",
+  //       as: "createdBy",
+  //       pipeline: [
+  //         {
+  //           $project: {
+  //             name: 1,
+  //             profilePic: 1,
+  //           },
+  //         },
+  //       ],
+  //     },
+  //   },
+  //   {
+  //     $lookup: {
+  //       from: "units", // assuming your unit collection name is "units"
+  //       localField: "unit",
+  //       foreignField: "_id",
+  //       as: "unit",
+  //     },
+  //   },
+  //   {
+  //     $lookup: {
+  //       from: "disciplines", // assuming your discipline collection name is "disciplines"
+  //       localField: "discipline",
+  //       foreignField: "_id",
+  //       as: "discipline",
+  //     },
+  //   },
+  //   {
+  //     $unwind: {
+  //       path: "$owner",
+  //       preserveNullAndEmptyArrays: true,
+  //     },
+  //   },
+  //   {
+  //     $unwind: {
+  //       path: "$consultant",
+  //       preserveNullAndEmptyArrays: true,
+  //     },
+  //   },
+  //   {
+  //     $unwind: {
+  //       path: "$contractor",
+  //       preserveNullAndEmptyArrays: true,
+  //     },
+  //   },
+  //   {
+  //     $unwind: {
+  //       path: "$createdBy",
+  //       preserveNullAndEmptyArrays: true,
+  //     },
+  //   },
+  //   {
+  //     $unwind: {
+  //       path: "$unit",
+  //       preserveNullAndEmptyArrays: true,
+  //     },
+  //   },
+  //   {
+  //     $unwind: {
+  //       path: "$discipline",
+  //       preserveNullAndEmptyArrays: true,
+  //     },
+  //   },
+  // ]);
 
-  if (!request || request.length === 0) {
+  const request = await requsetModel.findById(id).populate("project");
+  if (!request) {
     return res.status(404).json({ message: "request not found" });
   }
 
   res
     .status(200)
-    .json({ message: "request found successfully", data: request[0] });
+    .json({ message: "request found successfully", data: request });
 });
 
 const handle_admin_get_projects_by_id = catchAsync(async (req, res, next) => {

@@ -281,8 +281,60 @@ const getAllGroupsByUserProjects = catchAsync(async (req, res, next) => {
     results,
   });
 });
+const getadmin = catchAsync(async (req, res, next) => {
+  const admin = await userModel.findOne({ userType: "admin" });
+  let ineed = {};
+  if (admin) {
+    ineed = {
+      name: admin?.name,
+      _id: admin?._id,
+      profilePic: admin?.profilePic,
+    };
+  }
+  res.json({
+    message: "Done",
+    data: ineed,
+  });
+});
+const sendMessage = catchAsync(async (req, res, next) => {
+  const { sender, receiver, message } = req.body;
+
+  const createdMessage = await messageModel.create({
+    receiver,
+    sender,
+    content: message,
+    date: new Date(),
+    type: "text",
+  });
+  sio.emit(`message_${sender}_${receiver}_support_connection`, createdMessage);
+
+  res.json({
+    message: "Done",
+  });
+});
+const GETGETMessage = catchAsync(async (req, res, next) => {
+  const { sender, receiver } = req.body;
+
+  const data = await messageModel
+    .find({
+      $or: [
+        { sender: sender, receiver: receiver },
+        { sender: receiver, receiver: sender },
+      ],
+    })
+    .populate("sender", "name profilePic")
+    .populate("receiver", "name profilePic");
+
+  res.json({
+    message: "Done",
+    data,
+  });
+});
 
 export {
+  GETGETMessage,
+  sendMessage,
+  getadmin,
   createmessage,
   addPhotos,
   getAllMessageByTwoUsers,

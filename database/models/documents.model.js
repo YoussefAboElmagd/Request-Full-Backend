@@ -4,14 +4,15 @@ import { removeFiles } from "../../src/utils/removeFiles.js";
 
 const documentsSchema = mongoose.Schema(
   {
-    document: {
+    path: {
       type: String,
-      required: true,
+    },
+    filename: {
+      type: String,
     },
     task: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "task",
-      required: true,
     },
     status: {
       type: String,
@@ -21,12 +22,10 @@ const documentsSchema = mongoose.Schema(
     },
     comment: {
       type: String,
-      required: true,
     },
     uploadedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
-      required: true,
     },
     tag: {
       type: mongoose.Schema.Types.ObjectId,
@@ -36,21 +35,29 @@ const documentsSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "model",
       immutable: true,
-      // required: true,
+      //
     },
   },
   { timestamps: true }
 );
 documentsSchema.pre(/^find/, function () {
-  this.populate("uploadedBy", "task");
+  // this.populate("uploadedBy", "task");
 });
-documentsSchema.pre(/^delete/, { document: false, query: true }, async function () {
-  const doc = await this.model.findOne(this.getFilter());
-  if (doc) {
-    await taskModel.findOneAndUpdate({ _id: doc.task }, { $pull: { documents: doc._id } }, { new: true });
-    if (doc.document) {
-      removeFiles("documents", doc.document);
+documentsSchema.pre(
+  /^delete/,
+  { document: false, query: true },
+  async function () {
+    const doc = await this.model.findOne(this.getFilter());
+    if (doc) {
+      await taskModel.findOneAndUpdate(
+        { _id: doc.task },
+        { $pull: { documents: doc._id } },
+        { new: true }
+      );
+      if (doc.document) {
+        removeFiles("documents", doc.document);
+      }
     }
   }
-});
+);
 export const documentsModel = mongoose.model("document", documentsSchema);
