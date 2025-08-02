@@ -221,6 +221,7 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
 
   // Process invitations
   const link = "https://request-sa.com/Invitation";
+  
   const processedInvitations = [];
 
   for (let invitation of req.body) {
