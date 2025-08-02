@@ -221,13 +221,19 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
 
   // Process invitations
   const link = "https://request-sa.com/Invitation";
+  
   const processedInvitations = [];
 
   for (let invitation of req.body) {
     try {
       // Check if user exists
+      let flag;
       const existingUser = await userModel.findOne({ email: invitation.email });
-
+      if (existingUser) {
+        flag = true;
+      } else {
+        flag = false;
+      }
       // Get role and project info
       const [roleInfo, projectInfo] = await Promise.all([
         userTypeModel.findById(invitation.role).select("jobTitle"),
@@ -249,7 +255,7 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
       });
 
       const savedInvitation = await newInvitation.save();
-      savedInvitation.inivitaionLink = `${link}?id=${savedInvitation._id}`;
+      savedInvitation.inivitaionLink = `${link}?id=${savedInvitation._id}&signup=${flag}&role=${roleInfo?.jobTitle}`;
       await savedInvitation.save();
       processedInvitations.push(savedInvitation);
 
@@ -259,7 +265,7 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
         projectInfo.name,
         roleInfo.jobTitle,
         savedInvitation._id,
-        link
+        `${link}?id=${savedInvitation._id}&signup=${flag}&&role=${roleInfo?.jobTitle}`
       );
 
       // Send in-app notification if user exists
@@ -341,7 +347,7 @@ const updateInvite = catchAsync(async (req, res, next) => {
       });
       await invitationModel.findByIdAndUpdate(
         { _id: id },
-        { isApproved }
+        { isApproved, reject: false }
       );
       return res.status(200).json({ message: "Done" });
     } else {
@@ -753,7 +759,10 @@ const deleteInvite = catchAsync(async (req, res, next) => {
   if (req.query.lang == "ar") {
     err = "لا يمكن المسح! الدعوة غير موجود";
   }
-  let deletedUser = await invitationModel.deleteOne({ _id: id });
+  let deletedUser = await invitationModel.findByIdAndUpdate(id, {
+    isApproved: false,
+    reject: true,
+  });
 
   if (!deletedUser) {
     return res.status(404).json({ message: err });

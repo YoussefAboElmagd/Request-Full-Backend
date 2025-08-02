@@ -20,6 +20,10 @@ const invitationSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    reject: {
+      type: Boolean,
+      default: false,
+    },
     comment: {
       type: String,
       default: "",

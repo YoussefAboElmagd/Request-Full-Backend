@@ -878,6 +878,36 @@ const handle_admin_get_projects_by_id = catchAsync(async (req, res, next) => {
   if (!project.length)
     return res.status(404).json({ message: "Project not found" });
 
+  const tags = await taskModel.find({ project: id }).select("tags");
+  const filtered = tags.filter((ele) => ele.tags != null);
+
+  // Step 1: Extract simplified tag data
+  const simplifiedTags = filtered.map((ele) => ({
+    name: ele.tags.name,
+    colorCode: ele.tags.colorCode,
+  }));
+
+  // Step 2: Count frequency and track colorCode
+  const counts = {};
+  const colors = {};
+
+  simplifiedTags.forEach(({ name, colorCode }) => {
+    counts[name] = (counts[name] || 0) + 1;
+    if (!colors[name]) colors[name] = colorCode; // Save colorCode on first occurrence
+  });
+
+  // Step 3: Total number of tags
+  const total = simplifiedTags.length;
+
+  // Step 4: Build final array with name, colorCode, and percentage
+  const result = Object.entries(counts).map(([name, count]) => ({
+    name,
+    colorCode: colors[name],
+    percentage: parseFloat(((count / total) * 100).toFixed(2)),
+  }));
+
+  project[0].tags = result;
+
   res.status(200).json({
     message: "Project fetched successfully",
     data: project[0],

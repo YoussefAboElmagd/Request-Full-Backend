@@ -69,7 +69,7 @@ adminRoutes.get(
 );
 adminRoutes.get(
   "/projects/:id",
-  authen(["admin"]),
+  // authen(["admin"]),
   adminController.handle_admin_get_projects_by_id
 );
 //requests
