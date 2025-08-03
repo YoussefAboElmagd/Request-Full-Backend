@@ -392,9 +392,6 @@ const handle_admin_get_tasks = catchAsync(async (req, res, next) => {
         },
       },
     },
-
-    { $skip: skip },
-    { $limit: Number(limit) },
   ]);
 
   // For total count (without pagination)
@@ -405,12 +402,6 @@ const handle_admin_get_tasks = catchAsync(async (req, res, next) => {
   res.status(200).json({
     message: "Tasks found successfully",
     data: tasks,
-    pagination: {
-      total,
-      page: Number(page),
-      limit: Number(limit),
-      pages: Math.ceil(total / limit),
-    },
   });
 });
 const handle_admin_get_tasks_by_id = catchAsync(async (req, res, next) => {
@@ -505,10 +496,6 @@ const handle_admin_get_tasks_by_id = catchAsync(async (req, res, next) => {
 });
 
 const handle_admin_get_projects = catchAsync(async (req, res, next) => {
-  const page = parseInt(req.query.page) || 1; // default page 1
-  const limit = parseInt(req.query.limit) || 10; // default limit 10
-  const skip = (page - 1) * limit;
-
   const projects = await projectModel.aggregate([
     {
       $project: {
@@ -532,8 +519,8 @@ const handle_admin_get_projects = catchAsync(async (req, res, next) => {
         pipeline: [{ $project: { profilePic: 1 } }],
       },
     },
-    { $skip: skip },
-    { $limit: limit },
+    // { $skip: skip },
+    // { $limit: limit },
   ]);
 
   const total = await projectModel.countDocuments();
@@ -541,12 +528,12 @@ const handle_admin_get_projects = catchAsync(async (req, res, next) => {
   res.status(200).json({
     message: "Projects fetched successfully",
     data: projects,
-    pagination: {
-      total,
-      page,
-      limit,
-      pages: Math.ceil(total / limit),
-    },
+    // pagination: {
+    //   total,
+    //   page,
+    //   limit,
+    //   pages: Math.ceil(total / limit),
+    // },
   });
 });
 const handle_admin_get_requests = catchAsync(async (req, res, next) => {
@@ -925,8 +912,7 @@ const handle_admin_get_Tickets = catchAsync(async (req, res, next) => {
   const tickets = await ticketModel
     .find()
     .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit)
+
     .populate({
       path: "user",
       select: "name profilePic",
@@ -935,12 +921,6 @@ const handle_admin_get_Tickets = catchAsync(async (req, res, next) => {
   res.status(200).json({
     message: "Tickets fetched successfully",
     data: tickets,
-    pagination: {
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    },
   });
 });
 

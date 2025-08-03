@@ -36,7 +36,9 @@ adminRoutes.put(
 //USERS
 adminRoutes.get(
   "/users",
-  //authen(["admin"]),
+
+  authen(["admin"]),
+
   adminController.handle_admin_get_users
 );
 adminRoutes.get(
@@ -53,7 +55,7 @@ adminRoutes.delete(
 //tasks
 adminRoutes.get(
   "/tasks",
-  authen(["admin"]),
+  // authen(["admin"]),
   adminController.handle_admin_get_tasks
 );
 adminRoutes.get(
@@ -64,7 +66,7 @@ adminRoutes.get(
 //tasks
 adminRoutes.get(
   "/projects",
-  authen(["admin"]),
+  // authen(["admin"]),
   adminController.handle_admin_get_projects
 );
 adminRoutes.get(
@@ -91,7 +93,7 @@ adminRoutes.get(
 //tickets
 adminRoutes.get(
   "/tickets",
-  authen(["admin"]),
+  // authen(["admin"]),
   adminController.handle_admin_get_Tickets
 );
 adminRoutes.get(

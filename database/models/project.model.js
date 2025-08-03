@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import { taskModel } from "./tasks.model.js";
 import { requsetModel, Sequence } from "./request.model.js";
-import axios from 'axios';
 
 const projectSchema = mongoose.Schema(
   {
@@ -25,7 +24,7 @@ const projectSchema = mongoose.Schema(
       default: "medium",
       required: true,
     },
-    location:String,
+    location: String,
     // requestForDocumentSubmittalApproval: {
     //   type: Boolean,
     //   default: false,
@@ -154,7 +153,6 @@ const projectSchema = mongoose.Schema(
     progress: {
       type: Number,
       default: 0,
-      required: true,
     },
     members: [
       { type: mongoose.Schema.Types.ObjectId, ref: "user", default: [] },
@@ -177,33 +175,45 @@ const projectSchema = mongoose.Schema(
   { timestamps: true }
 );
 
-
-projectSchema.post("find", async function (docs , next) {
-  for (let project of docs) {
-    const tasks = await taskModel.find({ project: project._id });
-    const validTasks = tasks.filter((task) => task.type === "toq");
-    const totalProgress = validTasks.reduce(
-      (sum, task) => sum + task.progress,
-      0
-    );
-    const taskCount = validTasks.length;
-    project.progress = taskCount > 0 ? totalProgress / taskCount : 0;
+projectSchema.post(/^find/, async function (docs) {
+  for (const project of docs) {
     try {
-    const apiUrl = `https://api.request-sa.com/api/v1/project/tags/progress/${project._id}`; // Replace with your API endpoint
-    const { data } = await axios.get(apiUrl, {
-      params: {
-        lang: 'en', // Add query parameters if needed
-      },
-    });
-    if (data && data.results) {
-      project.tags = data.results;
-    }
-    next();
+      const tasks = await taskModel.find({ project: project._id });
 
-  } catch (error) {
-    console.log('Proceeding without tag progress due to API error:', error.message);
-    next(); // Proceed even if the API call fails
-  }
+      const validTasks = tasks.filter((task) => task.type === "toq");
+
+      const approvedQu = validTasks.reduce(
+        (sum, task) => sum + task.approvedQuantity,
+        0
+      );
+      const reqQu = validTasks.reduce(
+        (sum, task) => sum + task.requiredQuantity,
+        0
+      );
+
+      const progress = reqQu > 0 ? (approvedQu / reqQu) * 100 : 0;
+
+      // Dynamically attach progress (not saved to DB)
+      project.progress = progress;
+
+
+
+
+      
+
+      // Fetch tags from external API
+      // const apiUrl = `https://api.request-sa.com/api/v1/project/tags/progress/${project._id}`;
+      // const { data } = await axios.get(apiUrl, {
+      //   params: { lang: "en" },
+      // });
+
+      // if (data?.results) {
+      //   project.tags = data.results; // Dynamically attach tags
+      // }
+    } catch (err) {
+      console.log(`Error processing project ${project._id}:`, err.message);
+      // Do not throw — just proceed
+    }
   }
 });
 
@@ -211,6 +221,7 @@ projectSchema.post(/^find/, async function (docs, next) {
   if (!Array.isArray(docs)) {
     docs = [docs]; // Convert to array if it's a single document
   }
+
   docs.forEach(async (doc) => {
     if (doc) {
       if (

@@ -276,6 +276,7 @@ const reSendinvite = catchAsync(async (req, res, next) => {
 ////////////////////////////////// admin \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 const getAllProjectByAdmin = catchAsync(async (req, res, next) => {
+  console.log("zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz");
   let ApiFeat = null;
   let err_1 = "No Project was found!";
   if (req.query.lang == "ar") {
