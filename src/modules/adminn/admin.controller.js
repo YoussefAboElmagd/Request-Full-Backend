@@ -499,6 +499,9 @@ const handle_admin_get_projects = catchAsync(async (req, res, next) => {
   const projects = await projectModel.find().populate("members");
   const total = await projectModel.countDocuments();
 
+
+
+  
   res.status(200).json({
     message: "Projects fetched successfully",
     data: projects,
