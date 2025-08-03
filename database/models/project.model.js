@@ -196,6 +196,11 @@ projectSchema.post(/^find/, async function (docs) {
       // Dynamically attach progress (not saved to DB)
       project.progress = progress;
 
+
+
+
+      
+
       // Fetch tags from external API
       // const apiUrl = `https://api.request-sa.com/api/v1/project/tags/progress/${project._id}`;
       // const { data } = await axios.get(apiUrl, {
