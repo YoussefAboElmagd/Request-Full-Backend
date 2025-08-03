@@ -1,6 +1,7 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 
+
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
@@ -81,8 +82,8 @@ cron.schedule("0 0 * * *", async () => {
   }
 });
 
-app.listen(process.env.PORT || 8000, () =>
-  console.log(`Server is running on port ${process.env.PORT || 8000}!`)
+app.listen(process.env.PORT || 8020, () =>
+  console.log(`Server is running on port ${process.env.PORT || 8020}!`)
 );
-httpServer.listen(8001);
+httpServer.listen(8021);
 export const sio = io;

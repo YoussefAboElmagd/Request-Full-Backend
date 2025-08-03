@@ -1,0 +1,64 @@
+name: Deploy Node.js App to VPS
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📦 Deploy to VPS via SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.PRIVATE_KEY }}
+        port: 22
+        script: |
+          set -e  # Exit on any error
+
+          echo "📁 Setting up application directory..."
+          APP_DIR="/home/${{ secrets.USERNAME }}/apps/RequestCiCd"
+          rm -rf "$APP_DIR"
+          mkdir -p "$APP_DIR"
+          cd "$APP_DIR" || { echo "❌ Failed to access directory"; exit 1; }
+
+          echo "📥 Cloning repository..."
+          git clone --depth 1 --branch main https://github.com/YoussefAboElmagd/Request-Full-Backend.git . || { echo "❌ Git clone failed"; exit 1; }
+          echo "✅ Repository cloned. Commit: $(git rev-parse --short HEAD)"
+
+          echo "📦 Installing dependencies..."
+          npm install --omit=dev || { echo "❌ npm install failed"; exit 1; }
+
+
+          echo "🚀 Managing PM2 process..."
+          npm install -g pm2 || { echo "❌ PM2 installation failed"; exit 1; }
+          
+          # Stop and delete any existing PM2 process to ensure clean start
+          pm2 describe RequestCiCd > /dev/null 2>&1 && pm2 delete RequestCiCd || echo "ℹ️ No existing PM2 process found"
+          
+          # Start new PM2 process
+          pm2 start server.js --name RequestCiCd || { echo "❌ PM2 start failed"; exit 1; }
+          pm2 save
+          echo "✅ PM2 process started"
+
+          echo "🩺 Verifying application status..."
+          sleep 2  # Give the app a moment to start
+          # Check if the process is running
+          if pm2 describe RequestCiCd > /dev/null 2>&1; then
+            echo "✅ PM2 process 'RequestCiCd' is running"
+  
+            echo "📜 Retrieving last 10 log lines..."
+            pm2 logs RequestCiCd --lines 10 --nostream > recent_logs.txt || {
+            echo "⚠️ Could not retrieve PM2 logs"
+            exit 1
+              }
+
+          else
+          echo "❌ PM2 process 'RequestCiCd' is not running"
+          exit 1
+          fi
+
+          pm2 list
