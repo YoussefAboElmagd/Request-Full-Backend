@@ -496,33 +496,7 @@ const handle_admin_get_tasks_by_id = catchAsync(async (req, res, next) => {
 });
 
 const handle_admin_get_projects = catchAsync(async (req, res, next) => {
-  const projects = await projectModel.aggregate([
-    {
-      $project: {
-        status: 1,
-        name: 1,
-        budget: 1,
-        projectPriority: 1,
-        sDate: 1,
-        dueDate: 1,
-        tasks: 1,
-        members: 1,
-        progress: 1,
-      },
-    },
-    {
-      $lookup: {
-        from: "users", // the name of the collection (not model)
-        localField: "members",
-        foreignField: "_id",
-        as: "members",
-        pipeline: [{ $project: { profilePic: 1 } }],
-      },
-    },
-    // { $skip: skip },
-    // { $limit: limit },
-  ]);
-
+  const projects = await projectModel.find().populate("members");
   const total = await projectModel.countDocuments();
 
   res.status(200).json({
