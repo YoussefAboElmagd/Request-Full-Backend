@@ -20,12 +20,40 @@ export async function sendEmail(email, text) {
   //     pass: "ykejlphmzcmmwlgw",
   //   },
   // });
-// <support@request-sa.com>
+  // <support@request-sa.com>
   const info = await transporter.sendMail({
     from: `Admin " <support@request-sa.com>`, // sender address
     to: `${email}`, // list of receivers
     subject: "Email Verification", // Subject line
     text: `${text}`, // plain text body
+  });
+
+  console.log("Message sent: %s", info.messageId);
+}
+export async function sendEmailTOAssistant(email, password) {
+  const transporter = nodemailer.createTransport({
+    host: "smtp.hostinger.com", // Hostinger SMTP server
+    port: 465, // Use 587 for TLS or 465 for SSL
+    secure: true, // Set true for port 465
+    auth: {
+      user: "support@request-sa.com", // Your Hostinger email address
+      pass: "ASDasdasd@10", // Your Hostinger email password
+    },
+  });
+  // const transporter = nodemailer.createTransport({
+  //   service: "gmail",
+  //   auth: {
+  //     user: "abdelrahmanmohammed851@gmail.com",
+  //     pass: "ykejlphmzcmmwlgw",
+  //   },
+  // });
+  // <support@request-sa.com>
+  const info = await transporter.sendMail({
+    from: `Admin " <support@request-sa.com>`, // sender address
+    to: `${email}`, // list of receivers
+    subject: "Email Verification", // Subject line
+    text: `You have been added as an assistant in the request dashboard.
+Please log in using your email and the following password: ${password}`, // plain text body
   });
 
   console.log("Message sent: %s", info.messageId);

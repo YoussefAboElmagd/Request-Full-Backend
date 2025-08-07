@@ -23,9 +23,6 @@ const userSchema = mongoose.Schema(
     },
     phone: {
       type: String,
-      required: [true, "Phone is a required field."],
-      minLength: [9, "phone is too short."],
-      unique: [true, "Phone must be unique."],
     },
     password: {
       type: String,
@@ -87,14 +84,19 @@ const userSchema = mongoose.Schema(
     model: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "model",
-      immutable: true,
-      required: true,
     },
     team: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "team",
       default: null,
     },
+    teamMember: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
+    ],
     role: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "userType",
@@ -155,10 +157,19 @@ const userSchema = mongoose.Schema(
     },
     userType: {
       type: String,
-      enum: ["user", "admin", "superUser"],
+      enum: ["user", "admin", "superUser", "assistant"],
       default: "user",
       required: true,
     },
+    rights: {
+      type: [String], // An array of strings
+      default: [], // Optional: default to an empty array
+    },
+
+    memberVocation: {
+      type: String,
+    },
+
     projects: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "project",

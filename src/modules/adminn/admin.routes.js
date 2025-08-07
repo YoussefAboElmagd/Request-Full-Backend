@@ -2,6 +2,7 @@ import exprees from "express";
 import * as adminController from "./admin.controller.js";
 import { validate } from "../../utils/middleWare/validation/execution.js";
 import {
+  addMemeber,
   loginSchema,
   otpSchema,
   reotpSchema,
@@ -29,8 +30,22 @@ adminRoutes.post(
 adminRoutes.put(
   "/updateadmin",
   uploadSingleFile("profilePic", "image"),
-  authen(["admin"]),
+  authen(["admin", "assistant"]),
   adminController.handle_admin_update_profile
+);
+
+//admin team
+adminRoutes.post(
+  "/team",
+  authen(["admin"]),
+  validate(addMemeber),
+  adminController.adduserTeam
+);
+adminRoutes.delete(
+  "/team/:id",
+  authen(["admin"]),
+
+  adminController.deleteuserTeam
 );
 
 //USERS
@@ -53,7 +68,7 @@ adminRoutes.delete(
 //tasks
 adminRoutes.get(
   "/tasks",
-  // authen(["admin"]),
+  authen(["admin"]),
   adminController.handle_admin_get_tasks
 );
 adminRoutes.get(
@@ -64,12 +79,12 @@ adminRoutes.get(
 //tasks
 adminRoutes.get(
   "/projects",
-  // authen(["admin"]),
+  authen(["admin"]),
   adminController.handle_admin_get_projects
 );
 adminRoutes.get(
   "/projects/:id",
-  // authen(["admin"]),
+  authen(["admin"]),
   adminController.handle_admin_get_projects_by_id
 );
 //requests
@@ -85,7 +100,7 @@ adminRoutes.get(
 );
 adminRoutes.get(
   "/requets/most/used",
-  authen(["admin"]),
+  // authen(["admin"]),
   adminController.handle_admin_get_requests_most_use
 );
 //tickets
