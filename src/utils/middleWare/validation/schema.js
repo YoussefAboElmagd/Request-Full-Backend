@@ -41,6 +41,8 @@ export const addMemeber = Joi.object({
     "string.min": "Name must be at least 3 characters",
   }),
 
+  
+
   access: Joi.array()
     .items(Joi.string().valid("read", "update", "create"))
     .min(1)
