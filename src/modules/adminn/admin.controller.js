@@ -11,6 +11,7 @@ import { projectModel } from "../../../database/models/project.model.js";
 import { taskModel } from "../../../database/models/tasks.model.js";
 import { requsetModel } from "../../../database/models/request.model.js";
 import { ticketModel } from "../../../database/models/ticket.model.js";
+import { documentsModel } from "../../../database/models/documents.model.js";
 
 const handle_admin_signin = catchAsync(async (req, res, next) => {
   const { lang } = req.query;
@@ -74,8 +75,11 @@ const handle_admin_verify = catchAsync(async (req, res, next) => {
   const user = await userModel
     .findOne({ email })
     .select("-password -verificationCode");
+  user.lastLogin = new Date();
+  await user.save();
   res.status(200).json({ message: "success", data: { userData: user, token } });
 });
+
 const handle_admin_resend_otp = catchAsync(async (req, res, next) => {
   const { lang } = req.query;
 
@@ -99,6 +103,22 @@ const handle_admin_resend_otp = catchAsync(async (req, res, next) => {
   await emailExist.save();
   sendEmail(email, `Email Verification Code:${fourDigitCode}`);
   res.status(200).json({ message: "otp sent successfully" });
+});
+const handle_admin_change_password = catchAsync(async (req, res, next) => {
+  const { password } = req.body;
+
+  if (!password)
+    return res.status(400).json({ message: "password is required" });
+
+  const userExist = await userModel.findById(req.user.id);
+  if (!userExist) return res.status(404).json({ message: "user not found" });
+
+  const newPassword = await bcrypt.hash(password, +process.env.SALT_ROUNDS);
+
+  userExist.password = newPassword;
+  await userExist.save();
+
+  res.status(200).json({message:"password updated successfully"})
 });
 
 const handle_admin_update_profile = catchAsync(async (req, res, next) => {
@@ -1052,7 +1072,20 @@ const handle_admin_get_projects_by_id = catchAsync(async (req, res, next) => {
     percentage: parseFloat(((count / total) * 100).toFixed(2)),
   }));
 
+  let docs = [];
   project[0].tags = result;
+  console.log(project[0].tasks);
+
+  if (project[0]?.tasks && project[0]?.tasks?.length) {
+    for (const task of project[0]?.tasks) {
+      const newdocs = await documentsModel
+        .find({ task: task._id })
+        .select("path createdAt");
+      docs = [...docs, ...newdocs];
+    }
+  }
+
+  project[0].docs = docs;
 
   res.status(200).json({
     message: "Project fetched successfully",
@@ -1203,6 +1236,7 @@ export {
   handle_admin_signin,
   handle_admin_verify,
   handle_admin_resend_otp,
+  handle_admin_change_password,
   handle_admin_get_users,
   handle_admin_get_user_by_id,
   handle_admin_get_tasks,

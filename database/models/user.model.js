@@ -180,6 +180,9 @@ const userSchema = mongoose.Schema(
       ref: "userGroup",
       default: [],
     },
+    lastLogin: {
+      type: Date,
+    },
   },
   { timestamps: true }
 );

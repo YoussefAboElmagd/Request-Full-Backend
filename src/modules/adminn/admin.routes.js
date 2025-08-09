@@ -27,6 +27,11 @@ adminRoutes.post(
   validate(reotpSchema),
   adminController.handle_admin_resend_otp
 );
+adminRoutes.post(
+  "/changepassword",
+  authen(["admin", "assistant"]),
+  adminController.handle_admin_change_password
+);
 adminRoutes.put(
   "/updateadmin",
   uploadSingleFile("profilePic", "image"),
@@ -51,7 +56,7 @@ adminRoutes.delete(
 //USERS
 adminRoutes.get(
   "/users",
-  // authen(["admin"]),
+  authen(["admin"]),
   adminController.handle_admin_get_users
 );
 adminRoutes.get(
@@ -100,13 +105,13 @@ adminRoutes.get(
 );
 adminRoutes.get(
   "/requets/most/used",
-  // authen(["admin"]),
+  authen(["admin"]),
   adminController.handle_admin_get_requests_most_use
 );
 //tickets
 adminRoutes.get(
   "/tickets",
-  // authen(["admin"]),
+  authen(["admin"]),
   adminController.handle_admin_get_Tickets
 );
 adminRoutes.get(
