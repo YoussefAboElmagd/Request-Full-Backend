@@ -4,13 +4,14 @@ import catchAsync from "../../utils/middleWare/catchAsyncError.js";
 import { customAlphabet } from "nanoid";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { sendEmail } from "../../email/sendEmail.js";
+import { sendEmail, sendEmailTOAssistant } from "../../email/sendEmail.js";
 import { userTypeModel } from "../../../database/models/userType.model.js";
 import mongoose from "mongoose";
 import { projectModel } from "../../../database/models/project.model.js";
 import { taskModel } from "../../../database/models/tasks.model.js";
 import { requsetModel } from "../../../database/models/request.model.js";
 import { ticketModel } from "../../../database/models/ticket.model.js";
+import { documentsModel } from "../../../database/models/documents.model.js";
 
 const handle_admin_signin = catchAsync(async (req, res, next) => {
   const { lang } = req.query;
@@ -26,7 +27,7 @@ const handle_admin_signin = catchAsync(async (req, res, next) => {
 
   if (!emailExist) return res.status(400).json({ message: BodyError });
 
-  if (emailExist.userType != "admin")
+  if (emailExist.userType != "admin" && emailExist.userType != "assistant")
     return res.status(401).json({ message: authErr });
   const checkPassword = bcrypt.compareSync(password, emailExist.password);
 
@@ -56,7 +57,7 @@ const handle_admin_verify = catchAsync(async (req, res, next) => {
 
   if (!emailExist) return res.status(400).json({ message: BodyError });
 
-  if (emailExist.userType != "admin")
+  if (emailExist.userType != "admin" && emailExist.userType != "assistant")
     return res.status(401).json({ message: authErr });
 
   if (emailExist.verificationCode != otp)
@@ -74,8 +75,11 @@ const handle_admin_verify = catchAsync(async (req, res, next) => {
   const user = await userModel
     .findOne({ email })
     .select("-password -verificationCode");
+  user.lastLogin = new Date();
+  await user.save();
   res.status(200).json({ message: "success", data: { userData: user, token } });
 });
+
 const handle_admin_resend_otp = catchAsync(async (req, res, next) => {
   const { lang } = req.query;
 
@@ -89,7 +93,7 @@ const handle_admin_resend_otp = catchAsync(async (req, res, next) => {
 
   if (!emailExist) return res.status(400).json({ message: BodyError });
 
-  if (emailExist.userType != "admin")
+  if (emailExist.userType != "admin" && emailExist.userType != "assistant")
     return res.status(401).json({ message: authErr });
 
   const nanoid = customAlphabet("0123456789", 4);
@@ -99,6 +103,22 @@ const handle_admin_resend_otp = catchAsync(async (req, res, next) => {
   await emailExist.save();
   sendEmail(email, `Email Verification Code:${fourDigitCode}`);
   res.status(200).json({ message: "otp sent successfully" });
+});
+const handle_admin_change_password = catchAsync(async (req, res, next) => {
+  const { password } = req.body;
+
+  if (!password)
+    return res.status(400).json({ message: "password is required" });
+
+  const userExist = await userModel.findById(req.user.id);
+  if (!userExist) return res.status(404).json({ message: "user not found" });
+
+  const newPassword = await bcrypt.hash(password, +process.env.SALT_ROUNDS);
+
+  userExist.password = newPassword;
+  await userExist.save();
+
+  res.status(200).json({ message: "password updated successfully" });
 });
 
 const handle_admin_update_profile = catchAsync(async (req, res, next) => {
@@ -150,6 +170,7 @@ const handle_admin_get_users = catchAsync(async (req, res, next) => {
         profilePic: 1,
         name: 1,
         email: 1,
+        personalNumber: 1,
         role: {
           jobTitle: "$role.jobTitle",
         },
@@ -499,9 +520,6 @@ const handle_admin_get_projects = catchAsync(async (req, res, next) => {
   const projects = await projectModel.find().populate("members");
   const total = await projectModel.countDocuments();
 
-
-
-
   res.status(200).json({
     message: "Projects fetched successfully",
     data: projects,
@@ -513,7 +531,6 @@ const handle_admin_get_projects = catchAsync(async (req, res, next) => {
     // },
   });
 });
-
 
 const handle_admin_get_requests = catchAsync(async (req, res, next) => {
   const data = await requsetModel.aggregate([
@@ -603,32 +620,216 @@ const handle_admin_get_requests = catchAsync(async (req, res, next) => {
     data,
   });
 });
+
 const handle_admin_get_requests_most_use = catchAsync(
   async (req, res, next) => {
-    const [SubmittalRequest, TOF, Matrial, work, inspection, totalRequests] =
+    // Date calculations for weekly stats
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    const twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+
+    const [SubmittalRequest, TOF, Matrial, work, inspection] =
       await Promise.all([
         requsetModel.countDocuments({ type: "requestForDocumentSubmittal" }),
         requsetModel.countDocuments({ type: "tableOfQuantity" }),
         requsetModel.countDocuments({ type: "requestForMaterialAndEquipment" }),
         requsetModel.countDocuments({ type: "workRequest" }),
         requsetModel.countDocuments({ type: "requestForInspaction" }),
-        requsetModel.countDocuments(),
       ]);
+
+    const totalMostOfUsed =
+      SubmittalRequest + TOF + Matrial + work + inspection;
+
+    const [
+      totalUsers,
+      totalProjects,
+      totalTasks,
+      totlaTickets,
+      thisWeekUsers,
+      previousWeekUsers,
+      thisWeekProjects,
+      previousWeekProjects,
+      thisWeekTasks,
+      previousWeekTasks,
+      thisWeekTickets,
+      previousWeekTickets,
+    ] = await Promise.all([
+      userModel.countDocuments({ userType: { $ne: "admin" } }),
+      projectModel.countDocuments(),
+      taskModel.countDocuments(),
+      ticketModel.countDocuments(),
+      // Users created in the last week
+      userModel.countDocuments({
+        userType: { $ne: "admin" },
+        createdAt: { $gte: oneWeekAgo },
+      }),
+      // Users created in the week before that
+      userModel.countDocuments({
+        userType: { $ne: "admin" },
+        createdAt: {
+          $gte: twoWeeksAgo,
+          $lt: oneWeekAgo,
+        },
+      }),
+      // Projects created in the last week
+      projectModel.countDocuments({
+        createdAt: { $gte: oneWeekAgo },
+      }),
+      // Projects created in the week before that
+      projectModel.countDocuments({
+        createdAt: {
+          $gte: twoWeeksAgo,
+          $lt: oneWeekAgo,
+        },
+      }),
+      // Tasks created in the last week
+      taskModel.countDocuments({
+        createdAt: { $gte: oneWeekAgo },
+      }),
+      // Tasks created in the week before that
+      taskModel.countDocuments({
+        createdAt: {
+          $gte: twoWeeksAgo,
+          $lt: oneWeekAgo,
+        },
+      }),
+      // Tickets created in the last week
+      ticketModel.countDocuments({
+        createdAt: { $gte: oneWeekAgo },
+      }),
+      // Tickets created in the week before that
+      ticketModel.countDocuments({
+        createdAt: {
+          $gte: twoWeeksAgo,
+          $lt: oneWeekAgo,
+        },
+      }),
+    ]);
+
+    // Calculate weekly statistics for all entities
+    const calculateWeeklyStats = (thisWeek, previousWeek, total) => ({
+      thisWeek,
+      previousWeek,
+      growthRate:
+        previousWeek > 0
+          ? parseFloat(
+              (((thisWeek - previousWeek) / previousWeek) * 100).toFixed(2)
+            )
+          : thisWeek > 0
+          ? 100
+          : 0,
+      percentageOfTotal:
+        total > 0 ? parseFloat(((thisWeek / total) * 100).toFixed(2)) : 0,
+    });
+
+    const userStats = calculateWeeklyStats(
+      thisWeekUsers,
+      previousWeekUsers,
+      totalUsers
+    );
+    const projectStats = calculateWeeklyStats(
+      thisWeekProjects,
+      previousWeekProjects,
+      totalProjects
+    );
+    const taskStats = calculateWeeklyStats(
+      thisWeekTasks,
+      previousWeekTasks,
+      totalTasks
+    );
+    const ticketStats = calculateWeeklyStats(
+      thisWeekTickets,
+      previousWeekTickets,
+      totlaTickets
+    );
+
+    const topFiveNewestUsers = await userModel.aggregate([
+      {
+        $match: { userType: { $ne: "admin" } },
+      },
+      {
+        $sort: { createdAt: -1 },
+      },
+      {
+        $limit: 5,
+      },
+      {
+        $lookup: {
+          from: "usertypes",
+          localField: "role",
+          foreignField: "_id",
+          as: "roleData",
+        },
+      },
+      {
+        $unwind: "$roleData",
+      },
+      {
+        $project: {
+          name: 1,
+          profilePic: 1,
+          email: 1,
+          createdAt: 1,
+          role: "$roleData.jobTitle",
+        },
+      },
+    ]);
 
     res.status(200).json({
       message: "Request counts fetched successfully",
-      data: [
-        { title: "Work Request", value: work },
-        { title: "Table Of Quantity", value: TOF },
-        { title: "Request For Material And Equipment", value: Matrial },
-        { title: "Request For Document Submittal", value: SubmittalRequest },
-        { title: "Request For Inspection(RFI)", value: inspection },
-
-        totalRequests,
-      ],
+      data: {
+        most: [
+          { title: "Work Request", value: (work / totalMostOfUsed) * 100 },
+          { title: "Table Of Quantity", value: (TOF / totalMostOfUsed) * 100 },
+          {
+            title: "Request For Material And Equipment",
+            value: (Matrial / totalMostOfUsed) * 100,
+          },
+          {
+            title: "Request For Document Submittal",
+            value: (SubmittalRequest / totalMostOfUsed) * 100,
+          },
+          {
+            title: "Request For Inspection(RFI)",
+            value: (inspection / totalMostOfUsed) * 100,
+          },
+        ],
+        cards: [
+          {
+            title: "Users",
+            total: totalUsers,
+            ...userStats,
+          },
+          {
+            title: "Projects",
+            total: totalProjects,
+            ...projectStats,
+          },
+          {
+            title: "Tasks",
+            total: totalTasks,
+            ...taskStats,
+          },
+          {
+            title: "Tickets",
+            total: totlaTickets,
+            ...ticketStats,
+          },
+        ],
+        weeklyStats: {
+          users: userStats,
+          projects: projectStats,
+          tasks: taskStats,
+          tickets: ticketStats,
+        },
+        topFiveNewestUsers,
+      },
     });
   }
 );
+
 const handle_admin_get_requests_by_id = catchAsync(async (req, res, next) => {
   const { id } = req.params;
 
@@ -872,7 +1073,20 @@ const handle_admin_get_projects_by_id = catchAsync(async (req, res, next) => {
     percentage: parseFloat(((count / total) * 100).toFixed(2)),
   }));
 
+  let docs = [];
   project[0].tags = result;
+  console.log(project[0].tasks);
+
+  if (project[0]?.tasks && project[0]?.tasks?.length) {
+    for (const task of project[0]?.tasks) {
+      const newdocs = await documentsModel
+        .find({ task: task._id })
+        .select("path createdAt");
+      docs = [...docs, ...newdocs];
+    }
+  }
+
+  project[0].docs = docs;
 
   res.status(200).json({
     message: "Project fetched successfully",
@@ -969,7 +1183,68 @@ const handle_admin_change_ticket_status = catchAsync(async (req, res, next) => {
     .json({ message: "Ticket status updated successfully", ticket });
 });
 
+const adduserTeam = catchAsync(async (req, res, next) => {
+  const { name, email, vocation, password, access } = req.body;
+
+  const emailExist = await userModel.findOne({ email });
+
+  if (emailExist)
+    return res.status(409).json({ message: "email already exist" });
+
+  const hashedPassword = await bcrypt.hash(password, +process.env.SALT_ROUNDS);
+
+  const createdUser = await userModel.create({
+    name,
+    email,
+    memberVocation: vocation,
+    password: hashedPassword,
+    rights: access,
+
+    userType: "assistant",
+  });
+
+  await userModel.findByIdAndUpdate(req.user.id, {
+    $push: { teamMember: createdUser._id },
+  });
+  await sendEmailTOAssistant(email, password);
+
+  res.status(201).json({ message: "user created successfully" });
+});
+const deleteuserTeam = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+
+  const userExist = await userModel.findOne({ userType: "assistant", _id: id });
+  if (!userExist) return res.status(404).json({ message: "user not found" });
+
+  await userModel.findByIdAndUpdate(req.user.id, {
+    $pull: { teamMember: id },
+  });
+
+  await userModel.findByIdAndDelete(id);
+
+  res.status(201).json({ message: "user deleted successfully" });
+});
+const getTeam = catchAsync(async (req, res, next) => {
+  const id = req.user.id;
+  // console.log(id);
+
+  const userExits = await userModel
+    .findById(id)
+    .populate({ path: "teamMember", select: "-password" });
+  if (!userExits) return res.status(404).json({ message: "user not found" });
+
+  res.status(200).json({
+    message: "team fetched successfully",
+    data: userExits?.teamMember || [],
+  });
+});
+
+
+
 export {
+  getTeam,
+  deleteuserTeam,
+  adduserTeam,
   handle_admin_get_requests,
   handle_admin_change_ticket_status,
   handle_admin_response_Tickets_by_id,
@@ -979,6 +1254,7 @@ export {
   handle_admin_signin,
   handle_admin_verify,
   handle_admin_resend_otp,
+  handle_admin_change_password,
   handle_admin_get_users,
   handle_admin_get_user_by_id,
   handle_admin_get_tasks,
