@@ -1239,6 +1239,8 @@ const getTeam = catchAsync(async (req, res, next) => {
   });
 });
 
+
+
 export {
   getTeam,
   deleteuserTeam,
