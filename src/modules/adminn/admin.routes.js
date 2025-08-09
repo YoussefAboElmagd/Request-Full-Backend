@@ -46,6 +46,12 @@ adminRoutes.post(
   validate(addMemeber),
   adminController.adduserTeam
 );
+adminRoutes.get(
+  "/team",
+  authen(["admin"]),
+
+  adminController.getTeam
+);
 adminRoutes.delete(
   "/team/:id",
   authen(["admin"]),

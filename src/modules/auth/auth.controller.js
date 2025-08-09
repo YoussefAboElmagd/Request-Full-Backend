@@ -6,6 +6,7 @@ import { userModel } from "../../../database/models/user.model.js";
 import generateUniqueId from "generate-unique-id";
 import { sendEmail } from "../../email/sendEmail.js";
 import { teamModel } from "../../../database/models/team.model.js";
+import { customAlphabet } from "nanoid";
 
 export const signUp = catchAsync(async (req, res, next) => {
   let err_phone = "This Phone  already exist";
@@ -79,6 +80,17 @@ export const signUp = catchAsync(async (req, res, next) => {
     await results.populate("role");
     return res.json({ message: "added", token, results });
   }
+
+  const nanoidNumbers = customAlphabet("0123456789", 6); // 6 digits max
+
+  function getRandomNumberInRange(min = 100, max = 100000) {
+    let num;
+    do {
+      num = parseInt(nanoidNumbers(), 10); // Generate number and convert to integer
+    } while (num < min || num > max);
+    return num;
+  }
+  req.body.personalNumber = getRandomNumberInRange();
   let results = new userModel(req.body);
   let token = jwt.sign(
     { name: results.name, userId: results._id },

@@ -93,7 +93,7 @@ const userSchema = mongoose.Schema(
     teamMember: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: "user",
         default: null,
       },
     ],
@@ -182,6 +182,9 @@ const userSchema = mongoose.Schema(
     },
     lastLogin: {
       type: Date,
+    },
+    personalNumber: {
+      type: Number,
     },
   },
   { timestamps: true }

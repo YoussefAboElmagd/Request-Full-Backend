@@ -118,7 +118,7 @@ const handle_admin_change_password = catchAsync(async (req, res, next) => {
   userExist.password = newPassword;
   await userExist.save();
 
-  res.status(200).json({message:"password updated successfully"})
+  res.status(200).json({ message: "password updated successfully" });
 });
 
 const handle_admin_update_profile = catchAsync(async (req, res, next) => {
@@ -170,6 +170,7 @@ const handle_admin_get_users = catchAsync(async (req, res, next) => {
         profilePic: 1,
         name: 1,
         email: 1,
+        personalNumber: 1,
         role: {
           jobTitle: "$role.jobTitle",
         },
@@ -1223,8 +1224,23 @@ const deleteuserTeam = catchAsync(async (req, res, next) => {
 
   res.status(201).json({ message: "user deleted successfully" });
 });
+const getTeam = catchAsync(async (req, res, next) => {
+  const id = req.user.id;
+  // console.log(id);
+
+  const userExits = await userModel
+    .findById(id)
+    .populate({ path: "teamMember", select: "-password" });
+  if (!userExits) return res.status(404).json({ message: "user not found" });
+
+  res.status(200).json({
+    message: "team fetched successfully",
+    data: userExits?.teamMember || [],
+  });
+});
 
 export {
+  getTeam,
   deleteuserTeam,
   adduserTeam,
   handle_admin_get_requests,
