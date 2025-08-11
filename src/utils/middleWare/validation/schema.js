@@ -35,6 +35,7 @@ export const addMemeber = Joi.object({
   vocation: Joi.string().required().messages({
     "string.empty": "Vocation is required",
   }),
+  phone:Joi.string().required(),
 
   name: Joi.string().min(3).required().messages({
     "string.empty": "Name is required",
