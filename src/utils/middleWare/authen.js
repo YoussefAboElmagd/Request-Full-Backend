@@ -13,7 +13,7 @@ export const authen = (role = ["user"]) => {
 
         if (role.includes(admin.userType)) {
           req.user = decode;
-          console.log(admin.userType)
+    
 
           return next();
         } else {

@@ -1184,7 +1184,7 @@ const handle_admin_change_ticket_status = catchAsync(async (req, res, next) => {
 });
 
 const adduserTeam = catchAsync(async (req, res, next) => {
-  const { name, email, vocation, password, access } = req.body;
+  const { name, email, vocation, password, access, phone } = req.body;
 
   const emailExist = await userModel.findOne({ email });
 
@@ -1199,9 +1199,10 @@ const adduserTeam = catchAsync(async (req, res, next) => {
     memberVocation: vocation,
     password: hashedPassword,
     rights: access,
-
+    phone: phone,
     userType: "assistant",
   });
+  
 
   await userModel.findByIdAndUpdate(req.user.id, {
     $push: { teamMember: createdUser._id },
@@ -1238,8 +1239,6 @@ const getTeam = catchAsync(async (req, res, next) => {
     data: userExits?.teamMember || [],
   });
 });
-
-
 
 export {
   getTeam,
