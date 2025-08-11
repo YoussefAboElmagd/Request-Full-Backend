@@ -1202,6 +1202,7 @@ const adduserTeam = catchAsync(async (req, res, next) => {
     phone: phone,
     userType: "assistant",
   });
+  
 
   await userModel.findByIdAndUpdate(req.user.id, {
     $push: { teamMember: createdUser._id },
