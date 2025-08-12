@@ -57,6 +57,7 @@ adminRoutes.delete(
   authen(["admin"]),
 
   adminController.deleteuserTeam
+  
 );
 
 //USERS
