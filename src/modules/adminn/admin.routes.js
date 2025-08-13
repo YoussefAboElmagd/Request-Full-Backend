@@ -136,5 +136,10 @@ adminRoutes.patch(
   authen(["admin"]),
   adminController.handle_admin_change_ticket_status
 );
+adminRoutes.get(
+  "/tags",
+  authen(["admin"]),
+  adminController.handle_admin_get_tags
+);
 
 export default adminRoutes;
