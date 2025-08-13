@@ -1182,6 +1182,44 @@ const handle_admin_change_ticket_status = catchAsync(async (req, res, next) => {
     .status(200)
     .json({ message: "Ticket status updated successfully", ticket });
 });
+const handle_admin_get_tags = catchAsync(async (req, res, next) => {
+  const tags = await taskModel.aggregate([
+    {
+      $project: { tags: 1 },
+    },
+    {
+      $lookup: {
+        from: "tags",
+        localField: "tags",
+        foreignField: "_id",
+        as: "tags",
+      },
+    },
+    { $unwind: "$tags" },
+    {
+      $group: {
+        _id: "$tags._id",
+        name: { $first: "$tags.name" },
+        colorCode: { $first: "$tags.colorCode" },
+        count: { $sum: 1 },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        tagId: "$_id",
+        name: 1,
+        colorCode: 1,
+        count: 1,
+      },
+    },
+    {
+      $sort: { count: -1 }, 
+    },
+  ]);
+
+  res.status(200).json({ message: "tags founded successfully", data: tags });
+});
 
 const adduserTeam = catchAsync(async (req, res, next) => {
   const { name, email, vocation, password, access, phone } = req.body;
@@ -1202,7 +1240,6 @@ const adduserTeam = catchAsync(async (req, res, next) => {
     phone: phone,
     userType: "assistant",
   });
-  
 
   await userModel.findByIdAndUpdate(req.user.id, {
     $push: { teamMember: createdUser._id },
@@ -1241,6 +1278,7 @@ const getTeam = catchAsync(async (req, res, next) => {
 });
 
 export {
+  handle_admin_get_tags,
   getTeam,
   deleteuserTeam,
   adduserTeam,
