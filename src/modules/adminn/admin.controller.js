@@ -272,7 +272,9 @@ const handle_admin_get_user_by_id = catchAsync(async (req, res, next) => {
     return res.status(404).json({ message: notFound });
   }
   if (user?.team) {
-    const team = await teamModel.findById(user?.team).populate("members","-password");
+    const team = await teamModel
+      .findById(user?.team)
+      .populate("members", "-password");
     user.team = team;
   }
   const projects = await projectModel.aggregate([
@@ -1189,6 +1191,7 @@ const handle_admin_change_ticket_status = catchAsync(async (req, res, next) => {
 });
 const handle_admin_assign_ticket = catchAsync(async (req, res, next) => {
   const { ticketId, assistantId } = req.body;
+  console.log("sasasa");
 
   const ticket = await ticketModel.findById(ticketId);
 

@@ -139,7 +139,7 @@ adminRoutes.patch(
   adminController.handle_admin_change_ticket_status
 );
 adminRoutes.patch(
-  "/tickets/assign",
+  "/tickets/assign/assistant",
   authen(["admin"]),
   adminController.handle_admin_assign_ticket
 );
