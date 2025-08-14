@@ -57,7 +57,6 @@ adminRoutes.delete(
   authen(["admin"]),
 
   adminController.deleteuserTeam
-  
 );
 
 //USERS
@@ -118,12 +117,12 @@ adminRoutes.get(
 //tickets
 adminRoutes.get(
   "/tickets",
-  authen(["admin"]),
+  authen(["admin", "assistant"]),
   adminController.handle_admin_get_Tickets
 );
 adminRoutes.get(
   "/tickets/:id",
-  authen(["admin"]),
+  authen(["admin","assistant"]),
   adminController.handle_admin_get_Tickets_by_id
 );
 adminRoutes.post(
@@ -133,8 +132,13 @@ adminRoutes.post(
 );
 adminRoutes.patch(
   "/tickets/:id",
-  authen(["admin"]),
+  authen(["admin","assistant"]),
   adminController.handle_admin_change_ticket_status
+);
+adminRoutes.patch(
+  "/tickets/assign",
+  authen(["admin"]),
+  adminController.handle_admin_assign_ticket
 );
 adminRoutes.get(
   "/tags",

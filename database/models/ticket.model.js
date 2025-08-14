@@ -21,6 +21,10 @@ const ticketSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
     },
+    assignedTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+    },
 
     attachment: {
       type: String,

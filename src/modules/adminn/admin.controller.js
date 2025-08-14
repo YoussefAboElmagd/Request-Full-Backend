@@ -12,6 +12,7 @@ import { taskModel } from "../../../database/models/tasks.model.js";
 import { requsetModel } from "../../../database/models/request.model.js";
 import { ticketModel } from "../../../database/models/ticket.model.js";
 import { documentsModel } from "../../../database/models/documents.model.js";
+import { teamModel } from "../../../database/models/team.model.js";
 
 const handle_admin_signin = catchAsync(async (req, res, next) => {
   const { lang } = req.query;
@@ -261,7 +262,6 @@ const handle_admin_get_user_by_id = catchAsync(async (req, res, next) => {
         confirmedPhone: 0,
         verified: 0,
         plan: 0,
-        team: 0,
       },
     },
   ]);
@@ -270,6 +270,10 @@ const handle_admin_get_user_by_id = catchAsync(async (req, res, next) => {
 
   if (!user) {
     return res.status(404).json({ message: notFound });
+  }
+  if (user?.team) {
+    const team = await teamModel.findById(user?.team).populate("members","-password");
+    user.team = team;
   }
   const projects = await projectModel.aggregate([
     {
@@ -1102,14 +1106,21 @@ const handle_admin_get_Tickets = catchAsync(async (req, res, next) => {
   // Get total count to calculate total pages
   const total = await ticketModel.countDocuments();
 
+  let query = {};
+
+  if (req.user.role === "assistant") {
+    query = { assignedTo: req.user.id };
+  }
+
   const tickets = await ticketModel
-    .find()
+    .find(query)
     .sort({ createdAt: -1 })
 
     .populate({
       path: "user",
       select: "name profilePic",
-    });
+    })
+    .populate("assignedTo");
 
   res.status(200).json({
     message: "Tickets fetched successfully",
@@ -1121,7 +1132,7 @@ const handle_admin_get_Tickets_by_id = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const tickets = await ticketModel
     .findById(id)
-
+    .populate("assignedTo")
     .populate({
       path: "user",
       select: "name profilePic",
@@ -1172,15 +1183,26 @@ const handle_admin_change_ticket_status = catchAsync(async (req, res, next) => {
     return res.status(404).json({ message: "Ticket not found" });
   }
 
-  // Optional: Send email if the ticket is solved
-  // if (status === "solved") {
-  //   const message = `Your problem titled "${ticket.title}" has been solved.`;
-  //   await sendEmail(ticket.email, message);
-  // }
-
   res
     .status(200)
     .json({ message: "Ticket status updated successfully", ticket });
+});
+const handle_admin_assign_ticket = catchAsync(async (req, res, next) => {
+  const { ticketId, assistantId } = req.body;
+
+  const ticket = await ticketModel.findById(ticketId);
+
+  const userExist = await userModel.findById(assistantId);
+  if (!userExist) return res.status(404).json({ message: "user not found" });
+  if (!ticket) {
+    return res.status(404).json({ message: "Ticket not found" });
+  }
+  ticket.assignedTo = assistantId;
+  await ticket.save();
+
+  res.status(200).json({
+    message: `"Ticket assigned to ${userExist.name} successfully`,
+  });
 });
 const handle_admin_get_tags = catchAsync(async (req, res, next) => {
   const tags = await taskModel.aggregate([
@@ -1214,7 +1236,7 @@ const handle_admin_get_tags = catchAsync(async (req, res, next) => {
       },
     },
     {
-      $sort: { count: -1 }, 
+      $sort: { count: -1 },
     },
   ]);
 
@@ -1279,6 +1301,7 @@ const getTeam = catchAsync(async (req, res, next) => {
 
 export {
   handle_admin_get_tags,
+  handle_admin_assign_ticket,
   getTeam,
   deleteuserTeam,
   adduserTeam,
