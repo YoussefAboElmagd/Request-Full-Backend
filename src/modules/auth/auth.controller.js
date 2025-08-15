@@ -58,10 +58,11 @@ export const signUp = catchAsync(async (req, res, next) => {
     req.body.vocation = roleToVocationMap[req.body.role];
   }
   req.body.dateOfBirth = new Date("1950/01/02");
-  req.body.verificationCode = generateUniqueId({
-    length: 4,
-    useLetters: false,
-  });
+  req.body.verificationCode = "5555";
+  // req.body.verificationCode = generateUniqueId({
+  //   length: 4,
+  //   useLetters: false,
+  // });
   if (req.body.password.length < 8) {
     return res.status(409).json({ message: err_pass });
   }
@@ -158,10 +159,11 @@ export const signIn = catchAsync(async (req, res, next) => {
       // if (userData.userType == "admin") {
       //   return res.status(401).json({ message: err_admin });
       // }
-      userData.verificationCode = generateUniqueId({
-        length: 4,
-        useLetters: false,
-      });
+      userData.verificationCode = "5555";
+      // userData.verificationCode = generateUniqueId({
+      //   length: 4,
+      //   useLetters: false,
+      // });
       text = text + `${userData.verificationCode}`;
       sendEmail(userData.email, text);
       await userData.save();
@@ -231,10 +233,11 @@ export const resend = catchAsync(async (req, res, next) => {
     let userData = await userModel.findOne({ email });
     if (!userData) return res.status(401).json({ message: err_pass });
     if (userData) {
-      userData.verificationCode = generateUniqueId({
-        length: 4,
-        useLetters: false,
-      });
+      userData.verificationCode = "5555";
+      // userData.verificationCode = generateUniqueId({
+      //   length: 4,
+      //   useLetters: false,
+      // });
       text = text + `${userData.verificationCode}`;
 
       sendEmail(userData.email, text);
@@ -270,10 +273,11 @@ export const forgetPassword = catchAsync(async (req, res, next) => {
     let { email } = req.body;
     let userData = await userModel.findOne({ email });
     if (!userData) return res.status(404).json({ message: err_email });
-    userData.verificationCode = generateUniqueId({
-      length: 4,
-      useLetters: false,
-    });
+    userData.verificationCode = "5555";
+    // userData.verificationCode = generateUniqueId({
+    //   length: 4,
+    //   useLetters: false,
+    // });
     text += `${userData.verificationCode}`;
     sendEmail(userData.email, text);
     await userData.save();
