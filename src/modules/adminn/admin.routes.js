@@ -57,6 +57,8 @@ adminRoutes.post(
   validate(addMemeber),
   adminController.adduserTeam
 );
+
+
 adminRoutes.get(
   "/team",
   authen(["admin"]),
