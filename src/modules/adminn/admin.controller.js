@@ -148,6 +148,47 @@ const handle_admin_update_profile = catchAsync(async (req, res, next) => {
   await existAdmin.save();
   res.status(200).json({ message: "admin upadated successfully" });
 });
+const handle_admin_update_member = catchAsync(async (req, res, next) => {
+  const { name, email, vocation, access, phone, userId } = req.body;
+
+  const id = req.user.id;
+
+  const existAdmin = await userModel.findById(id);
+
+  if (!existAdmin) return res.status(404).json({ message: "admin not found" });
+
+  const memberFound = await userModel.findOne({
+    _id: userId,
+    userType: "assistant",
+  });
+
+  if (!memberFound)
+    return res.status(404).json({ message: "member not found" });
+
+  const emailExist = await userModel.findOne({
+    _id: { $ne: userId },
+    email: email,
+  });
+  const phoneExist = await userModel.findOne({
+    _id: { $ne: userId },
+    phone: phone,
+  });
+
+  if (emailExist) return res.status(409).json({ message: "email exist" });
+  if (phoneExist) return res.status(409).json({ message: "phone exist" });
+
+  await userModel.findByIdAndUpdate(userId, {
+    name,
+    email,
+
+    phone,
+    memberVocation: vocation,
+    rights: access,
+  });
+
+  res.status(200).json({ message: "member upadated successfully" });
+});
+
 const handle_admin_get_users = catchAsync(async (req, res, next) => {
   // Use aggregation instead of find
   const users = await userModel.aggregate([
@@ -1305,6 +1346,7 @@ const getTeam = catchAsync(async (req, res, next) => {
 
 export {
   handle_admin_get_tags,
+  handle_admin_update_member,
   handle_admin_assign_ticket,
   getTeam,
   deleteuserTeam,
