@@ -6,6 +6,7 @@ import {
   loginSchema,
   otpSchema,
   reotpSchema,
+  updateMemeber,
 } from "../../utils/middleWare/validation/schema.js";
 import { authen } from "../../utils/middleWare/authen.js";
 import { access } from "../../utils/middleWare/access.js";
@@ -41,6 +42,13 @@ adminRoutes.put(
   access("read"),
   adminController.handle_admin_update_profile
 );
+adminRoutes.put(
+  "/updateMember",
+  authen(["admin"]),
+  validate(updateMemeber),
+
+  adminController.handle_admin_update_member
+);
 
 //admin team
 adminRoutes.post(
@@ -49,6 +57,8 @@ adminRoutes.post(
   validate(addMemeber),
   adminController.adduserTeam
 );
+
+
 adminRoutes.get(
   "/team",
   authen(["admin"]),
@@ -149,7 +159,7 @@ adminRoutes.post(
 );
 adminRoutes.patch(
   "/tickets/:id",
- authen(["admin", "assistant"]),
+  authen(["admin", "assistant"]),
   access("update"),
   adminController.handle_admin_change_ticket_status
 );
@@ -160,7 +170,7 @@ adminRoutes.patch(
 );
 adminRoutes.get(
   "/tags",
- authen(["admin", "assistant"]),
+  authen(["admin", "assistant"]),
   access("read"),
   adminController.handle_admin_get_tags
 );

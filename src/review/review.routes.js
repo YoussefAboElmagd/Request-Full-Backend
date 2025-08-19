@@ -5,7 +5,8 @@ import {
   getReviewsForAdmin,
   manageReview,
 } from "./review.controller.js";
-import { authen, access } from "../utils/middleWare/authen.js";
+import { authen } from "../utils/middleWare/authen.js";
+import { access } from "../utils/middleWare/access.js";
 
 const reviewRoutes = express.Router();
 
