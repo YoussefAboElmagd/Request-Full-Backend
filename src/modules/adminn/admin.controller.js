@@ -69,6 +69,7 @@ const handle_admin_verify = catchAsync(async (req, res, next) => {
       id: emailExist._id,
       userType: emailExist.userType,
       email: emailExist.email,
+      rights: emailExist.rights || [],
     },
     process.env.JWT_SECRET_KEY,
     { expiresIn: "1d" }
