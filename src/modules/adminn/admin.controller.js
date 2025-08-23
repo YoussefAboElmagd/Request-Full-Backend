@@ -191,10 +191,7 @@ const handle_admin_update_member = catchAsync(async (req, res, next) => {
 
 const handle_admin_get_users = catchAsync(async (req, res, next) => {
   // Use aggregation instead of find
-  const search = req.query.search;
-
-  // Build the aggregation pipeline
-  const pipeline = [
+  const users = await userModel.aggregate([
     {
       $match: {
         userType: { $ne: "admin" },
@@ -211,35 +208,19 @@ const handle_admin_get_users = catchAsync(async (req, res, next) => {
     {
       $unwind: "$role",
     },
-  ];
-
-  // Add search functionality if search query exists
-  if (search && search.trim()) {
-    pipeline.push({
-      $match: {
-        $or: [
-          { name: { $regex: search, $options: "i" } },
-          { "role.jobTitle": { $regex: search, $options: "i" } },
-          { personalNumber: { $regex: search, $options: "i" } },
-        ],
-      },
-    });
-  }
-
-  // Add projection
-  pipeline.push({
-    $project: {
-      profilePic: 1,
-      name: 1,
-      email: 1,
-      personalNumber: 1,
-      role: {
-        jobTitle: "$role.jobTitle",
+    {
+      $project: {
+        profilePic: 1,
+        name: 1,
+        email: 1,
+        personalNumber: 1,
+        role: {
+          jobTitle: "$role.jobTitle",
+        },
       },
     },
-  });
+  ]);
 
-  const users = await userModel.aggregate(pipeline);
   // Fetch role IDs using direct queries
   const [owner, contractor, consultant] = await Promise.all([
     userTypeModel.findOne({ jobTitle: "owner" }).select("_id"),
@@ -408,27 +389,14 @@ const handle_admin_get_tasks = catchAsync(async (req, res, next) => {
 
   const skip = (Number(page) - 1) * Number(limit);
 
-  // Build dynamic match stage based on search
-  let matchStage = { $match: {} };
-
-  if (search && search.trim()) {
-    const searchRegex = new RegExp(search.trim(), "i"); // Case-insensitive search
-
-    matchStage = {
-      $match: {
-        $or: [
-          { title: searchRegex },
-          { taskStatus: searchRegex },
-          // For date searches, we'll handle both string and date formats
-          { sDate: searchRegex },
-          { dueDate: searchRegex },
-        ],
-      },
-    };
-  }
+  const matchStage = search
+    ? { $match: { taskStatus: search } }
+    : { $match: {} };
 
   const tasks = await taskModel.aggregate([
-    // First lookup users for assignees and createdBy
+    matchStage,
+
+    // Lookup for assignees
     {
       $lookup: {
         from: "users",
@@ -460,82 +428,49 @@ const handle_admin_get_tasks = catchAsync(async (req, res, next) => {
       },
     },
 
-    // Apply search filter after lookups (to search in populated fields)
-    ...(search && search.trim()
-      ? [
-          {
-            $match: {
-              $or: [
-                { title: new RegExp(search.trim(), "i") },
-                { taskStatus: new RegExp(search.trim(), "i") },
-                { sDate: new RegExp(search.trim(), "i") },
-                { dueDate: new RegExp(search.trim(), "i") },
-                { "assignees.name": new RegExp(search.trim(), "i") },
-                { "createdBy.name": new RegExp(search.trim(), "i") },
-                { "tags.name": new RegExp(search.trim(), "i") },
-              ],
-            },
-          },
-        ]
-      : []),
-
-    // Add facet for total count and paginated results
+    // Format data like select() + populate()
     {
-      $facet: {
-        data: [
-          { $skip: skip },
-          { $limit: Number(limit) },
-          {
-            $project: {
-              title: 1,
-              taskStatus: 1,
-              sDate: 1,
-              dueDate: 1,
-              assignees: {
-                $map: {
-                  input: "$assignees",
-                  as: "assignee",
-                  in: {
-                    name: "$$assignee.name",
-                    profilePic: "$$assignee.profilePic",
-                  },
-                },
-              },
-              createdBy: {
-                name: "$createdBy.name",
-                profilePic: "$createdBy.profilePic",
-              },
-              tags: {
-                $map: {
-                  input: "$tags",
-                  as: "tag",
-                  in: {
-                    name: "$$tag.name",
-                    color: "$$tag.colorCode",
-                  },
-                },
-              },
+      $project: {
+        title: 1,
+        taskStatus: 1,
+        sDate: 1,
+        dueDate: 1,
+        assignees: {
+          $map: {
+            input: "$assignees",
+            as: "assignee",
+            in: {
+              name: "$$assignee.name",
+              profilePic: "$$assignee.profilePic",
             },
           },
-        ],
-        totalCount: [{ $count: "count" }],
+        },
+        createdBy: {
+          name: "$createdBy.name",
+          profilePic: "$createdBy.profilePic",
+        },
+        tags: {
+          $map: {
+            input: "$tags",
+            as: "tag",
+            in: {
+              name: "$$tag.name",
+              color: "$$tag.colorCode",
+            },
+          },
+        },
       },
     },
   ]);
 
-  const result = tasks[0];
-  const data = result.data;
-  const total = result.totalCount[0]?.count || 0;
+  // For total count (without pagination)
+  const total = await taskModel.countDocuments(
+    search ? { taskStatus: search } : {}
+  );
 
   res.status(200).json({
     message: "Tasks found successfully",
-    data: data,
-    pagination: {
-      currentPage: Number(page),
-      totalPages: Math.ceil(total / Number(limit)),
-      totalItems: total,
-      itemsPerPage: Number(limit),
-    },
+    data: tasks,
   });
 });
 const handle_admin_get_tasks_by_id = catchAsync(async (req, res, next) => {
@@ -630,44 +565,18 @@ const handle_admin_get_tasks_by_id = catchAsync(async (req, res, next) => {
 });
 
 const handle_admin_get_projects = catchAsync(async (req, res, next) => {
-  const search = req.query.search;
-
-  // Build search query
-  let searchQuery = {};
-
-  if (search && search.trim()) {
-    const searchTerm = search.trim();
-    const searchRegex = new RegExp(searchTerm, "i");
-
-    // Build search conditions array
-    const searchConditions = [
-      { name: searchRegex },
-      { status: searchRegex },
-      { projectPriority: searchRegex },
-    ];
-
-    // Handle numeric fields
-    const numericValue = parseFloat(searchTerm);
-    if (!isNaN(numericValue)) {
-      searchConditions.push({ budget: numericValue });
-      searchConditions.push({ progress: numericValue });
-    }
-
-    // Handle date fields - try to parse as date
-    const dateValue = new Date(searchTerm);
-    if (!isNaN(dateValue.getTime())) {
-      searchConditions.push({ sDate: dateValue });
-      searchConditions.push({ dueDate: dateValue });
-    }
-
-    searchQuery = { $or: searchConditions };
-  }
-
-  const projects = await projectModel.find(searchQuery).populate("members");
+  const projects = await projectModel.find().populate("members");
+  const total = await projectModel.countDocuments();
 
   res.status(200).json({
     message: "Projects fetched successfully",
     data: projects,
+    // pagination: {
+    //   total,
+    //   page,
+    //   limit,
+    //   pages: Math.ceil(total / limit),
+    // },
   });
 });
 
@@ -1233,90 +1142,29 @@ const handle_admin_get_projects_by_id = catchAsync(async (req, res, next) => {
   });
 });
 const handle_admin_get_Tickets = catchAsync(async (req, res, next) => {
-  const search = req.query.search;
+  // Parse pagination params with defaults
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const limit = Math.max(1, parseInt(req.query.limit, 10) || 10);
+  const skip = (page - 1) * limit;
 
-  // Build the aggregation pipeline
-  let pipeline = [];
+  // Get total count to calculate total pages
+  const total = await ticketModel.countDocuments();
 
-  // Stage 1: Match based on user role
-  let matchStage = {};
+  let query = {};
+
   if (req.user.role === "assistant") {
-    matchStage.assignedTo = req.user.id;
+    query = { assignedTo: req.user.id };
   }
 
-  // Add the initial match stage if there are conditions
-  if (Object.keys(matchStage).length > 0) {
-    pipeline.push({ $match: matchStage });
-  }
+  const tickets = await ticketModel
+    .find(query)
+    .sort({ createdAt: -1 })
 
-  // Stage 2: Lookup user details
-  pipeline.push({
-    $lookup: {
-      from: "users", // Replace with your actual users collection name
-      localField: "user",
-      foreignField: "_id",
-      as: "user",
-      pipeline: [
-        {
-          $project: {
-            name: 1,
-            profilePic: 1,
-          },
-        },
-      ],
-    },
-  });
-
-  // Stage 3: Lookup assignedTo details
-  pipeline.push({
-    $lookup: {
-      from: "users", // Replace with your actual users collection name
-      localField: "assignedTo",
-      foreignField: "_id",
-      as: "assignedTo",
-    },
-  });
-
-  // Stage 4: Unwind the arrays (since populate returns single objects)
-  pipeline.push(
-    {
-      $unwind: {
-        path: "$user",
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-    {
-      $unwind: {
-        path: "$assignedTo",
-        preserveNullAndEmptyArrays: true,
-      },
-    }
-  );
-
-  // Stage 5: Add search functionality if search query exists
-  if (search) {
-    const searchRegex = new RegExp(search, "i");
-
-    pipeline.push({
-      $match: {
-        $or: [
-          { ticketNumber: searchRegex },
-          { subject: searchRegex },
-          { status: searchRegex },
-          { "user.name": searchRegex },
-          { "assignedTo.name": searchRegex },
-        ],
-      },
-    });
-  }
-
-  // Stage 6: Sort by creation date (newest first)
-  pipeline.push({
-    $sort: { createdAt: -1 },
-  });
-
-  // Execute the aggregation
-  const tickets = await ticketModel.aggregate(pipeline);
+    .populate({
+      path: "user",
+      select: "name profilePic",
+    })
+    .populate("assignedTo");
 
   res.status(200).json({
     message: "Tickets fetched successfully",
