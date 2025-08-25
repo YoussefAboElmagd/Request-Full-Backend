@@ -87,7 +87,17 @@ const getInTouch = catchAsync(async (req, res, next) => {
     }
 
     const ticket = await ticketModel.create(obj);
-    console.log(ticket);
+
+    const admins = await userModel.find({ userType: "admin" });
+
+    for (const admin of admins) {
+      await sendNotification(
+        `new ticket created  and its number is ${ticket.ticketNumber} `,
+        `تم انشاء تذكره جديدة ورقمها هو ${ticket.ticketNumber}`,
+        "success",
+        admin._id
+      );
+    }
 
     contactUs2(req.body.name, req.body.email, req.body.phone, req.body.message);
     res.json({ message: message });
@@ -221,7 +231,7 @@ const sendInviteToProject = catchAsync(async (req, res, next) => {
 
   // Process invitations
   const link = "https://request-sa.com/Invitation";
-  
+
   const processedInvitations = [];
 
   for (let invitation of req.body) {
