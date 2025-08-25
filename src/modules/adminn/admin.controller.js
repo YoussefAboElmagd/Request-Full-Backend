@@ -13,6 +13,7 @@ import { requsetModel } from "../../../database/models/request.model.js";
 import { ticketModel } from "../../../database/models/ticket.model.js";
 import { documentsModel } from "../../../database/models/documents.model.js";
 import { teamModel } from "../../../database/models/team.model.js";
+import { sendNotification } from "../../utils/sendNotification.js";
 
 const handle_admin_signin = catchAsync(async (req, res, next) => {
   const { lang } = req.query;
@@ -1397,6 +1398,12 @@ const handle_admin_assign_ticket = catchAsync(async (req, res, next) => {
   ticket.assignedTo = assistantId;
   await ticket.save();
 
+  await sendNotification(
+    `you have been assigned to new  tikcket and its number is ${ticket.ticketNumber} `,
+    `تم تعيينك على تذكرة جديدة ورقمها هو ${ticket.ticketNumber}`,
+    "success",
+    assistantId
+  );
   res.status(200).json({
     message: `"Ticket assigned to ${userExist.name} successfully`,
   });
