@@ -406,13 +406,30 @@ const handle_admin_delete_user = catchAsync(async (req, res, next) => {
 
 const handle_admin_get_tasks = catchAsync(async (req, res, next) => {
   const { search, page = 1, limit = 10 } = req.query;
+
   const skip = (Number(page) - 1) * Number(limit);
 
-  const searchRegex =
-    search && search.trim() ? new RegExp(search.trim(), "i") : null;
+  // Build dynamic match stage based on search
+  let matchStage = { $match: {} };
+
+  if (search && search.trim()) {
+    const searchRegex = new RegExp(search.trim(), "i"); // Case-insensitive search
+
+    matchStage = {
+      $match: {
+        $or: [
+          { title: searchRegex },
+          { taskStatus: searchRegex },
+          // For date searches, we'll handle both string and date formats
+          { sDate: searchRegex },
+          { dueDate: searchRegex },
+        ],
+      },
+    };
+  }
 
   const tasks = await taskModel.aggregate([
-    // Lookup for assignees
+    // First lookup users for assignees and createdBy
     {
       $lookup: {
         from: "users",
@@ -421,7 +438,6 @@ const handle_admin_get_tasks = catchAsync(async (req, res, next) => {
         as: "assignees",
       },
     },
-    // Lookup for createdBy
     {
       $lookup: {
         from: "users",
@@ -436,7 +452,6 @@ const handle_admin_get_tasks = catchAsync(async (req, res, next) => {
         preserveNullAndEmptyArrays: true,
       },
     },
-    // Lookup for tags
     {
       $lookup: {
         from: "tags",
@@ -445,7 +460,6 @@ const handle_admin_get_tasks = catchAsync(async (req, res, next) => {
         as: "tags",
       },
     },
-    // 🔹 Lookup for documents (related to task)
     {
       $lookup: {
         from: "documents",
@@ -455,27 +469,26 @@ const handle_admin_get_tasks = catchAsync(async (req, res, next) => {
       },
     },
 
-    // Apply search filter if exists
-    ...(searchRegex
+    // Apply search filter after lookups (to search in populated fields)
+    ...(search && search.trim()
       ? [
           {
             $match: {
               $or: [
-                { title: searchRegex },
-                { taskStatus: searchRegex },
-                { sDate: searchRegex },
-                { dueDate: searchRegex },
-                { "assignees.name": searchRegex },
-                { "createdBy.name": searchRegex },
-                { "tags.name": searchRegex },
-                { "documents.name": searchRegex }, // ✅ allow searching in document names
+                { title: new RegExp(search.trim(), "i") },
+                { taskStatus: new RegExp(search.trim(), "i") },
+                { sDate: new RegExp(search.trim(), "i") },
+                { dueDate: new RegExp(search.trim(), "i") },
+                { "assignees.name": new RegExp(search.trim(), "i") },
+                { "createdBy.name": new RegExp(search.trim(), "i") },
+                { "tags.name": new RegExp(search.trim(), "i") },
               ],
             },
           },
         ]
       : []),
 
-    // Pagination + projection
+    // Add facet for total count and paginated results
     {
       $facet: {
         data: [
@@ -516,8 +529,8 @@ const handle_admin_get_tasks = catchAsync(async (req, res, next) => {
                   input: "$documents",
                   as: "doc",
                   in: {
+                    link: "$$doc.path",
                     createdAt: "$$doc.createdAt",
-                    path: "$$doc.path", // change to your document schema fields
                   },
                 },
               },
@@ -535,7 +548,7 @@ const handle_admin_get_tasks = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     message: "Tasks found successfully",
-    data,
+    data: data,
     pagination: {
       currentPage: Number(page),
       totalPages: Math.ceil(total / Number(limit)),
@@ -544,7 +557,6 @@ const handle_admin_get_tasks = catchAsync(async (req, res, next) => {
     },
   });
 });
-
 const handle_admin_get_tasks_by_id = catchAsync(async (req, res, next) => {
   const { id } = req.params;
 
