@@ -75,6 +75,7 @@ adminRoutes.delete(
 //USERS
 adminRoutes.get(
   "/users",
+
   authen(["admin", "assistant"]),
   access("read"),
   adminController.handle_admin_get_users
