@@ -176,6 +176,9 @@ const projectSchema = mongoose.Schema(
 );
 
 projectSchema.post(/^find/, async function (docs) {
+  if (!Array.isArray(docs)) {
+    docs = [docs]; // Convert to array if it's a single document
+  }
   for (const project of docs) {
     try {
       const tasks = await taskModel.find({ project: project._id });
@@ -195,11 +198,6 @@ projectSchema.post(/^find/, async function (docs) {
 
       // Dynamically attach progress (not saved to DB)
       project.progress = progress;
-
-
-
-
-      
 
       // Fetch tags from external API
       // const apiUrl = `https://api.request-sa.com/api/v1/project/tags/progress/${project._id}`;
