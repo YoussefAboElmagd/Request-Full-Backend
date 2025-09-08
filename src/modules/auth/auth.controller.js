@@ -62,6 +62,7 @@ export const signUp = catchAsync(async (req, res, next) => {
   req.body.verificationCode = generateUniqueId({
     length: 4,
     useLetters: false,
+    
   });
   if (req.body.password.length < 8) {
     return res.status(409).json({ message: err_pass });
