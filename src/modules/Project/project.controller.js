@@ -237,10 +237,13 @@ const getModelsAprroved = catchAsync(async (req, res, next) => {
 const getinvitationByproject = catchAsync(async (req, res, next) => {
   const { projectId } = req.params;
 
+  
+  
   const existProject = await projectModel.findById(projectId);
   if (!existProject)
     return res.status(404).json({ message: "project not found" });
 
+  
   const inivations = await invitationModel
     .find({ project: projectId })
     .populate("project", "name")
