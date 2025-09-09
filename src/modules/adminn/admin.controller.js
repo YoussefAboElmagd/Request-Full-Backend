@@ -222,6 +222,7 @@ const handle_admin_get_users = catchAsync(async (req, res, next) => {
           { name: { $regex: search, $options: "i" } },
           { "role.jobTitle": { $regex: search, $options: "i" } },
           { personalNumber: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } },
         ],
       },
     });
