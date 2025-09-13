@@ -8,19 +8,26 @@ const notificationSchema = mongoose.Schema(
       required: true,
     },
     message: {
-        message_en: { type: String , },
-        message_ar: { type: String , },
+      message_en: { type: String },
+      message_ar: { type: String },
     },
     receiver: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       required: true,
     },
-    isRead:{
+    isRead: {
       type: Boolean,
       default: false,
       required: true,
     },
+    related: {
+      type: String,
+    },
+    referanceId: {
+      type: String,
+    },
+
     // model: {
     //   type: mongoose.Schema.Types.ObjectId,
     //   ref: "model",
@@ -30,11 +37,13 @@ const notificationSchema = mongoose.Schema(
   },
   { timestamps: true }
 );
-notificationSchema.pre('save', async function (next) {
+notificationSchema.pre("save", async function (next) {
   try {
     const ninetyDaysAgo = new Date();
     ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 91);
-    const result = await this.constructor.deleteMany({ createdAt: { $lt: ninetyDaysAgo } });
+    const result = await this.constructor.deleteMany({
+      createdAt: { $lt: ninetyDaysAgo },
+    });
     next(); // Proceed to save the new document
   } catch (err) {
     next(err); // Pass the error to the next middleware

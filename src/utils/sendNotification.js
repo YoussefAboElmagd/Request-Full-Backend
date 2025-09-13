@@ -6,7 +6,9 @@ export const sendNotification = async (
   message_ar,
   type,
   receivers,
-  invitation
+  invitation,
+  related,
+  referanceId
 ) => {
   try {
     if (!Array.isArray(receivers)) {
@@ -33,7 +35,15 @@ export const sendNotification = async (
     }
     for (let index = 0; index < receivers.length; index++) {
       let receiver = receivers[index];
-      const newNotif = new notificationModel({ message, icon, receiver });
+      const newNotif = related
+        ? new notificationModel({
+            message,
+            icon,
+            receiver,
+            related,
+            referanceId,
+          })
+        : new notificationModel({ message, icon, receiver });
       const savedNotif = await newNotif.save();
       let createdAt = savedNotif.createdAt;
 

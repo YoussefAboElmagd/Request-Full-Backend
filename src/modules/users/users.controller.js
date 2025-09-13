@@ -95,7 +95,10 @@ const getInTouch = catchAsync(async (req, res, next) => {
         `new ticket created  and its number is ${ticket.ticketNumber} `,
         `تم انشاء تذكره جديدة ورقمها هو ${ticket.ticketNumber}`,
         "success",
-        admin._id
+        admin._id,
+        null,
+        "ticket",
+        ticket._id
       );
     }
 
