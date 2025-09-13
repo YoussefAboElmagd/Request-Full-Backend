@@ -1421,7 +1421,10 @@ const handle_admin_assign_ticket = catchAsync(async (req, res, next) => {
     `you have been assigned to new  tikcket and its number is ${ticket.ticketNumber} `,
     `تم تعيينك على تذكرة جديدة ورقمها هو ${ticket.ticketNumber}`,
     "success",
-    assistantId
+    assistantId,
+    null,
+    "ticket",
+    ticket._id
   );
   res.status(200).json({
     message: `"Ticket assigned to ${userExist.name} successfully`,
