@@ -56,7 +56,14 @@ export const sendNotification = async (
           invitation,
         });
       } else {
-        sio.emit(`notification_`, { message, icon, receiver, createdAt });
+        sio.emit(`notification_`, {
+          message,
+          icon,
+          receiver,
+          createdAt,
+          related: related || "",
+          referanceId: referanceId || "",
+        });
       }
     }
   } catch (error) {
