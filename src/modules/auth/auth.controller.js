@@ -62,7 +62,6 @@ export const signUp = catchAsync(async (req, res, next) => {
   req.body.verificationCode = generateUniqueId({
     length: 4,
     useLetters: false,
-    
   });
   if (req.body.password.length < 8) {
     return res.status(409).json({ message: err_pass });
@@ -157,6 +156,7 @@ export const signIn = catchAsync(async (req, res, next) => {
     if (!userData) return res.status(401).json({ message: err_pass });
     const match = bcrypt.compareSync(password, userData.password);
     if (match && userData) {
+      let lastLogin = new Date();
       // if (userData.userType == "admin") {
       //   return res.status(401).json({ message: err_admin });
       // }
@@ -167,15 +167,16 @@ export const signIn = catchAsync(async (req, res, next) => {
       });
       text = text + `${userData.verificationCode}`;
       sendEmail(userData.email, text);
+      userData.lastLogin = lastLogin;
       await userData.save();
       let token = jwt.sign(
         { name: userData.name, userId: userData._id },
         process.env.JWT_SECRET_KEY,
         { expiresIn: "1h" } // expires in 1 hour
       );
-      let lastSignIn = new Date();
-      req.lastSignIn = lastSignIn;
-      return res.json({ message: "success", token, userData, lastSignIn });
+
+      req.lastLogin = lastLogin;
+      return res.json({ message: "success", token, userData, lastLogin });
     }
     return res.status(401).json({ message: err_pass });
   } else {
