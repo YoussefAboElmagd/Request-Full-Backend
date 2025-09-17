@@ -58,7 +58,6 @@ adminRoutes.post(
   adminController.adduserTeam
 );
 
-
 adminRoutes.get(
   "/team",
   authen(["admin"]),
@@ -173,6 +172,12 @@ adminRoutes.get(
   authen(["admin", "assistant"]),
   access("read"),
   adminController.handle_admin_get_tags
+);
+adminRoutes.get(
+  "/activity",
+  // authen(["admin", "assistant"]),
+  // access("read"),
+  adminController.handle_activity
 );
 
 export default adminRoutes;

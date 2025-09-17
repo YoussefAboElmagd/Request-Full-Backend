@@ -1468,6 +1468,55 @@ const handle_admin_get_tags = catchAsync(async (req, res, next) => {
 
   res.status(200).json({ message: "tags founded successfully", data: tags });
 });
+const handle_activity = catchAsync(async (req, res, next) => {
+  // Calculate date range for the last month
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setMonth(startDate.getMonth() - 1);
+
+  // Find users with populated role data
+  const users = await userModel
+    .find({
+      $or: [
+        { role: "66d33e7a4ad80e468f231f8d" },
+        { role: "66d33a4b4ad80e468f231f83" },
+        { role: "66d33ec44ad80e468f231f91" },
+      ],
+    })
+    .select("role lastLogin")
+    .populate("role", "jobTitle");
+
+  // Transform the data to the desired format
+  const transformedData = {};
+  const dayNames = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+
+  users.forEach((user) => {
+    if (user.lastLogin && user.role && user.role.jobTitle) {
+      // Get day of week (0=Sunday, 1=Monday, etc.)
+      const dayOfWeek = user.lastLogin.getDay();
+      const dayName = dayNames[dayOfWeek];
+      const roleName = user.role.jobTitle.toLowerCase();
+
+      // Initialize day object if it doesn't exist
+      if (!transformedData[dayName]) {
+        transformedData[dayName] = {};
+      }
+
+      // Initialize role count if it doesn't exist
+      if (!transformedData[dayName][roleName]) {
+        transformedData[dayName][roleName] = 0;
+      }
+
+      // Increment the count
+      transformedData[dayName][roleName]++;
+    }
+  });
+
+  res.status(200).json({
+    message: "User activity retrieved successfully",
+    data: transformedData,
+  });
+});
 
 const adduserTeam = catchAsync(async (req, res, next) => {
   const { name, email, vocation, password, access, phone } = req.body;
@@ -1551,4 +1600,5 @@ export {
   handle_admin_delete_user,
   handle_admin_get_requests_most_use,
   handle_admin_get_requests_by_id,
+  handle_activity,
 };
